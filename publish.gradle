@@ -23,6 +23,29 @@ task outputVersions() {
     }
 }
 
+def libFileInput = file("src/generate/NFRLib.json.in")
+ext.libFileOutput = file("$buildDir/generated/vendordeps/NFRLib.json")
+
+task generateVendorJson() {
+    description = "Generates the vendor JSON file"
+
+    outputs.file libFileOutput
+    inputs.file libFileInput
+
+    doLast {
+        println "Writing version ${pubVersion} to $libFileOutput"
+
+        if (libFileOutput.exists()) {
+            libFileOutput.delete()
+        }
+        def read = libFileInput.text.replace('${lib_version}', pubVersion)
+        libFileOutput.write(read)
+    }
+    outputs.upToDateWhen { false }
+}
+
+publish.dependsOn generateVendorJson
+
 task libraryBuild() {}
 
 build.dependsOn outputVersions
