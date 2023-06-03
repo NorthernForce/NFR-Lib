@@ -13,7 +13,8 @@ Currently, there is no maven repository set up. However, that is a priority at t
 
 ## Maven
 
-the maven repo is found at [https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/](https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/)
+The maven repo is found at [https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/](https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/)
+(link will return error but it is there)
 
-the vendor json link is [https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/1.3/nfrlib-json-1.3.json](https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/1.3/nfrlib-json-1.3.json)
+The vendor json link is `https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/1.3/nfrlib-json-1.3.json`.
 
