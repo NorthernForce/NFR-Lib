@@ -2,8 +2,6 @@ apply plugin: 'maven-publish'
 
 ext.licenseFile = files("$rootDir/LICENSE.txt")
 
-
-
 def outputsFolder = file("$buildDir/outputs")
 
 def versionFile = file("$outputsFolder/version.txt")
@@ -127,8 +125,6 @@ build.dependsOn outputSourcesJar
 build.dependsOn outputJavadocJar
 build.dependsOn outputJar
 
-libraryBuild.dependsOn build
-
 def releasesRepoUrl = "$buildDir/repos/releases"
 
 publishing {
@@ -147,7 +143,7 @@ tasks.matching {it != cleanReleaseRepo}.all {it.dependsOn cleanReleaseRepo}
 
 model {
     publishing {
-        // def taskList = createComponentZipTasks($.components, ['Vendor'], zipBaseName, Zip, project, includeStandardZipFormat)
+        def taskList = generateVendorJson
 
         publications {
             // cpp(MavenPublication) {

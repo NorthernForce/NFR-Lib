@@ -4,10 +4,9 @@
   "version": "${lib_version}",
   "uuid": "515fe07e-bfc6-11fa-b3de-0242ac130004 ",
   "mavenUrls": [
-    "https://maven.photonvision.org/repository/internal",
-    "https://maven.photonvision.org/repository/snapshots"
+    "/Users/harlanhaller/Documents/Robot/Projects/NFR-Lib/build/repos/releases/com/northernforce/NFRLib-java"
   ],
-  "jsonUrl": "https://maven.photonvision.org/repository/internal/org/photonvision/PhotonLib-json/1.0/PhotonLib-json-1.0.json",
+  "jsonUrl": "/Users/harlanhaller/Documents/Robot/Projects/NFR-Lib/build/repos/releases/com/northernforce/NFRLib-json/1.0/NFRLib-json-1.0.json",
   "javaDependencies": [
     {
       "groupId": "com.northernforce",
