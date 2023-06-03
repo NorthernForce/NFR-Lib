@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorController;
  * A NFRMotorController is an interface that defines common funcionality amongst many motor controller types,
  * and it provides utility for dealing with multiple motors following a primary motor.
  */
-public interface NFRMotorController
+public interface NFRMotorController extends MotorController
 {
     /**
      * Checks to see whether an motor controller is present through various means.
