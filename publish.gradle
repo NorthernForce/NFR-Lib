@@ -153,6 +153,7 @@ publishing {
                     username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
                     password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
                 }
+                println("json url is https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/$json_version/nfrlib-json-$json_version" + ".json")
             }
         }
     }
