@@ -25,8 +25,12 @@ the current vendor json link is `https://${key}@maven.pkg.github.com/northernfor
 The maven repo is found at [https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/](https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/)
 (link will return error but it is there)
 
+<<<<<<< HEAD
 The vendor json link is `https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/1.3/nfrlib-json-1.3.json`.
 >>>>>>> 5f45649 (Update README.md)
+=======
+the current vendor json link is `https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/1.0/nfrlib-json-1.0.json`
+>>>>>>> 0f813cf (updated README.md)
 
 `${key}` is used in replace of the actual key because github would revoke the key if it was placed in the repo
 
