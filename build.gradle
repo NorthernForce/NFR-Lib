@@ -10,7 +10,10 @@ plugins {
 }
 
 ext.pubVersion = '0.0.1'
+<<<<<<< HEAD
 ext.json_version = "1.0"
+=======
+>>>>>>> d4708af (Bug/make gradle compatible with v8 (#16))
 
 apply plugin: "cpp"
 apply plugin: "java"
