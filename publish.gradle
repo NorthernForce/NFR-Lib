@@ -23,6 +23,29 @@ task outputVersions() {
     }
 }
 
+def libFileInput = file("src/generate/NFRLib.json.in")
+ext.libFileOutput = file("$buildDir/generated/vendordeps/NFRLib.json")
+
+task generateVendorJson() {
+    description = "Generates the vendor JSON file"
+
+    outputs.file libFileOutput
+    inputs.file libFileInput
+
+    doLast {
+        println "Writing version ${pubVersion} to $libFileOutput"
+
+        if (libFileOutput.exists()) {
+            libFileOutput.delete()
+        }
+        def read = libFileInput.text.replace('${lib_version}', pubVersion)
+        libFileOutput.write(read)
+    }
+    outputs.upToDateWhen { false }
+}
+
+publish.dependsOn generateVendorJson
+
 task libraryBuild() {}
 
 build.dependsOn outputVersions
@@ -42,11 +65,9 @@ ext.addTaskToCopyAllOutputs = { task ->
     copyAllOutputs.from task.archivePath
 }
 
-def artifactGroupId = 'com.vendor.frc'
-def baseArtifactId = 'Vendor'
-def driverZipBaseName = "_GROUP_com_vendor_frc_ID_${baseArtifactId}-driver_CLS"
-def zipBaseName = "_GROUP_com_vendor_frc_ID_${baseArtifactId}-cpp_CLS"
-def javaBaseName = "_GROUP_com_vendor_frc_ID_${baseArtifactId}-java_CLS"
+def artifactGroupId = 'com.northernforce'
+def baseArtifactId = 'NFRLib'
+def javaBaseName = "_GROUP_com_northernforce_ID_${baseArtifactId}-java_CLS"
 
 // task cppHeadersZip(type: Zip) {
 //     destinationDirectory = outputsFolder
@@ -134,7 +155,6 @@ def releasesRepoUrl = "$buildDir/repos/releases"
 publishing {
     repositories {
         maven {
-
             url = releasesRepoUrl
         }
     }
