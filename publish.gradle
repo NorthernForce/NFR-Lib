@@ -145,12 +145,14 @@ publishing {
                 println("json url is https://repsy.io/mvn/cml1010101/nfr-lib/org/northernforce/nfrlib-json/$json_version/nfrlib-json-$json_version" + ".json")
             }
         }
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/northernforce/nfr-lib")
-            credentials {
-                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
-                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+        if(project.hasProperty("repos.external")) {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/northernforce/nfr-lib")
+                credentials {
+                    username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+                }
             }
         }
     }
