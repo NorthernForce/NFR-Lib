@@ -8,6 +8,8 @@ plugins {
   id 'edu.wpi.first.GradleVsCode' version '1.3.0'
 }
 
+ext.pubVersion = '0.0.1'
+
 apply plugin: "cpp"
 apply plugin: "java"
 
@@ -78,6 +80,30 @@ model {
     }
   }
 }
+
+def libFileInput = file("src/generate/NFRLib.json.in")
+ext.libFileOutput = file("$buildDir/generated/vendordeps/NFRLib.json")
+
+task generateVendorJson() {
+    description = "Generates the vendor JSON file"
+
+    outputs.file libFileOutput
+    inputs.file libFileInput
+
+    doLast {
+        println "Writing version ${pubVersion} to $libFileOutput"
+
+        if (libFileOutput.exists()) {
+            libFileOutput.delete()
+        }
+
+        def read = libFileInput.text.replace('${lib_version}', pubVersion)
+        libFileOutput.write(read)
+    }
+    outputs.upToDateWhen { false }
+}
+
+build.dependsOn generateVendorJson
 
 apply from: 'publish.gradle'
 
