@@ -41,8 +41,8 @@ ext.addTaskToCopyAllOutputs = { task ->
 }
 
 def artifactGroupId = 'com.northernforce'
-def baseArtifactId = 'NFRLib'
-def javaBaseName = "_GROUP_com_northernforce_ID_${baseArtifactId}-java_CLS"
+def baseArtifactId = 'nfrlib'
+def javaBaseName = "com_northernforce_ID_${baseArtifactId}-java_cls"
 
 // task cppHeadersZip(type: Zip) {
 //     destinationDirectory = outputsFolder
@@ -129,15 +129,19 @@ def releasesRepoUrl = "$buildDir/repos/releases"
 
 publishing {
     repositories {
-        maven {
-            url = releasesRepoUrl
+        if(project.hasProperty("repos.local")) {
+            maven {
+                url = releasesRepoUrl
+            }
         }
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/northernforce/nfr-lib")
-            credentials {
-                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
-                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+        if(project.hasProperty("repos.external")) {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/northernforce/nfr-lib")
+                credentials {
+                    username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+                }
             }
         }
     }
@@ -166,21 +170,25 @@ model {
             //     version pubVersion
             // }
 
-            java(MavenPublication) {
-                artifact jar
-                artifact sourcesJar
-                artifact javadocJar
+            if(project.hasProperty("pubs.publishJava")) {
+                java(MavenPublication) {
+                    artifact jar
+                    artifact sourcesJar
+                    artifact javadocJar
 
-                artifactId = "${baseArtifactId}-java"
-                groupId artifactGroupId
-                version pubVersion
+                    artifactId = "${baseArtifactId}-java"
+                    groupId artifactGroupId
+                    version pubVersion
+                }
             }
-            vendorjson(MavenPublication) {
-                artifact vendorJson
+            if(project.hasProperty("pubs.publishJson")){
+                vendorjson(MavenPublication) {
+                    artifact vendorJson
 
-                artifactId = "${baseArtifactId}-json"
-                groupId = artifactGroupId
-                version "1.0"
+                    artifactId = "${baseArtifactId}-json"
+                    groupId = artifactGroupId
+                    version "$json_version"
+                }
             }
         }
     }

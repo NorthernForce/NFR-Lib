@@ -9,3 +9,11 @@ The library is to be located in `insert package name here`. Various subpackages 
 ## Installing
 
 Currently, there is no maven repository set up. However, that is a priority at the moment. There will be a link posted here for when there is.
+
+
+## Maven
+
+the maven repo is found at [https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/](https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/)
+
+the vendor json link is [https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/1.3/nfrlib-json-1.3.json](https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/1.3/nfrlib-json-1.3.json)
+

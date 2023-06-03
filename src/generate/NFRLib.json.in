@@ -4,9 +4,9 @@
   "version": "${lib_version}",
   "uuid": "515fe07e-bfc6-11fa-b3de-0242ac130004 ",
   "mavenUrls": [
-    "/Users/harlanhaller/Documents/Robot/Projects/NFR-Lib/build/repos/releases/com/northernforce/NFRLib-java"
+    "https://maven.pkg.github.com/northernforce/nfr-lib/"
   ],
-  "jsonUrl": "/Users/harlanhaller/Documents/Robot/Projects/NFR-Lib/build/repos/releases/com/northernforce/NFRLib-json/1.0/NFRLib-json-1.0.json",
+  "jsonUrl": "https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/${json_version}/nfrlib-json-${lib_version}.json",
   "javaDependencies": [
     {
       "groupId": "com.northernforce",
