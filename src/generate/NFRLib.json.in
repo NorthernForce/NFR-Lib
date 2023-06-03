@@ -6,7 +6,7 @@
   "mavenUrls": [
     "https://maven.pkg.github.com/northernforce/nfr-lib/"
   ],
-  "jsonUrl": "https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/${json_version}/nfrlib-json-${lib_version}.json",
+  "jsonUrl": "https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/${json_version}/nfrlib-json-${json_version}.json",
   "javaDependencies": [
     {
       "groupId": "com.northernforce",

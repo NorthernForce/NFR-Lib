@@ -8,8 +8,8 @@ plugins {
   id 'edu.wpi.first.GradleVsCode' version '1.3.0'
 }
 
-ext.pubVersion = '0.0.2'
-ext.json_version = "1.3"
+ext.pubVersion = '0.0.1'
+ext.json_version = "1.0"
 
 apply plugin: "cpp"
 apply plugin: "java"
