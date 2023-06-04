@@ -14,11 +14,7 @@ There will be other vendor libraries that this library requires. They must too b
 
 The maven repo is found at [https://repsy.io/mvn/cml1010101/nfr-lib/org/northernforce/](https://repsy.io/mvn/cml1010101/nfr-lib/org/northernforce/)
 
-<<<<<<< HEAD
 the current vendor json link is `https://repsy.io/mvn/cml1010101/nfr-lib/org/northernforce/nfrlib-json/1.0/nfrlib-json-1.0.json` 
-=======
-the current vendor json link is `https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/1.0/nfrlib-json-1.0.json`
->>>>>>> 92515d2 (updated README.md)
 
 
 ## Publishing (Dev only)
