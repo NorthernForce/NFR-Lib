@@ -83,13 +83,13 @@ public interface NFRMotorController extends MotorController
     /**
      * Sets the position of the motor using closed-loop feedback. Must use a configured pid slot.
      * @param pidSlot the pid slot of the closed-loop configuration.
-     * @param velocity the target position in terms of the selected sensor's units.
+     * @param position the target position in terms of the selected sensor's units.
      */
     public void setPosition(int pidSlot, double position);
     /**
      * Sets the position of the motor using closed-loop feedback. Must use a configured pid slot.
      * @param pidSlot the pid slot of the closed-loop configuration.
-     * @param velocity the target position in terms of the selected sensor's units.
+     * @param position the target position in terms of the selected sensor's units.
      * @param arbitraryFeedforward the arbitrary percentage value applied. Often to counteract gravity.
      * Added to the output calculated by the closed-loop control.
      */
@@ -97,13 +97,13 @@ public interface NFRMotorController extends MotorController
     /**
      * Sets the position of the motor using trapezoidal closed-loop feedback. Must use a configured pid slot.
      * @param pidSlot the pid slot of the closed-loop configuration.
-     * @param velocity the target position in terms of the selected sensor's units.
+     * @param position the target position in terms of the selected sensor's units.
      */
     public void setPositionTrapezoidal(int pidSlot, double position);
     /**
      * Sets the position of the motor using trapezoidal closed-loop feedback. Must use a configured pid slot.
      * @param pidSlot the pid slot of the closed-loop configuration.
-     * @param velocity the target position in terms of the selected sensor's units.
+     * @param position the target position in terms of the selected sensor's units.
      * @param arbitraryFeedforward the arbitrary percentage value applied. Often to counteract gravity.
      * Added to the output calculated by the closed-loop control.
      */
