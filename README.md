@@ -4,7 +4,7 @@ This library is meant to provide utility classes and methods that are used year 
 
 ## Layout
 
-The library is to be located in `insert package name here`. Various subpackages should exist containing classes relevant to only a specific part or subsystem of the robot.
+The library is to be located in `org.northernforce`. Various subpackages should exist containing classes relevant to only a specific part or subsystem of the robot.
 
 ## Installing
 
