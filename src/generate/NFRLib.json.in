@@ -4,15 +4,16 @@
   "version": "${lib_version}",
   "uuid": "515fe07e-bfc6-11fa-b3de-0242ac130004 ",
   "mavenUrls": [
-    "https://maven.photonvision.org/repository/internal",
-    "https://maven.photonvision.org/repository/snapshots"
+    "https://harlanhaller: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@maven.pkg.github.com/northernforce/nfr-lib/"
   ],
-  "jsonUrl": "https://maven.photonvision.org/repository/internal/org/photonvision/PhotonLib-json/1.0/PhotonLib-json-1.0.json",
+  "jsonUrl": "https://harlanhaller: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@maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/${json_version}/nfrlib-json-${json_version}.json",
   "javaDependencies": [
     {
       "groupId": "com.northernforce",
-      "artifactId": "NFRLib-java",
+      "artifactId": "nfrlib-java",
       "version": "${lib_version}"
     }
-  ]
+  ],
+  "jniDependencies":[],
+  "cppDependencies":[]
 }

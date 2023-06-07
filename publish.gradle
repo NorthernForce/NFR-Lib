@@ -2,8 +2,6 @@ apply plugin: 'maven-publish'
 
 ext.licenseFile = files("$rootDir/LICENSE.txt")
 
-
-
 def outputsFolder = file("$buildDir/outputs")
 
 def versionFile = file("$outputsFolder/version.txt")
@@ -43,8 +41,8 @@ ext.addTaskToCopyAllOutputs = { task ->
 }
 
 def artifactGroupId = 'com.northernforce'
-def baseArtifactId = 'NFRLib'
-def javaBaseName = "_GROUP_com_northernforce_ID_${baseArtifactId}-java_CLS"
+def baseArtifactId = 'nfrlib'
+def javaBaseName = "com_northernforce_ID_${baseArtifactId}-java_cls"
 
 // task cppHeadersZip(type: Zip) {
 //     destinationDirectory = outputsFolder
@@ -127,14 +125,25 @@ build.dependsOn outputSourcesJar
 build.dependsOn outputJavadocJar
 build.dependsOn outputJar
 
-libraryBuild.dependsOn build
-
 def releasesRepoUrl = "$buildDir/repos/releases"
 
 publishing {
     repositories {
-        maven {
-            url = releasesRepoUrl
+        if(project.hasProperty("repos.local")) {
+            maven {
+                url = releasesRepoUrl
+            }
+        }
+        if(project.hasProperty("repos.external")) {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/northernforce/nfr-lib")
+                credentials {
+                    username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+                }
+                println("json url is https://harlanhaller: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@maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/$json_version/nfrlib-json-$json_version" + ".json")
+            }
         }
     }
 }
@@ -147,7 +156,7 @@ tasks.matching {it != cleanReleaseRepo}.all {it.dependsOn cleanReleaseRepo}
 
 model {
     publishing {
-        // def taskList = createComponentZipTasks($.components, ['Vendor'], zipBaseName, Zip, project, includeStandardZipFormat)
+        def taskList = generateVendorJson
 
         publications {
             // cpp(MavenPublication) {
@@ -162,22 +171,31 @@ model {
             //     version pubVersion
             // }
 
-            java(MavenPublication) {
-                artifact jar
-                artifact sourcesJar
-                artifact javadocJar
+            if(project.hasProperty("pubs.publishJava")) {
+                java(MavenPublication) {
+                    artifact jar
+                    artifact sourcesJar
+                    artifact javadocJar
 
-                artifactId = "${baseArtifactId}-java"
-                groupId artifactGroupId
-                version pubVersion
+                    artifactId = "${baseArtifactId}-java"
+                    groupId artifactGroupId
+                    version pubVersion
+                }
             }
-            vendorjson(MavenPublication) {
-                artifact vendorJson
+            if(project.hasProperty("pubs.publishJson")){
+                vendorjson(MavenPublication) {
+                    artifact vendorJson
 
-                artifactId = "${baseArtifactId}-json"
-                groupId = artifactGroupId
-                version "1.0"
+                    artifactId = "${baseArtifactId}-json"
+                    groupId = artifactGroupId
+                    version "$json_version"
+                }
             }
         }
     }
 }
+
+tasks.withType(org.gradle.api.publish.maven.tasks.PublishToMavenRepository).configureEach {
+    dependsOn generateVendorJson
+}
+publish.dependsOn build

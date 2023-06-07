@@ -9,6 +9,7 @@ plugins {
 }
 
 ext.pubVersion = '0.0.1'
+ext.json_version = "1.0"
 
 apply plugin: "cpp"
 apply plugin: "java"
@@ -98,6 +99,7 @@ task generateVendorJson() {
         }
 
         def read = libFileInput.text.replace('${lib_version}', pubVersion)
+        read = read.replace('${json_version}', json_version)
         libFileOutput.write(read)
     }
     outputs.upToDateWhen { false }
