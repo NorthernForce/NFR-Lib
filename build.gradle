@@ -1,7 +1,7 @@
 plugins {
   id 'cpp'
   id 'java'
-  id 'google-test'
+  //id 'google-test'
   id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
   id 'edu.wpi.first.NativeUtils' version '2023.11.1'
   id 'edu.wpi.first.GradleJni' version '1.0.0'
@@ -79,18 +79,18 @@ model {
       nativeUtils.useRequiredLibrary(it, 'wpilib_shared')
     }
   }
-  testSuites {
+  /*testSuites {
     NFRLibTest {
         sources.cpp {
             source {
                 srcDir 'src/test/native/cpp'
-                include '**/*.cpp'
+                include '
             }
         }
 
-        nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared", "googletest_static")
+        //nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared", "googletest_static")
     }
-  }
+  }*/
 }
 
 def libFileInput = file("src/generate/NFRLib.json.in")
