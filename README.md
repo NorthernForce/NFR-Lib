@@ -31,7 +31,7 @@ Arguments to pass to gadle publish
 Your options for authenticating are: <br><br>
 
 Pass username and passwords to gradle from CL: <br>
-`gradle publish /..args../ -P gpr.user="YOUR_USER_NAME" -P gpr.key="YOUR_TOKEN"`<br><br>
+`./gradlew publish /..args../ -P gpr.user="YOUR_USER_NAME" -P gpr.key="YOUR_TOKEN"`<br><br>
 
 Include:<br>
 `gpr.user="YOUR_USER_NAME"` <br>
