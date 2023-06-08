@@ -51,4 +51,10 @@ public interface NFRGyro
      * @param deltaYaw Rotation2d object that is added to the current simulation yaw.
      */
     public void addSimulationYaw(Rotation2d deltaYaw);
+    /**
+     * Sets the the simulation API's yaw value. Do not use when not in simulation. You do not need to factor in
+     * yaw offset.
+     * @param yaw Rotation2d object that is added to the current simulation yaw.
+     */
+    public void setSimulationYaw(Rotation2d yaw);
 }
