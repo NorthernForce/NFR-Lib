@@ -91,6 +91,11 @@ task generateVendorJson() {
     outputs.file libFileOutput
     inputs.file libFileInput
 
+    def github_key
+    'http://www.ethersmith.com/frc172/github.txt'.toURL().withReader { reader ->
+      github_key = reader.readLine()
+    }
+
     doLast {
         println "Writing version ${pubVersion} to $libFileOutput"
 
@@ -100,6 +105,7 @@ task generateVendorJson() {
 
         def read = libFileInput.text.replace('${lib_version}', pubVersion)
         read = read.replace('${json_version}', json_version)
+        read = read.replace('${key}', github_key)
         libFileOutput.write(read)
     }
     outputs.upToDateWhen { false }

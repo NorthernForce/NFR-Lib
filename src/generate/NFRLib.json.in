@@ -4,9 +4,9 @@
   "version": "${lib_version}",
   "uuid": "515fe07e-bfc6-11fa-b3de-0242ac130004 ",
   "mavenUrls": [
-    "https://harlanhaller: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@maven.pkg.github.com/northernforce/nfr-lib/"
+    "https://${key}@maven.pkg.github.com/northernforce/nfr-lib/"
   ],
-  "jsonUrl": "https://harlanhaller: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@maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/${json_version}/nfrlib-json-${json_version}.json",
+  "jsonUrl": "https://${key}@maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/${json_version}/nfrlib-json-${json_version}.json",
   "javaDependencies": [
     {
       "groupId": "com.northernforce",
