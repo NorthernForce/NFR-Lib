@@ -43,9 +43,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-2019
-            artifact-name: Win64
-            architecture: x64
           - os: macos-11
             artifact-name: macOS
             architecture: x64
