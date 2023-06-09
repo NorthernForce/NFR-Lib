@@ -10,6 +10,9 @@ The library is to be located in `org.northernforce`. Various subpackages should 
 
 Currently, there is no maven repository set up. However, that is a priority at the moment. There will be a link posted here for when there is.
 
+## Vendor Libraries
+
+There will be other vendor libraries that this library requires. They must too be part of your project in order for it to build.
 
 ## Maven
 
