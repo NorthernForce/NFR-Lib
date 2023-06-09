@@ -22,16 +22,16 @@ the current vendor json link is `https://harlanhaller:ghp_akz2Ht3GU7h9z7Guykwgrm
 ## Publishing (Dev only)
 
 Arguments to pass to gadle publish
-* `-Prepos.local` publish to local repo
-* `-Prepos.external` publish to external repo (needs github token)
-* `-Ppubs.publishJava` publishes the java artifacts
-* `-Ppubs.publishJson` publishes the Json artifacts
+* `-P repos.local` publish to local repo
+* `-P repos.external` publish to external repo (needs github token)
+* `-P pubs.publishJava` publishes the java artifacts
+* `-P pubs.publishJson` publishes the Json artifacts
 
 #### Github OAuth
 Your options for authenticating are: <br><br>
 
 Pass username and passwords to gradle from CL: <br>
-`gradle publish /..args../ -Pgpr.user="YOUR_USER_NAME" -Pgpr.key="YOUR_TOKEN"`<br><br>
+`gradle publish /..args../ -P gpr.user="YOUR_USER_NAME" -P gpr.key="YOUR_TOKEN"`<br><br>
 
 Include:<br>
 `gpr.user="YOUR_USER_NAME"` <br>
