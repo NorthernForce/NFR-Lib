@@ -40,9 +40,9 @@ ext.addTaskToCopyAllOutputs = { task ->
     copyAllOutputs.from task.archiveFile
 }
 
-def artifactGroupId = 'com.northernforce'
+def artifactGroupId = 'org.northernforce'
 def baseArtifactId = 'nfrlib'
-def javaBaseName = "com_northernforce_ID_${baseArtifactId}-java_cls"
+def javaBaseName = "org_northernforce_ID_${baseArtifactId}-java_cls"
 
 // task cppHeadersZip(type: Zip) {
 //     destinationDirectory = outputsFolder
@@ -142,7 +142,7 @@ publishing {
                     username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
                     password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
                 }
-                println("json url is https://harlanhaller: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@maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/$json_version/nfrlib-json-$json_version" + ".json")
+                println("json url is https://harlanhaller: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@maven.pkg.github.com/northernforce/nfr-lib/org/northernforce/nfrlib-json/$json_version/nfrlib-json-$json_version" + ".json")
             }
         }
     }
