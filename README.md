@@ -19,7 +19,7 @@ There will be other vendor libraries that this library requires. They must too b
 The maven repo is found at [https://maven.pkg.github.com/northernforce/nfr-lib/org/northernforce/](https://maven.pkg.github.com/northernforce/nfr-lib/org/northernforce/)
 (link will return error but it is there)  
 
-the current vendor json link is `https://${key}@maven.pkg.github.com/northernforce/nfr-lib/org/northernforce/nfrlib-json/1.0/nfrlib-json-1.0.json`
+the current vendor json link is `https://${key}@maven.pkg.github.com/northernforce/nfr-lib/org/northernforce/nfrlib-json/1.0/nfrlib-json-1.0.json` 
 
 `${key}` is used in replace of the actual key because github would revoke the key if it was placed in the repo
 
