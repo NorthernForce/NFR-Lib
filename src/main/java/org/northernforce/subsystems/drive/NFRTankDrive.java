@@ -44,9 +44,9 @@ public class NFRTankDrive extends NFRDrive
          * @param wheelRadius the radius of the wheel in meters
          * @param moi the moment of inertia of the drive train. Can be left as zero if simulation is not used.
          * @param mass the mass of the robot. Can be left as zero is simulation is not used.
-         * @param maxSpeed the max speed of the robot. Best estimation & is used for closed loop control. It is in
+         * @param maxSpeed the max speed of the robot. Best estimation is used for closed loop control. It is in
          * meters/s.
-         * @param maxThetaVelocity the max angular velocity of the robot. Best estimation & is used for closed loop
+         * @param maxThetaVelocity the max angular velocity of the robot. Best estimation is used for closed loop
          * control. It is in radians/s.
          * @param velocityPidSlot the index of the pid slot that contains the velocity closed-loop configuration.
          * @param positionPidSlot the index of the pid slot that contains the position closed-loop configuration.
