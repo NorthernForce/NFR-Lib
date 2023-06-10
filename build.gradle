@@ -9,6 +9,15 @@ plugins {
   id "edu.wpi.first.GradleRIO" version "2023.4.3"
 }
 
+sourceSets
+{
+  main {
+    java {
+      srcDirs = ['src/main/java/']
+    }
+  }
+}
+
 ext.pubVersion = '0.0.1'
 ext.json_version = "1.0"
 
