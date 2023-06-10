@@ -15,6 +15,14 @@ public abstract class NFRArmJoint extends NFRSubsystem
     public static abstract class NFRArmJointConfiguration extends NFRSubsystemConfiguration
     {
         /**
+         * This represents the static offset from the end of the last component
+         * for example if this was a two join rotational arm and this represented the 2nd joint 
+         * it would be the transform between the end of the first arm component to this joint
+         * 
+         * if this was the first component it would be the transform from the center of the robot to the joint
+         */
+        protected Transform3d staticOffset;
+        /**
          * Constructs a new configuration for an arm joint.
          * @param name the unique name of the subsystem.
          */
