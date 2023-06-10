@@ -16,52 +16,26 @@ There will be other vendor libraries that this library requires. They must too b
 
 ## Maven
 
-<<<<<<< HEAD
 The maven repo is found at [https://maven.pkg.github.com/northernforce/nfr-lib/org/northernforce/](https://maven.pkg.github.com/northernforce/nfr-lib/org/northernforce/)
 (link will return error but it is there)  
 
-the current vendor json link is `https://${key}@maven.pkg.github.com/northernforce/nfr-lib/org/northernforce/nfrlib-json/1.0/nfrlib-json-1.0.json` 
-=======
-The maven repo is found at [https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/](https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/)
-(link will return error but it is there)
-
-<<<<<<< HEAD
-The vendor json link is `https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/1.3/nfrlib-json-1.3.json`.
->>>>>>> 5f45649 (Update README.md)
-=======
-the current vendor json link is `https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/1.0/nfrlib-json-1.0.json`
->>>>>>> 0f813cf (updated README.md)
-
-<<<<<<< HEAD
+the current vendor json link is `https://${key}@maven.pkg.github.com/northernforce/nfr-lib/org/northernforce/nfrlib-json/1.0/nfrlib-json-1.0.json`
 `${key}` is used in replace of the actual key because github would revoke the key if it was placed in the repo
 
-=======
->>>>>>> fee6ae0 (Update README.md)
 
 ## Publishing (Dev only)
 
 Arguments to pass to gadle publish
-<<<<<<< HEAD
 * `-P repos.local` publish to local repo
 * `-P repos.external` publish to external repo (needs github token)
 * `-P pubs.publishJava` publishes the java artifacts
 * `-P pubs.publishJson` publishes the Json artifacts
-=======
-* `-Prepos.local` publish to local repo
-* `-Prepos.external` publish to external repo (needs github token)
-* `-Ppubs.publishJava` publishes the java artifacts
-* `-Ppubs.publishJson` publishes the Json artifacts
->>>>>>> fee6ae0 (Update README.md)
 
 #### Github OAuth
 Your options for authenticating are: <br><br>
 
 Pass username and passwords to gradle from CL: <br>
-<<<<<<< HEAD
 `./gradlew publish /..args../ -P gpr.user="YOUR_USER_NAME" -P gpr.key="YOUR_TOKEN"`<br><br>
-=======
-`gradle publish /..args../ -Pgpr.user="YOUR_USER_NAME" -Pgpr.key="YOUR_TOKEN"`<br><br>
->>>>>>> fee6ae0 (Update README.md)
 
 Include:<br>
 `gpr.user="YOUR_USER_NAME"` <br>
