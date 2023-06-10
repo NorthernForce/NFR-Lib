@@ -78,5 +78,5 @@ public abstract class NFRDrive extends NFRSubsystem
      * @param speed the speed at which to drive
      * @return a command to drive forward
      */
-    public abstract Command getDriveMetersCommand(double meters, double speed);
+    public abstract Command getDriveMetersCommand(double meters);
 }
