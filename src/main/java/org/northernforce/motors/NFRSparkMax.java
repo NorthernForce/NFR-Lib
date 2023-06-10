@@ -362,7 +362,7 @@ public class NFRSparkMax extends CANSparkMax implements NFRMotorController
         }
         /**
          * Do not trust this. Simulation is not supported by rev.
-         * @param velocity
+         * @param position
          */
         @Override
         @Deprecated
@@ -370,7 +370,7 @@ public class NFRSparkMax extends CANSparkMax implements NFRMotorController
         }
         /**
          * Do not trust this. Simulation is not supported by rev.
-         * @param velocity
+         * @param position
          */
         @Override
         @Deprecated
