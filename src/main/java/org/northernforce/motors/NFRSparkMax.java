@@ -136,7 +136,7 @@ public class NFRSparkMax extends CANSparkMax implements NFRMotorController
     /**
      * Creates a new NFR Spark Max.
      * @param type The Rev Motor Type. (Brushed or Brushless)
-     * @param primaryId The primary id of the motor controller
+     * @param primaryID The primary id of the motor controller
      */
     public NFRSparkMax(MotorType type, int primaryID)
     {
