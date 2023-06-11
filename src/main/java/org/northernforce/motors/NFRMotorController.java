@@ -124,4 +124,10 @@ public interface NFRMotorController extends MotorController
      * @param idx index of the motor in the opposition
      */
     public void setFollowerOppose(int idx);
+    /**
+     * Sets up limits that prevent the motor from moving in all modes when past these limits.
+     * @param positiveLimit in selected sensor units
+     * @param negativeLimit in selected sensor units
+     */
+    public void setupLimits(double positiveLimit, double negativeLimit);
 }
