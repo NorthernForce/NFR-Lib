@@ -109,6 +109,15 @@ public class NFRSparkMax extends CANSparkMax implements NFRMotorController
         public void setSimulationVelocity(double velocity)
         {
         }
+        /**
+         * Gets the conversion factor that affects readings of the sensor. This is by default 1. 
+         * @return the factor for measurements of velocity and position. 1 means 1 unit = 1 encoder rotation.
+         */
+        @Override
+        public double getConversionFactor()
+        {
+            return getEncoder().getPositionConversionFactor();
+        }
     }
     private final ArrayList<CANSparkMax> followers;
     private final IntegratedEncoder integratedEncoder;
@@ -384,6 +393,15 @@ public class NFRSparkMax extends CANSparkMax implements NFRMotorController
         @Deprecated
         public void setAbsoluteSimulationVelocity(double velocity) {
         }
+        /**
+         * Gets the conversion factor that affects readings of the sensor. This is by default 1. 
+         * @return the factor for measurements of velocity and position. 1 means 1 unit = 1 encoder rotation.
+         */
+        @Override
+        public double getConversionFactor()
+        {
+            return getAbsoluteEncoder(Type.kDutyCycle).getPositionConversionFactor();
+        }
     }
     /**
      * Returns the external absolute encoder plugged into the motor. May not be able to tell if the absolute
@@ -471,5 +489,16 @@ public class NFRSparkMax extends CANSparkMax implements NFRMotorController
     @Override
     public void setFollowerOppose(int idx) {
         followers.get(idx).follow(this, true);
+    }
+    /**
+     * Sets up limits that prevent the motor from moving in all modes when past these limits.
+     * @param positiveLimit in selected sensor units
+     * @param negativeLimit in selected sensor units
+     */
+    @Override
+    public void setupLimits(double positiveLimit, double negativeLimit)
+    {
+        setSoftLimit(SoftLimitDirection.kForward, (float)negativeLimit);
+        setSoftLimit(SoftLimitDirection.kReverse, (float)positiveLimit);
     }    
 }
