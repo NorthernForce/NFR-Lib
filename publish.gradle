@@ -139,7 +139,7 @@ publishing {
                 name = "repsy-repo"
                 url = uri("https://repo.repsy.io/mvn/cml1010101/nfr-lib")
                 credentials {
-                    username = project.findProperty("gpr.user") 
+                    username = project.findProperty("auth.user") ?: System.getenv("REPSY_USERNAME") 
                     password = project.findProperty("gpr.key") 
                 }
                 println("json url is https://repsy.io/mvn/cml1010101/nfr-lib/org/northernforce/nfrlib-json/$json_version/nfrlib-json-$json_version" + ".json")
