@@ -33,8 +33,8 @@ Arguments to pass to gadle publish
 
 Pass Arguments:
 
-`-P gpr.user="YOUR_USER_NAME"` 
+`-P auth.user="YOUR_USER_NAME"` 
 
-`-P gpr.key="YOUR_PASSWORD"`
+`-P auth.key="YOUR_PASSWORD"`
 
 See Team Wiki for credentials (the one on teams).
