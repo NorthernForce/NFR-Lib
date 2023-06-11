@@ -4,9 +4,9 @@
   "version": "${lib_version}",
   "uuid": "515fe07e-bfc6-11fa-b3de-0242ac130004 ",
   "mavenUrls": [
-    "https://${key}@maven.pkg.github.com/northernforce/nfr-lib/"
+    "https://repo.repsy.io/mvn/cml1010101/nfr-lib"
   ],
-  "jsonUrl": "https://${key}@maven.pkg.github.com/northernforce/nfr-lib/org/northernforce/nfrlib-json/${json_version}/nfrlib-json-${json_version}.json",
+  "jsonUrl": "https://repsy.io/mvn/cml1010101/nfr-lib/org/northernforce/nfrlib-json/${json_version}/nfrlib-json-${json_version}",
   "javaDependencies": [
     {
       "groupId": "org.northernforce",

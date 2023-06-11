@@ -136,13 +136,13 @@ publishing {
         }
         if(project.hasProperty("repos.external")) {
             maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/northernforce/nfr-lib")
+                name = "repsy-repo"
+                url = uri("https://repo.repsy.io/mvn/cml1010101/nfr-lib")
                 credentials {
-                    username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
-                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+                    username = project.findProperty("auth.user") ?: System.getenv("REPSY_USERNAME") 
+                    password = project.findProperty("auth.key") ?: System.getenv("REPSY_PASSWORD")  
                 }
-                println("json url is https://harlanhaller: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@maven.pkg.github.com/northernforce/nfr-lib/org/northernforce/nfrlib-json/$json_version/nfrlib-json-$json_version" + ".json")
+                println("json url is https://repsy.io/mvn/cml1010101/nfr-lib/org/northernforce/nfrlib-json/$json_version/nfrlib-json-$json_version" + ".json")
             }
         }
     }

@@ -16,12 +16,9 @@ There will be other vendor libraries that this library requires. They must too b
 
 ## Maven
 
-The maven repo is found at [https://maven.pkg.github.com/northernforce/nfr-lib/org/northernforce/](https://maven.pkg.github.com/northernforce/nfr-lib/org/northernforce/)
-(link will return error but it is there)  
+The maven repo is found at [https://repsy.io/mvn/cml1010101/nfr-lib/org/northernforce/](https://repsy.io/mvn/cml1010101/nfr-lib/org/northernforce/)
 
-the current vendor json link is `https://${key}@maven.pkg.github.com/northernforce/nfr-lib/org/northernforce/nfrlib-json/1.0/nfrlib-json-1.0.json` 
-
-`${key}` is used in replace of the actual key because github would revoke the key if it was placed in the repo
+the current vendor json link is `https://repsy.io/mvn/cml1010101/nfr-lib/org/northernforce/nfrlib-json/1.0/nfrlib-json-1.0.json` 
 
 
 ## Publishing (Dev only)
@@ -32,18 +29,12 @@ Arguments to pass to gadle publish
 * `-P pubs.publishJava` publishes the java artifacts
 * `-P pubs.publishJson` publishes the Json artifacts
 
-#### Github OAuth
-Your options for authenticating are: <br><br>
+#### Authentication
 
-Pass username and passwords to gradle from CL: <br>
-`./gradlew publish /..args../ -P gpr.user="YOUR_USER_NAME" -P gpr.key="YOUR_TOKEN"`<br><br>
+Pass Arguments:
 
-Include:<br>
-`gpr.user="YOUR_USER_NAME"` <br>
-`gpr.key="YOUR_TOKEN"`<br>
-in your gradle properties file<br><br>
+`-P gpr.user="YOUR_USER_NAME"` 
 
-Include:<br>
-`export GITHUB_USERNAME="YOUR_USER_NAME"`<br>
-`export GITHUB_TOKEN="YOUR_TOKEN"`<br>
-in your ~/.bash_profile or ~/.zprofile
+`-P gpr.key="YOUR_PASSWORD"`
+
+See Team Wiki for credentials (the one on teams).
