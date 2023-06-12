@@ -50,6 +50,7 @@ public class RobotChooser
             Scanner scanner = new Scanner(file);
             String robotName = scanner.next();
             scanner.close();
+            if (!otherRobots.containsKey(robotName)) return defaultRobot.get();
             return otherRobots.get(robotName).get();
         }
         catch (FileNotFoundException e)
