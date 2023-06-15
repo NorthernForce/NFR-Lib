@@ -269,24 +269,75 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
     {
         return new CloseCommand();
     }
+    public boolean isClosed()
+    {
+        if (config.useLimitSwitches)
+        {
+            return closedLimitSwitch.get().getAsBoolean();
+        }
+        else
+        {
+            if (externalEncoder.isEmpty())
+            {
+                return controller.getSelectedEncoder().getPosition() <= config.closedRotation.getRotations();
+            }
+            else
+            {
+                return externalEncoder.get().getPosition() <= config.closedRotation.getRotations();
+            }
+        }
+    }
+    public boolean isOpen()
+    {
+        if (config.useLimitSwitches)
+        {
+            return openLimitSwitch.get().getAsBoolean();
+        }
+        else
+        {
+            if (externalEncoder.isEmpty())
+            {
+                return controller.getSelectedEncoder().getPosition() >= config.openRotation.getRotations();
+            }
+            else
+            {
+                return externalEncoder.get().getPosition() >= config.openRotation.getRotations();
+            }
+        }
+    }
     public Command getManualControlCommand(BooleanSupplier closeSupplier, BooleanSupplier openSupplier)
     {
         return Commands.run(() -> {
-            if (closeSupplier.getAsBoolean())
+            if (closeSupplier.getAsBoolean() && !isClosed())
             {
                 controller.set(config.closeSpeed);
             }
-            else if (openSupplier.getAsBoolean())
+            else if (openSupplier.getAsBoolean() && !isOpen())
             {
                 controller.set(config.openSpeed);
+            }
+            else
+            {
+                controller.set(0);
             }
         }, this);
     }
     public Command getManualControlCommand(DoubleSupplier closeSupplier, DoubleSupplier openSupplier)
     {
         return Commands.run(() -> {
-            controller.set(closeSupplier.getAsDouble() * config.closeSpeed + openSupplier.getAsDouble()
-                * config.openSpeed);
+            double speed = closeSupplier.getAsDouble() * config.closeSpeed + openSupplier.getAsDouble() * config.openSpeed;
+            if (speed > 0 == config.openSpeed > 0 && !isOpen())
+            {
+                controller.set(speed);
+            }
+            else if (speed > 0 == config.closeSpeed > 0 && !isClosed())
+            {
+                controller.set(speed);
+            }
+            else
+            {
+                controller.set(0);
+            }
         }, this);
     }
     @Override
