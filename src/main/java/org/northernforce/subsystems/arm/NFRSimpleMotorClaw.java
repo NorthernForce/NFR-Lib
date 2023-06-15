@@ -16,14 +16,14 @@ import edu.wpi.first.wpilibj2.command.Commands;
 
 public class NFRSimpleMotorClaw extends NFRArmJoint
 {
-    public static class NFRSimpleMotorIntakeConfiguration extends NFRArmJointConfiguration
+    public static class NFRSimpleMotorClawConfiguration extends NFRArmJointConfiguration
     {
         protected Transform3d originOffset, offsetToEndOfClaw;
         protected boolean useLimitSwitches, usePidControl, useTrapezoidalPidControl;
         protected Rotation2d openRotation, closedRotation;
         protected int positionalPidSlot;
         protected double openSpeed, closeSpeed;
-        public NFRSimpleMotorIntakeConfiguration(String name)
+        public NFRSimpleMotorClawConfiguration(String name)
         {
             super(name);
             originOffset = new Transform3d();
@@ -37,7 +37,7 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
             openSpeed = 0;
             closeSpeed = 0;
         }
-        public NFRSimpleMotorIntakeConfiguration(String name, Transform3d originOffset,
+        public NFRSimpleMotorClawConfiguration(String name, Transform3d originOffset,
             Transform3d offsetToEndOfClaw, boolean useLimitSwitches, boolean usePidControl, boolean useTrapezoidalPidControl,
             Rotation2d openRotation, Rotation2d closedRotation, int positionalPidSlot, double openSpeed, double closeSpeed)
         {
@@ -53,63 +53,63 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
             this.openSpeed = openSpeed;
             this.closeSpeed = closeSpeed;
         }
-        public NFRSimpleMotorIntakeConfiguration withOriginOffset(Transform3d originOffset)
+        public NFRSimpleMotorClawConfiguration withOriginOffset(Transform3d originOffset)
         {
             this.originOffset = originOffset;
             return this;
         }
-        public NFRSimpleMotorIntakeConfiguration withOffsetToEndOfClaw(Transform3d offsetToEndOfClaw)
+        public NFRSimpleMotorClawConfiguration withOffsetToEndOfClaw(Transform3d offsetToEndOfClaw)
         {
             this.offsetToEndOfClaw = offsetToEndOfClaw;
             return this;
         }
-        public NFRSimpleMotorIntakeConfiguration withUseLimitSwitches(boolean useLimitSwitches)
+        public NFRSimpleMotorClawConfiguration withUseLimitSwitches(boolean useLimitSwitches)
         {
             this.useLimitSwitches = useLimitSwitches;
             return this;
         }
-        public NFRSimpleMotorIntakeConfiguration withUsePidControl(boolean usePidControl)
+        public NFRSimpleMotorClawConfiguration withUsePidControl(boolean usePidControl)
         {
             this.usePidControl = usePidControl;
             return this;
         }
-        public NFRSimpleMotorIntakeConfiguration withTrapezoidalPidControl(boolean useTrapezoidalPidControl)
+        public NFRSimpleMotorClawConfiguration withTrapezoidalPidControl(boolean useTrapezoidalPidControl)
         {
             this.useTrapezoidalPidControl = useTrapezoidalPidControl;
             return this;
         }
-        public NFRSimpleMotorIntakeConfiguration withOpenRotation(Rotation2d openRotation)
+        public NFRSimpleMotorClawConfiguration withOpenRotation(Rotation2d openRotation)
         {
             this.openRotation = openRotation;
             return this;
         }
-        public NFRSimpleMotorIntakeConfiguration withClosedRotation(Rotation2d closedRotation)
+        public NFRSimpleMotorClawConfiguration withClosedRotation(Rotation2d closedRotation)
         {
             this.closedRotation = closedRotation;
             return this;
         }
-        public NFRSimpleMotorIntakeConfiguration withPositionalPidSlot(int positionalPidSlot)
+        public NFRSimpleMotorClawConfiguration withPositionalPidSlot(int positionalPidSlot)
         {
             this.positionalPidSlot = positionalPidSlot;
             return this;
         }
-        public NFRSimpleMotorIntakeConfiguration withOpenSpeed(double openSpeed)
+        public NFRSimpleMotorClawConfiguration withOpenSpeed(double openSpeed)
         {
             this.openSpeed = openSpeed;
             return this;
         }
-        public NFRSimpleMotorIntakeConfiguration withCloseSpeed(double closeSpeed)
+        public NFRSimpleMotorClawConfiguration withCloseSpeed(double closeSpeed)
         {
             this.closeSpeed = closeSpeed;
             return this;
         }
     }
-    protected final NFRSimpleMotorIntakeConfiguration config;
+    protected final NFRSimpleMotorClawConfiguration config;
     protected final NFRMotorController controller;
     protected final Optional<PIDController> pidController;
     protected final Optional<BooleanSupplier> closedLimitSwitch, openLimitSwitch;
     protected final Optional<NFREncoder> externalEncoder;
-    public NFRSimpleMotorClaw(NFRSimpleMotorIntakeConfiguration config, NFRMotorController controller,
+    public NFRSimpleMotorClaw(NFRSimpleMotorClawConfiguration config, NFRMotorController controller,
         Optional<NFREncoder> externalEncoder, Optional<BooleanSupplier> closedLimitSwitch,
         Optional<BooleanSupplier> openLimitSwitch, Optional<PIDController> pidController)
     {
