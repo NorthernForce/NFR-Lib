@@ -200,7 +200,7 @@ public class NFRTankDrive extends NFRDrive
                 setChassisSpeeds(new ChassisSpeeds(
                     suppliers[0].getAsDouble() * config.maxSpeed,
                     0,
-                    suppliers[1].getAsDouble() * config.maxThetaVelocity
+                    -suppliers[1].getAsDouble() * config.maxThetaVelocity
                 ));
             }, this);
         }
