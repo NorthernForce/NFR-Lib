@@ -21,7 +21,7 @@ public abstract class NFRArmJoint extends NFRSubsystem
          * 
          * if this was the first component it would be the transform from the center of the robot to the joint
          */
-        protected Transform3d staticOffset;
+        protected Transform3d originOffset;
         /**
          * Constructs a new configuration for an arm joint.
          * @param name the unique name of the subsystem.
