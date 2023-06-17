@@ -44,6 +44,14 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
      *  the config for the {@link NFRArmMotorExtensionJoint} class
      */
     public static class NFRArmMotorExtensionJointConfiguration extends NFRArmJointConfiguration {
+        /**
+         * This represents the static offset from the end of the last component
+         * for example if this was a two join rotational arm and this represented the 2nd joint 
+         * it would be the transform between the end of the first arm component to this joint
+         * 
+         * if this was the first component it would be the transform from the center of the robot to the joint
+         */
+        protected Transform3d originOffset;
         protected double retractedArmLength;
         protected double extendedArmLength;
         protected int pidSlot;
@@ -76,7 +84,7 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
         public NFRArmMotorExtensionJointConfiguration(String name, Transform3d originOffset, 
             double retractedArmLength, double extendedArmLength, int pidSlot, double metersPerRotation, boolean useTrapezoidalPositioning, double tolerance) {
             super(name);
-            super.originOffset = originOffset;
+            this.originOffset = originOffset;
             this.retractedArmLength = retractedArmLength;
             this.extendedArmLength = extendedArmLength;
             this.pidSlot = pidSlot;
@@ -86,13 +94,13 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
         }
 
         /**
-         * set the staticOffset
-         * @param staticOffset the offset from the end of the last component to this joint 
+         * set the originOffset
+         * @param originOffset the offset from the end of the last component to this joint 
          * more explanation in the {@link NFRArmJointConfiguration} super class
          * @return returns this for chaining
          */
-        public NFRArmMotorExtensionJointConfiguration withStartPosition(Transform3d staticOffset) {
-            super.originOffset = originOffset;
+        public NFRArmMotorExtensionJointConfiguration withStartPosition(Transform3d originOffset) {
+            this.originOffset = originOffset;
             return this;
         }
 
