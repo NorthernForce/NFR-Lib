@@ -1,6 +1,7 @@
 package org.northernforce.subsystems.arm;
 
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import org.northernforce.encoders.NFREncoder;
@@ -385,6 +386,50 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
      */
     public setLength getRetractByPIDCommand() {
         return new setLength(0);
+    }
+
+    /**
+     * the extend until boolean class for the {@link NFRArmMotorExtensionJoint} class
+     */
+    public class ExtendUntilBoolean extends ExtendBySpeed {
+        protected BooleanSupplier stopCondition;
+
+        /**
+         * creates a new extend until boolean
+         * @param speed the speed to extend at
+         * @param stopCondition boolean supplier should return true when the command should stop
+         */
+        public ExtendUntilBoolean(double speed, BooleanSupplier stopCondition) {
+            super(speed);
+            this.stopCondition = stopCondition;
+        }
+
+        @Override
+        public boolean isFinished() {
+            return stopCondition.getAsBoolean();
+        }
+    }
+
+    /**
+     * the retract until boolean class for the {@link NFRArmMotorExtensionJoint} class
+     */
+    public class RetractUntilBoolean extends RetractBySpeed {
+        protected BooleanSupplier stopCondition;
+
+        /**
+         * creates a new retract until boolean
+         * @param speed the speed to retract at
+         * @param stopCondition boolean supplier should return true when the command should stop
+         */
+        public RetractUntilBoolean(double speed, BooleanSupplier stopCondition) {
+            super(speed);
+            this.stopCondition = stopCondition;
+        }
+
+        @Override
+        public boolean isFinished() {
+            return stopCondition.getAsBoolean();
+        }
     }
 
     /**
