@@ -9,10 +9,10 @@ import java.util.function.Supplier;
 /**
  * A robot chooser is a class that is meant for reading a file to select the robot.
  */
-public class RobotChooser
+public class NFRRobotChooser
 {
-    protected final Supplier<RobotContainer> defaultRobot;
-    protected final Map<String, Supplier<RobotContainer>> otherRobots;
+    protected final Supplier<NFRRobotContainer> defaultRobot;
+    protected final Map<String, Supplier<NFRRobotContainer>> otherRobots;
     protected final String robotNamePath;
     /**
      * Creates a new robot chooser.
@@ -21,7 +21,7 @@ public class RobotChooser
      * @param otherRobots the map of other robots.
      * @param robotNamePath the path of where to find the file.
      */
-    public RobotChooser(Supplier<RobotContainer> defaultRobot, Map<String, Supplier<RobotContainer>> otherRobots,
+    public NFRRobotChooser(Supplier<NFRRobotContainer> defaultRobot, Map<String, Supplier<NFRRobotContainer>> otherRobots,
         String robotNamePath)
     {
         this.defaultRobot = defaultRobot;
@@ -34,7 +34,7 @@ public class RobotChooser
      * purposes of fallbacks should anything happen to the roboRio.
      * @param otherRobots the map of other robots.
      */
-    public RobotChooser(Supplier<RobotContainer> defaultRobot, Map<String, Supplier<RobotContainer>> otherRobots)
+    public NFRRobotChooser(Supplier<NFRRobotContainer> defaultRobot, Map<String, Supplier<NFRRobotContainer>> otherRobots)
     {
         this(defaultRobot, otherRobots, "/home/admin/robot_settings.txt");
     }
@@ -42,7 +42,7 @@ public class RobotChooser
      * Gets the current robot container by reading the name from the specified file.
      * @return the robot container using one of the suppliers.
      */
-    public RobotContainer getRobotContainer()
+    public NFRRobotContainer getNFRRobotContainer()
     {
         try
         {
@@ -50,8 +50,11 @@ public class RobotChooser
             Scanner scanner = new Scanner(file);
             String robotName = scanner.next();
             scanner.close();
-            if (!otherRobots.containsKey(robotName)) return defaultRobot.get();
-            return otherRobots.get(robotName).get();
+            for (var entry : otherRobots.entrySet())
+            {
+                if (entry.getKey().equalsIgnoreCase(robotName)) return entry.getValue().get();
+            }
+            return defaultRobot.get();
         }
         catch (FileNotFoundException e)
         {
