@@ -274,17 +274,14 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
         @Override
         public void execute()
         {
-            if (pidController.isPresent())
-            {
+            if (pidController.isPresent()) {
                 double targetSpeed = pidController.get().calculate(getLength());
                 if (externalEncoder.isPresent() && getLength() <= config.negativeLimit &&
-                targetSpeed < 0)
-                {
+                    targetSpeed < 0) {
                     targetSpeed = 0;
                 }
                 else if (externalEncoder.isPresent() && getLength() >= config.positiveLimit &&
-                targetSpeed > 0)
-                {
+                    targetSpeed > 0) {
                     targetSpeed = 0;
                 }
                 motor.set(targetSpeed);
