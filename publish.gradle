@@ -2,7 +2,6 @@ apply plugin: 'maven-publish'
 
 ext.licenseFile = files("$rootDir/LICENSE.txt")
 
-
 def outputsFolder = file("$buildDir/outputs")
 
 def versionFile = file("$outputsFolder/version.txt")
@@ -144,17 +143,6 @@ publishing {
                     password = project.findProperty("auth.key") ?: System.getenv("REPSY_PASSWORD")  
                 }
                 println("json url is https://repsy.io/mvn/cml1010101/nfr-lib/org/northernforce/nfrlib-json/$json_version/nfrlib-json-$json_version" + ".json")
-            }
-        }
-        if(project.hasProperty("repos.external")) {
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/northernforce/nfr-lib")
-                credentials {
-                    username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
-                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
-                }
-                println("json url is https://maven.pkg.github.com/northernforce/nfr-lib/com/northernforce/nfrlib-json/$json_version/nfrlib-json-$json_version" + ".json")
             }
         }
     }
