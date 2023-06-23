@@ -71,7 +71,7 @@ public class NFRSparkMax extends CANSparkMax implements NFRMotorController
         public void setConversionFactor(double factor)
         {
             getEncoder().setPositionConversionFactor(factor);
-            getEncoder().setVelocityConversionFactor(factor);
+            getEncoder().setVelocityConversionFactor(factor / 60);
         }
         /**
          * Resets the position of the encoder. Useful for relative applications.
