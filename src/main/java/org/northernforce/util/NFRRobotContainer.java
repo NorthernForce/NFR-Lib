@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 /**
  * A robot container should contain all subsystems and states. Has various utility functions.
  */
-public interface RobotContainer
+public interface NFRRobotContainer
 {
     /**
      * Binds the commands from subsystems to the HID's. Check the actual implementation to see which HID's are supported.
