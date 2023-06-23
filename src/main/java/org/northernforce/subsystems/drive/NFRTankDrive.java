@@ -224,7 +224,7 @@ public class NFRTankDrive extends NFRDrive
                     || Math.abs(rightSide.getSelectedEncoder().getVelocity()) <= 0.1;
             }), Commands.run(() -> {
                 setChassisSpeeds(new ChassisSpeeds());
-            }));
+            }, this));
         }
         else
         {
@@ -233,7 +233,7 @@ public class NFRTankDrive extends NFRDrive
                     && Math.abs(rightSide.getSelectedEncoder().getVelocity()) <= 0.1;
             }), Commands.run(() -> {
                 robotDrive.arcadeDrive(0, 0);
-            }));
+            }, this));
         }
     }
     /**
