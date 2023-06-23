@@ -8,6 +8,7 @@ import org.northernforce.encoders.NFRAbsoluteEncoder;
 import org.northernforce.encoders.NFREncoder;
 
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -123,6 +124,15 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
         public void setSimulationVelocity(double velocity)
         {
             simState.setRotorVelocity(velocity / conversionFactor);
+        }
+        /**
+         * Gets the conversion factor that affects readings of the sensor. This is by default 1. 
+         * @return the factor for measurements of velocity and position. 1 means 1 unit = 1 encoder rotation.
+         */
+        @Override
+        public double getConversionFactor()
+        {
+            return Math.abs(conversionFactor);
         }
     }
     private final TalonFXSimState simState;
@@ -345,5 +355,21 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
     public void setFollowerOppose(int idx)
     {
         followers.get(idx).setControl(new Follower(getDeviceID(), true));
+    }
+    /**
+     * Sets up limits that prevent the motor from moving in all modes when past these limits.
+     * @param positiveLimit in selected sensor units
+     * @param negativeLimit in selected sensor units
+     */
+    @Override
+    public void setupLimits(double positiveLimit, double negativeLimit)
+    {
+        SoftwareLimitSwitchConfigs configuration = new SoftwareLimitSwitchConfigs();
+        getConfigurator().refresh(configuration);
+        configuration.ForwardSoftLimitEnable = true;
+        configuration.ForwardSoftLimitThreshold = negativeLimit / getSelectedEncoder().getConversionFactor();
+        configuration.ReverseSoftLimitEnable = true;
+        configuration.ReverseSoftLimitThreshold = positiveLimit / getSelectedEncoder().getConversionFactor();
+        getConfigurator().apply(configuration);
     }
 }

@@ -39,6 +39,11 @@ public interface NFREncoder
      */
     public void setConversionFactor(double factor);
     /**
+     * Gets the conversion factor that affects readings of the sensor. This is by default 1. 
+     * @return the factor for measurements of velocity and position. 1 means 1 unit = 1 encoder rotation.
+     */
+    public double getConversionFactor();
+    /**
      * Returns whether the encoder has absolute position measurement capabilities. Does not share whether it inherits from
      * NFRAbsoluteEncoder, thus improper implementations often lead to improper casting. Be careful.
      * @return whether the encoder has absolute funcionality
