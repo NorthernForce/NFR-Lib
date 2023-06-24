@@ -320,6 +320,7 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
          * @param speed the speed to extend at
          */
         public ExtendBySpeed(double speed) {
+            addRequirements(NFRArmMotorExtensionJoint.this);
             this.speed = speed;
         }
 
@@ -354,6 +355,7 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
          * @param speed the speed to retract at
          */
         public RetractBySpeed(double speed) {
+            addRequirements(NFRArmMotorExtensionJoint.this);
             this.speed = speed;
         }
 
