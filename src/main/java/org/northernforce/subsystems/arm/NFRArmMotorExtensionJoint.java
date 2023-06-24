@@ -364,7 +364,7 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
 
         @Override
         public boolean isFinished() {
-            return getLength() > 0;
+            return getLength() <= 0 + config.tolerance;
         }
     }
     
@@ -435,6 +435,26 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
         public boolean isFinished() {
             return stopCondition.getAsBoolean();
         }
+    }
+
+    /**
+     * gets the retract until boolean command for the {@link NFRArmMotorExtensionJoint} class
+     * @param speed the speed to retract at
+     * @param condition the boolean supplier condition to end the command
+     * @return the command
+     */
+    public RetractUntilBoolean getRetractUntilBooleanCommand(double speed, BooleanSupplier condition) {
+        return new RetractUntilBoolean(speed, condition);
+    }
+
+    /**
+     * gets the extend until boolean command for the {@link NFRArmMotorExtensionJoint} class
+     * @param speed the speed to retract at
+     * @param condition the boolean supplier condition to end the command
+     * @return the command
+     */
+    public ExtendUntilBoolean getExtendUntilBooleanCommand(double speed, BooleanSupplier condition) {
+        return new ExtendUntilBoolean(speed, condition);
     }
 
     /**
