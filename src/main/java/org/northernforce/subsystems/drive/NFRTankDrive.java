@@ -257,8 +257,7 @@ public class NFRTankDrive extends NFRDrive
         @Override
         public boolean isFinished()
         {
-            return Math.abs(leftSide.getSelectedEncoder().getPosition() - meters) <= tolerance
-                && Math.abs(rightSide.getSelectedEncoder().getPosition() - meters) <= tolerance;
+            return leftFeedback.atSetpoint() && rightFeedback.atSetpoint();
         }
     }
     /**
