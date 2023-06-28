@@ -215,7 +215,16 @@ public class NFRRotatingArmJoint extends NFRArmJoint
     public void setSpeed(double speed, NFRFeedbackProvider feedback)
     {
         this.feedback = feedback;
-        feedback.setSetpoint(speed);
+        if (!externalEncoder.isPresent() || (speed > 0 &&
+            externalEncoder.get().getPosition() < config.positiveLimit.getRotations()) || (speed < 0 &&
+            externalEncoder.get().getPosition() > config.negativeLimit.getRotations()))
+        {
+            feedback.setSetpoint(speed);
+        }
+        else
+        {
+            feedback.setSetpoint(0);
+        }
     }
     /**
      * The default command for the NFRRotatingArmJoint.
