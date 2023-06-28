@@ -30,8 +30,7 @@ public class NFRRotatingArmJoint extends NFRArmJoint
     {
         protected Transform3d originOffset = new Transform3d();
         protected Rotation2d positiveLimit = null, negativeLimit = null, encoderOffset = new Rotation2d();
-        protected int positionalPidSlot = 0;
-        protected boolean useTrapezoidalPositioning = false, simulateGravity = false;
+        protected boolean simulateGravity = false;
         protected DCMotor gearbox = null;
         protected double gearRatio = 1, length = 0, mass = 0;
         /**
@@ -48,8 +47,6 @@ public class NFRRotatingArmJoint extends NFRArmJoint
          * @param originOffset the offset from the end of the previous joint, or from the center of the chassis.
          * @param positiveLimit the positive limit of the arm joint.
          * @param negativeLimit the negative limit of the arm joint.
-         * @param positionalPidSlot the slot index of the position pid configuration
-         * @param useTrapezoidalPositioning whether to use trapezoidal positioning
          * @param gearbox the gearbox of the motor. Only necessary if using simulation.
          * @param gearRatio the gear ratio of the motor. Only necessary if using simulation.
          * @param length the length of the arm in meters.
@@ -59,15 +56,13 @@ public class NFRRotatingArmJoint extends NFRArmJoint
          * @param simulateGravity whether or not to simulate gravity.
          */
         public NFRRotatingArmJointConfiguration(String name, Transform3d originOffset, Rotation2d positiveLimit,
-            Rotation2d negativeLimit, int positionalPidSlot, boolean useTrapezoidalPositioning, DCMotor gearbox,
-            double gearRatio, double length, double mass, Rotation2d encoderOffset, boolean simulateGravity)
+            Rotation2d negativeLimit, DCMotor gearbox, double gearRatio, double length, double mass, Rotation2d encoderOffset,
+            boolean simulateGravity)
         {
             super(name);
             this.originOffset = originOffset;
             this.positiveLimit = positiveLimit;
             this.negativeLimit = negativeLimit;
-            this.positionalPidSlot = positionalPidSlot;
-            this.useTrapezoidalPositioning = useTrapezoidalPositioning;
             this.gearbox = gearbox;
             this.gearRatio = gearRatio;
             this.length = length;
@@ -94,26 +89,6 @@ public class NFRRotatingArmJoint extends NFRArmJoint
         {
             this.positiveLimit = positiveLimit;
             this.negativeLimit = negativeLimit;
-            return this;
-        }
-        /**
-         * With position pid slot.
-         * @param positionalPidSlot the slot index of the position pid configuration
-         * @return configuration instance
-         */
-        public NFRRotatingArmJointConfiguration withPositionPidSlot(int positionalPidSlot)
-        {
-            this.positionalPidSlot = positionalPidSlot;
-            return this;
-        }
-        /**
-         * With use trapezoidal positioning.
-         * @param useTrapezoidalPositioning whether to use trapezoidal positioning
-         * @return configuration instance
-         */
-        public NFRRotatingArmJointConfiguration withUseTrapezoidalPositioning(boolean useTrapezoidalPositioning)
-        {
-            this.useTrapezoidalPositioning = useTrapezoidalPositioning;
             return this;
         }
         /**
@@ -188,7 +163,6 @@ public class NFRRotatingArmJoint extends NFRArmJoint
      * @param config the configuration of the nfr rotating arm joint
      * @param controller the motor controller for the rotating arm joint
      * @param externalEncoder the optional external encoder
-     * @param pidController the optional pid controller if external encoder is present
      */
     public NFRRotatingArmJoint(NFRRotatingArmJointConfiguration config, NFRMotorController controller,
         Optional<NFREncoder> externalEncoder)
