@@ -5,13 +5,14 @@ import java.util.function.DoubleSupplier;
 
 import org.northernforce.encoders.NFREncoder;
 import org.northernforce.motors.NFRMotorController;
+import org.northernforce.util.NFRFeedbackProvider;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -180,8 +181,8 @@ public class NFRRotatingArmJoint extends NFRArmJoint
     protected final NFRRotatingArmJointConfiguration config;
     protected final NFRMotorController controller;
     protected final Optional<NFREncoder> externalEncoder;
-    protected final Optional<PIDController> pidController;
     protected final SingleJointedArmSim armSim;
+    protected NFRFeedbackProvider feedback;
     /**
      * Creates a new NFRRotatingArmJoint
      * @param config the configuration of the nfr rotating arm joint
@@ -190,13 +191,12 @@ public class NFRRotatingArmJoint extends NFRArmJoint
      * @param pidController the optional pid controller if external encoder is present
      */
     public NFRRotatingArmJoint(NFRRotatingArmJointConfiguration config, NFRMotorController controller,
-        Optional<NFREncoder> externalEncoder, Optional<PIDController> pidController)
+        Optional<NFREncoder> externalEncoder)
     {
         super(config);
         this.config = config;
         this.controller = controller;
         this.externalEncoder = externalEncoder;
-        this.pidController = pidController;
         if (externalEncoder.isEmpty())
         {
             if (config.positiveLimit != null && config.negativeLimit != null)
@@ -223,6 +223,7 @@ public class NFRRotatingArmJoint extends NFRArmJoint
         {
             armSim = null;
         }
+        feedback = null;
     }
     /**
      * Gets the rotation of the arm
@@ -237,6 +238,11 @@ public class NFRRotatingArmJoint extends NFRArmJoint
             return Rotation2d.fromDegrees(controller.getSelectedEncoder().getPosition())
                 .plus(config.encoderOffset);
     }
+    public void setSpeed(double speed, NFRFeedbackProvider feedback)
+    {
+        this.feedback = feedback;
+        feedback.setSetpoint(speed);
+    }
     /**
      * The default command for the NFRRotatingArmJoint.
      */
@@ -247,7 +253,7 @@ public class NFRRotatingArmJoint extends NFRArmJoint
          * Creates a new DefaultCommand
          * @param supplier the supplier for the speed of the arm
          */
-        public DefaultCommand(DoubleSupplier supplier)
+        public DefaultCommand(NFRFeedbackProvider feedback, DoubleSupplier supplier)
         {
             addRequirements(NFRRotatingArmJoint.this);
             this.supplier = supplier;
@@ -258,20 +264,7 @@ public class NFRRotatingArmJoint extends NFRArmJoint
         @Override
         public void execute()
         {
-            double targetSpeed = supplier.getAsDouble();
-            if (externalEncoder.isPresent() && config.negativeLimit != null &&
-                getRotation().minus(config.negativeLimit).getDegrees() <= 0 &&
-                targetSpeed < 0)
-            {
-                targetSpeed = 0;
-            }
-            else if (externalEncoder.isPresent() && config.positiveLimit != null &&
-                getRotation().minus(config.positiveLimit).getDegrees() >= 0 &&
-                targetSpeed > 0)
-            {
-                targetSpeed = 0;
-            }
-            controller.set(targetSpeed);
+            setSpeed(supplier.getAsDouble(), feedback);
         }
     }
     /**
@@ -279,9 +272,9 @@ public class NFRRotatingArmJoint extends NFRArmJoint
      * @param supplier a supplier for the arm movement (ie joystick input)
      * @return the default rotating arm command
      */
-    public Command getDefaultRotatingArmCommand(DoubleSupplier supplier)
+    public Command getDefaultRotatingArmCommand(NFRFeedbackProvider feedback, DoubleSupplier supplier)
     {
-        return new DefaultCommand(supplier);
+        return new DefaultCommand(feedback, supplier);
     }
     /**
      * The set angle command for the NFRRotatingArmJoint.
@@ -289,14 +282,17 @@ public class NFRRotatingArmJoint extends NFRArmJoint
     public class SetAngle extends CommandBase
     {
         protected final Rotation2d targetAngle;
+        protected final NFRFeedbackProvider positionalFeedback, speedFeedback;
         /**
          * Creates a new set angle.
          * @param targetAngle the target angle for the arm to go to.
          */
-        public SetAngle(Rotation2d targetAngle)
+        public SetAngle(NFRFeedbackProvider positionalFeedback, NFRFeedbackProvider speedFeedback, Rotation2d targetAngle)
         {
             addRequirements(NFRRotatingArmJoint.this);
             this.targetAngle = targetAngle;
+            this.positionalFeedback = positionalFeedback;
+            this.speedFeedback = speedFeedback;
         }
         /**
          * Initializes the command which resets the pid controller or sets the internal closed-loop control.
@@ -304,22 +300,7 @@ public class NFRRotatingArmJoint extends NFRArmJoint
         @Override
         public void initialize()
         {
-            if (pidController.isPresent())
-            {
-                pidController.get().reset();
-                pidController.get().setSetpoint(targetAngle.getDegrees());
-            }
-            else
-            {
-                if (config.useTrapezoidalPositioning)
-                {
-                    controller.setPositionTrapezoidal(config.positionalPidSlot, targetAngle.minus(config.encoderOffset).getRotations());
-                }
-                else
-                {
-                    controller.setPosition(config.positionalPidSlot, targetAngle.minus(config.encoderOffset).getRotations());
-                }
-            }
+            positionalFeedback.setSetpoint(targetAngle.getRotations());
         }
         /**
          * If using pid controller, computes closed loop control
@@ -327,23 +308,7 @@ public class NFRRotatingArmJoint extends NFRArmJoint
         @Override
         public void execute()
         {
-            if (pidController.isPresent())
-            {
-                double targetSpeed = pidController.get().calculate(getRotation().getDegrees());
-                if (externalEncoder.isPresent() && config.negativeLimit != null &&
-                    getRotation().minus(config.negativeLimit).getDegrees() <= 0 &&
-                    targetSpeed < 0)
-                {
-                    targetSpeed = 0;
-                }
-                else if (externalEncoder.isPresent() && config.positiveLimit != null &&
-                    getRotation().minus(config.positiveLimit).getDegrees() >= 0 &&
-                    targetSpeed > 0)
-                {
-                    targetSpeed = 0;
-                }
-                controller.set(targetSpeed);
-            }
+            positionalFeedback.runFeedback(getRotation().getRotations());
         }
         /**
          * Returns whether within 5 degrees of target angle
@@ -351,7 +316,7 @@ public class NFRRotatingArmJoint extends NFRArmJoint
         @Override
         public boolean isFinished()
         {
-            return Math.abs(getRotation().minus(targetAngle).getDegrees()) <= 5;
+            return positionalFeedback.atSetpoint();
         }
     }
     /**
@@ -359,9 +324,10 @@ public class NFRRotatingArmJoint extends NFRArmJoint
      * @param targetAngle target angle for arm to go to
      * @return the set angle command
      */
-    public Command getSetAngleCommand(Rotation2d targetAngle)
+    public Command getSetAngleCommand(NFRFeedbackProvider positionalFeedback, NFRFeedbackProvider speedFeedback,
+        Rotation2d targetAngle)
     {
-        return new SetAngle(targetAngle);
+        return new SetAngle(positionalFeedback, speedFeedback, targetAngle);
     }
     /**
      * Updates the simulation data.
@@ -403,5 +369,16 @@ public class NFRRotatingArmJoint extends NFRArmJoint
                 0
             )
         ));
+    }
+    @Override
+    public void periodic()
+    {
+        if (DriverStation.isEnabled())
+        {
+            if (feedback != null)
+            {
+                feedback.runFeedback(getRotation().getRotations());
+            }
+        }
     }
 }
