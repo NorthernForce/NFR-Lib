@@ -265,17 +265,16 @@ public class NFRRotatingArmJoint extends NFRArmJoint
     public class SetAngle extends CommandBase
     {
         protected final Rotation2d targetAngle;
-        protected final NFRFeedbackProvider positionalFeedback, speedFeedback;
+        protected final NFRFeedbackProvider positionalFeedback;
         /**
          * Creates a new set angle.
          * @param targetAngle the target angle for the arm to go to.
          */
-        public SetAngle(NFRFeedbackProvider positionalFeedback, NFRFeedbackProvider speedFeedback, Rotation2d targetAngle)
+        public SetAngle(NFRFeedbackProvider positionalFeedback, Rotation2d targetAngle)
         {
             addRequirements(NFRRotatingArmJoint.this);
             this.targetAngle = targetAngle;
             this.positionalFeedback = positionalFeedback;
-            this.speedFeedback = speedFeedback;
         }
         /**
          * Initializes the command which resets the pid controller or sets the internal closed-loop control.
@@ -307,10 +306,9 @@ public class NFRRotatingArmJoint extends NFRArmJoint
      * @param targetAngle target angle for arm to go to
      * @return the set angle command
      */
-    public Command getSetAngleCommand(NFRFeedbackProvider positionalFeedback, NFRFeedbackProvider speedFeedback,
-        Rotation2d targetAngle)
+    public Command getSetAngleCommand(NFRFeedbackProvider positionalFeedback, Rotation2d targetAngle)
     {
-        return new SetAngle(positionalFeedback, speedFeedback, targetAngle);
+        return new SetAngle(positionalFeedback, targetAngle);
     }
     /**
      * Updates the simulation data.
@@ -353,6 +351,11 @@ public class NFRRotatingArmJoint extends NFRArmJoint
             )
         ));
     }
+    public Rotation2d getSpeed()
+    {
+        return Rotation2d.fromRotations(externalEncoder.isPresent() ? externalEncoder.get().getVelocity() :
+            controller.getSelectedEncoder().getVelocity());
+    }
     @Override
     public void periodic()
     {
@@ -360,7 +363,7 @@ public class NFRRotatingArmJoint extends NFRArmJoint
         {
             if (feedback != null)
             {
-                feedback.runFeedback(getRotation().getRotations());
+                feedback.runFeedback(getSpeed().getRotations());
             }
         }
     }

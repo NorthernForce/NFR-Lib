@@ -6,10 +6,12 @@ import java.util.function.DoubleSupplier;
 
 import org.northernforce.encoders.NFREncoder;
 import org.northernforce.motors.NFRMotorController;
+import org.northernforce.util.NFRFeedbackProvider;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -188,6 +190,7 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
     protected final Optional<PIDController> pidController;
     protected final Optional<BooleanSupplier> closedLimitSwitch, openLimitSwitch;
     protected final Optional<NFREncoder> externalEncoder;
+    protected NFRFeedbackProvider feedback;
     /**
      * Creates a new NFR Simple Motor Claw
      * @param config the configuration of the claw
@@ -208,53 +211,53 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
         this.closedLimitSwitch = closedLimitSwitch;
         this.openLimitSwitch = openLimitSwitch;
         this.pidController = pidController;
+        this.feedback = null;
+    }
+    public void setSpeed(NFRFeedbackProvider feedback, double speed)
+    {
+        this.feedback = feedback;
+        if (!externalEncoder.isPresent() || (speed > 0 && (config.useLimitSwitches ? openLimitSwitch.get().getAsBoolean() :
+            externalEncoder.get().getPosition() < config.openRotation.getRotations())) || (speed < 0 &&
+            (config.useLimitSwitches ? closedLimitSwitch.get().getAsBoolean() :
+            externalEncoder.get().getPosition() > config.closedRotation.getRotations())))
+        {
+            feedback.setSetpoint(speed);
+        }
+        else
+        {
+            feedback.setSetpoint(0);
+        }
     }
     /**
      * The command to open the claw
      */
     protected class OpenCommand extends CommandBase
     {
-        public OpenCommand()
+        protected final NFRFeedbackProvider feedback;
+        public OpenCommand(NFRFeedbackProvider feedback)
         {
             addRequirements(NFRSimpleMotorClaw.this);
+            this.feedback = feedback;
         }
         @Override
         public void initialize()
         {
-            if (config.usePidControl && externalEncoder.isEmpty() && pidController.isEmpty())
-            {
-                if (config.useTrapezoidalPidControl)
-                {
-                    controller.setPositionTrapezoidal(config.positionalPidSlot, config.openRotation.getRotations());
-                }
-                else
-                {
-                    controller.setPosition(config.positionalPidSlot, config.openRotation.getRotations());
-                }
-            }
-            else if (pidController.isPresent())
-            {
-                pidController.get().reset();
-                pidController.get().setSetpoint(config.openRotation.getRotations());
-            }
+            feedback.setSetpoint(config.openRotation.getRotations());
         }
         @Override
         public void execute()
         {
-            if (config.usePidControl && pidController.isPresent())
+            if (config.useLimitSwitches)
             {
-                if (externalEncoder.isPresent())
-                {
-                    controller.set(pidController.get().calculate(externalEncoder.get().getPosition()));
-                }
-                else
-                {
-                    controller.set(pidController.get().calculate(controller.getSelectedEncoder().getPosition()));
-                }
+                feedback.runFeedback(0);
+            }
+            else if (externalEncoder.isPresent())
+            {
+                feedback.runFeedback(externalEncoder.get().getPosition());
             }
             else
             {
-                controller.set(config.openSpeed);
+                feedback.runFeedback(controller.getSelectedEncoder().getPosition());
             }
         }
         @Override
@@ -266,14 +269,7 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
             }
             else
             {
-                if (externalEncoder.isPresent())
-                {
-                    return externalEncoder.get().getPosition() > config.openRotation.getRotations();
-                }
-                else
-                {
-                    return controller.getSelectedEncoder().getPosition() > config.openRotation.getRotations();
-                }
+                return feedback.atSetpoint();
             }
         }
         @Override
@@ -286,56 +282,40 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
      * Returns the command to open the claw. Either goes directly to position or uses pid depending on config.
      * @return the command to open the claw
      */
-    public Command getOpenCommand()
+    public Command getOpenCommand(NFRFeedbackProvider feedback)
     {
-        return new OpenCommand();
+        return new OpenCommand(feedback);
     }
     /**
      * The command to close the claw
      */
     protected class CloseCommand extends CommandBase
     {
-        public CloseCommand()
+        protected final NFRFeedbackProvider feedback;
+        public CloseCommand(NFRFeedbackProvider feedback)
         {
+            this.feedback = feedback;
             addRequirements(NFRSimpleMotorClaw.this);
         }
         @Override
         public void initialize()
         {
-            if (config.usePidControl && externalEncoder.isEmpty() && pidController.isEmpty())
-            {
-                if (config.useTrapezoidalPidControl)
-                {
-                    controller.setPositionTrapezoidal(config.positionalPidSlot, config.closedRotation.getRotations());
-                }
-                else
-                {
-                    controller.setPosition(config.positionalPidSlot, config.closedRotation.getRotations());
-                }
-            }
-            else if (pidController.isPresent())
-            {
-                pidController.get().reset();
-                pidController.get().setSetpoint(config.closedRotation.getRotations());
-            }
+            feedback.setSetpoint(config.closedRotation.getRotations());
         }
         @Override
         public void execute()
         {
-            if (config.usePidControl && pidController.isPresent())
+            if (config.useLimitSwitches)
             {
-                if (externalEncoder.isPresent())
-                {
-                    controller.set(pidController.get().calculate(externalEncoder.get().getPosition()));
-                }
-                else
-                {
-                    controller.set(pidController.get().calculate(controller.getSelectedEncoder().getPosition()));
-                }
+                feedback.runFeedback(0);
+            }
+            else if (externalEncoder.isPresent())
+            {
+                feedback.runFeedback(externalEncoder.get().getPosition());
             }
             else
             {
-                controller.set(config.closeSpeed);
+                feedback.runFeedback(controller.getSelectedEncoder().getPosition());
             }
         }
         @Override
@@ -343,18 +323,11 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
         {
             if (config.useLimitSwitches)
             {
-                return closedLimitSwitch.get().getAsBoolean();
+                return openLimitSwitch.get().getAsBoolean();
             }
             else
             {
-                if (externalEncoder.isPresent())
-                {
-                    return externalEncoder.get().getPosition() > config.closedRotation.getRotations();
-                }
-                else
-                {
-                    return controller.getSelectedEncoder().getPosition() > config.closedRotation.getRotations();
-                }
+                return feedback.atSetpoint();
             }
         }
         @Override
@@ -367,9 +340,9 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
      * Returns the command to close the claw. Either goes directly to position or uses pid depending on config.
      * @return the command to close the claw
      */
-    public Command getCloseCommand()
+    public Command getCloseCommand(NFRFeedbackProvider feedback)
     {
-        return new CloseCommand();
+        return new CloseCommand(feedback);
     }
     /**
      * Checks whether the claw is closed
@@ -470,5 +443,21 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
     public Transform3d getEndState()
     {
         return config.originOffset.plus(config.offsetToEndOfClaw);
+    }
+    public Rotation2d getSpeed()
+    {
+        return Rotation2d.fromRotations(externalEncoder.isPresent() ? externalEncoder.get().getVelocity() :
+            controller.getSelectedEncoder().getVelocity());
+    }
+    @Override
+    public void periodic()
+    {
+        if (DriverStation.isEnabled())
+        {
+            if (feedback != null)
+            {
+                feedback.runFeedback(getSpeed().getRotations());
+            }
+        }
     }
 }
