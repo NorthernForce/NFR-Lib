@@ -12,11 +12,15 @@ public interface NFRFeedbackProvider
      */
     public void setSetpoint(double setpoint);
     /**
-     * Updates the feedback. Will send signals to the 
-     * @param currentPosition
+     * Updates the feedback.
+     * @param currentPosition the current measured position
      */
     public default void runFeedback(double currentPosition)
     {
     }
+    /**
+     * Checks whether at the setpoint
+     * @return if the feedback is over
+     */
     public boolean atSetpoint();
 }
