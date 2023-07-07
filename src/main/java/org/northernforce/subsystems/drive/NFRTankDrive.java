@@ -4,6 +4,7 @@ import java.util.function.DoubleSupplier;
 
 import org.northernforce.motors.MotorEncoderMismatchException;
 import org.northernforce.motors.NFRMotorController;
+import org.northernforce.util.NFRFeedbackProvider;
 import org.northernforce.gyros.NFRGyro;
 
 import edu.wpi.first.math.VecBuilder;
@@ -13,6 +14,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -33,8 +35,6 @@ public class NFRTankDrive extends NFRDrive
     public static class NFRTankDriveConfiguration extends NFRDriveConfiguration
     {
         protected final double trackWidth, gearRatio, wheelRadius, moi, mass, maxSpeed, maxThetaVelocity;
-        protected final int velocityPidSlot, positionPidSlot;
-        protected final boolean useClosedLoopControl, useClosedLoopBrake, useTrapezoidalPositioning;
         protected final DCMotor gearbox;
         /**
          * Creates a new NFRTankDriveConfiguration.
@@ -48,19 +48,10 @@ public class NFRTankDrive extends NFRDrive
          * meters/s.
          * @param maxThetaVelocity the max angular velocity of the robot. Best estimation is used for closed loop
          * control. It is in radians/s.
-         * @param velocityPidSlot the index of the pid slot that contains the velocity closed-loop configuration.
-         * @param positionPidSlot the index of the pid slot that contains the position closed-loop configuration.
-         * @param useClosedLoopControl whether or not to use closed loop control (going absolute speeds) for the
-         * default command.
-         * @param useClosedLoopBrake whether or not to use basic braking (just setting motor to zero) or using
-         * closed-loop control to brake the robot for the stop command.
-         * @param useTrapezoidalPositioning whether or not to use the more advanced trapezoidal positioning to get to
-         * location. Must be tuned.
          * @param gearbox the gearbox that the controller is controlling. Only necessary if simulation is used.
          */
         public NFRTankDriveConfiguration(String name, double trackWidth, double gearRatio, double wheelRadius, double moi,
-            double mass, double maxSpeed, double maxThetaVelocity, int velocityPidSlot, int positionPidSlot,
-            boolean useClosedLoopControl, boolean useClosedLoopBrake, boolean useTrapezoidalPositioning, DCMotor gearbox)
+            double mass, double maxSpeed, double maxThetaVelocity, DCMotor gearbox)
         {
             super(name);
             this.trackWidth = trackWidth;
@@ -70,12 +61,7 @@ public class NFRTankDrive extends NFRDrive
             this.moi = moi;
             this.mass = mass;
             this.maxSpeed = maxSpeed;
-            this.velocityPidSlot = velocityPidSlot;
-            this.positionPidSlot = positionPidSlot;
-            this.useClosedLoopControl = useClosedLoopControl;
-            this.useClosedLoopBrake = useClosedLoopBrake;
             this.maxThetaVelocity = maxThetaVelocity;
-            this.useTrapezoidalPositioning = useTrapezoidalPositioning;
         }
     }
     protected final DifferentialDriveKinematics kinematics;
@@ -85,6 +71,7 @@ public class NFRTankDrive extends NFRDrive
     protected final NFRGyro gyro;
     protected final DifferentialDrivetrainSim simulator;
     protected final NFRTankDriveConfiguration config;
+    protected NFRFeedbackProvider leftFeedback, rightFeedback;
     /**
      * Creates a new NFR Tank Drive.
      * @param config the class containing the configuration parameters.
@@ -128,6 +115,8 @@ public class NFRTankDrive extends NFRDrive
         {
             simulator = null;
         }
+        leftFeedback = null;
+        rightFeedback = null;
     }
     /**
      * Gets the estimated pose that is a combination of odometry and vision estimates
@@ -176,65 +165,48 @@ public class NFRTankDrive extends NFRDrive
     }
     /**
      * Sets the chassis to a specific speed of vx, vy, and vtheta.
-     * @param speeds
+     * @param leftFeedback the speed feedback for the left side
+     * @param rightFeedback the speed feedback for the right side
+     * @param speeds the target speeds of the chassis
      */
-    @Override
-    public void setChassisSpeeds(ChassisSpeeds speeds)
+    public void setChassisSpeeds(NFRFeedbackProvider leftFeedback, NFRFeedbackProvider rightFeedback, ChassisSpeeds speeds)
     {
         var wheelSpeeds = kinematics.toWheelSpeeds(speeds);
-        leftSide.setVelocity(config.velocityPidSlot, wheelSpeeds.leftMetersPerSecond);
-        rightSide.setVelocity(config.velocityPidSlot, wheelSpeeds.rightMetersPerSecond);
+        this.leftFeedback = leftFeedback;
+        this.rightFeedback = rightFeedback;
+        leftFeedback.setSetpoint(wheelSpeeds.leftMetersPerSecond);
+        rightFeedback.setSetpoint(wheelSpeeds.rightMetersPerSecond);
         robotDrive.feed();
     }
     /**
      * Gets the default drive command that uses double suppliers (from controllers) to move.
+     * @param leftFeedback the speed feedback for the left side
+     * @param rightFeedback the speed feedback for the right side
      * @param suppliers the suppliers. Two for arcade, three for swerve.
      * @return Default drive command for subsystem
      */
-    @Override
-    public Command getDefaultDriveCommand(DoubleSupplier... suppliers)
+    public Command getDefaultDriveCommand(NFRFeedbackProvider leftFeedback, NFRFeedbackProvider rightFeedback,
+        DoubleSupplier... suppliers)
     {
-        if (config.useClosedLoopControl)
-        {
-            return Commands.run(() -> {
-                setChassisSpeeds(new ChassisSpeeds(
-                    suppliers[0].getAsDouble() * config.maxSpeed,
-                    0,
-                    -suppliers[1].getAsDouble() * config.maxThetaVelocity
-                ));
-            }, this);
-        }
-        else
-        {
-            return Commands.run(() -> {
-                robotDrive.arcadeDrive(suppliers[0].getAsDouble(), suppliers[1].getAsDouble());
-            }, this);
-        }
+        return Commands.run(() -> {
+            setChassisSpeeds(leftFeedback, rightFeedback, new ChassisSpeeds(
+                suppliers[0].getAsDouble() * config.maxSpeed,
+                0,
+                -suppliers[1].getAsDouble() * config.maxThetaVelocity
+            ));
+        }, this);
     }
     /**
      * Gets a command that stops the robot. Finishes when stopped.
      * @return a stop command
      */
-    @Override
-    public Command getStopCommand() {
-        if (config.useClosedLoopControl)
-        {
-            return Commands.deadline(Commands.waitUntil(() -> {
-                return Math.abs(leftSide.getSelectedEncoder().getVelocity()) <= 0.1
-                    || Math.abs(rightSide.getSelectedEncoder().getVelocity()) <= 0.1;
+    public Command getStopCommand(NFRFeedbackProvider leftFeedback, NFRFeedbackProvider rightFeedback) {
+        return Commands.deadline(Commands.waitUntil(() -> {
+            return Math.abs(leftSide.getSelectedEncoder().getVelocity()) <= 0.1
+                || Math.abs(rightSide.getSelectedEncoder().getVelocity()) <= 0.1;
             }), Commands.run(() -> {
-                setChassisSpeeds(new ChassisSpeeds());
+                setChassisSpeeds(leftFeedback, rightFeedback, new ChassisSpeeds());
             }, this));
-        }
-        else
-        {
-            return Commands.deadline(Commands.waitUntil(() -> {
-                return Math.abs(leftSide.getSelectedEncoder().getVelocity()) <= 0.1
-                    && Math.abs(rightSide.getSelectedEncoder().getVelocity()) <= 0.1;
-            }), Commands.run(() -> {
-                robotDrive.arcadeDrive(0, 0);
-            }, this));
-        }
     }
     /**
      * An internal class responsible for driving a tank drive forward a set number of meters.
@@ -242,47 +214,47 @@ public class NFRTankDrive extends NFRDrive
     protected class DriveMeters extends CommandBase
     {
         protected final double meters;
+        protected final NFRFeedbackProvider leftFeedback, rightFeedback;
         protected double startingLeft, startingRight;
-        public DriveMeters(double meters)
+        public DriveMeters(double meters,  NFRFeedbackProvider leftFeedback, NFRFeedbackProvider rightFeedback)
         {
             addRequirements(NFRTankDrive.this);
             this.meters = meters;
+            this.leftFeedback = leftFeedback;
+            this.rightFeedback = rightFeedback;
         }
         @Override
         public void initialize()
         {
-            if (config.useTrapezoidalPositioning)
-            {
-                leftSide.setPositionTrapezoidal(config.positionPidSlot, leftSide.getSelectedEncoder().getPosition() + meters);
-                rightSide.setPositionTrapezoidal(config.positionPidSlot, rightSide.getSelectedEncoder().getPosition() + meters);
-            }
-            else
-            {
-                leftSide.setPosition(config.positionPidSlot, leftSide.getSelectedEncoder().getPosition() + meters);
-                rightSide.setPosition(config.positionPidSlot, rightSide.getSelectedEncoder().getPosition() + meters);
-            }
+            startingLeft = leftSide.getSelectedEncoder().getPosition();
+            startingRight = rightSide.getSelectedEncoder().getPosition();
+            leftFeedback.setSetpoint(meters + startingLeft);
+            rightFeedback.setSetpoint(meters + startingRight);
         }
         @Override
         public void execute()
         {
+            leftFeedback.runFeedback(leftSide.getSelectedEncoder().getPosition());
+            rightFeedback.runFeedback(rightSide.getSelectedEncoder().getPosition());
             robotDrive.feed();
         }
         @Override
         public boolean isFinished()
         {
-            return Math.abs(leftSide.getSelectedEncoder().getPosition() - meters) <= 0.1
-                && Math.abs(rightSide.getSelectedEncoder().getPosition() - meters) <= 0.1;
+            return leftFeedback.atSetpoint() && rightFeedback.atSetpoint();
         }
     }
     /**
-     * Gets a command to drive the robot forward a set amount of meters at a set speed. Uses encoders.
+     * Gets a command to drive the robot forward a set amount of meters. Uses encoders.
      * @param meters the distance to drive
+     * @param leftFeedback the positional feedback for the left side
+     * @param rightFeedback the positional feedback for the right side
      * @return a command to drive forward
      */
-    @Override
-    public Command getDriveMetersCommand(double meters)
+    public Command getDriveMetersCommand(double meters, NFRFeedbackProvider leftFeedback,
+        NFRFeedbackProvider rightFeedback)
     {
-        return new DriveMeters(meters);
+        return new DriveMeters(meters, leftFeedback, rightFeedback);
     }
     /**
      * This is the periodic function. In it, the estimator is fed the current information from the encoders and
@@ -296,6 +268,14 @@ public class NFRTankDrive extends NFRDrive
             leftSide.getSelectedEncoder().getPosition(),
             rightSide.getSelectedEncoder().getPosition()
         );
+        if (DriverStation.isEnabled())
+        {
+            if (leftFeedback != null && rightFeedback != null)
+            {
+                leftFeedback.runFeedback(leftSide.getSelectedEncoder().getVelocity());
+                rightFeedback.runFeedback(rightSide.getSelectedEncoder().getVelocity());
+            }
+        }
     }
     /**
      * This is the simulation periodic function. The simulator is fed the inputs from the motors, and the simulation
