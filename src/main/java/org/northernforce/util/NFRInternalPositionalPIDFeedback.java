@@ -46,7 +46,7 @@ public class NFRInternalPositionalPIDFeedback implements NFRFeedbackProvider
     }
     /**
      * Checks to see whether within tolerance.
-     * @return |position - setpoint| <= tolerance
+     * @return |position - setpoint| less than tolerance
      */
     @Override
     public boolean atSetpoint()

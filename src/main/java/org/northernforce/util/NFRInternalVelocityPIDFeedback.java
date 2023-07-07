@@ -35,7 +35,7 @@ public class NFRInternalVelocityPIDFeedback implements NFRFeedbackProvider
     }
     /**
      * Checks to see whether within tolerance.
-     * @return |velocity - setpoint| <= tolerance
+     * @return |velocity - setpoint| less than tolerance
      */
     @Override
     public boolean atSetpoint()

@@ -43,7 +43,7 @@ public class NFRConstantSpeedFeedback implements NFRFeedbackProvider
     }
     /**
      * Checks whether at setpoint.
-     * @return moreThan ? position >= setpoint : position <= setpoint
+     * @return moreThan ? position is more than setpoint : position is less than setpoint
      */
     @Override
     public boolean atSetpoint() {
