@@ -141,6 +141,7 @@ public class NFRSparkMax extends CANSparkMax implements NFRMotorController
             follower.follow(this);
         }
         integratedEncoder = new IntegratedEncoder();
+        selectedEncoder = integratedEncoder;
     }
     /**
      * Creates a new NFR Spark Max.
