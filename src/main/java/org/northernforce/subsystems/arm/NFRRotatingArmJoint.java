@@ -212,6 +212,36 @@ public class NFRRotatingArmJoint extends NFRArmJoint
             return Rotation2d.fromDegrees(controller.getSelectedEncoder().getPosition())
                 .plus(config.encoderOffset);
     }
+    /**
+     * Sets the speed of the rotating arm joint. This checks to see if the feedback has been set, if so it uses the feedback.
+     * Else, the setSpeed method uses the NFRMotorController.set on the motor controller group.
+     * @param speed the speed as is relevant to the feedback, or [-1..1]
+     */
+    public void setSpeed(double speed)
+    {
+        if (feedback != null)
+        {
+            if (!externalEncoder.isPresent() || (speed > 0 &&
+                externalEncoder.get().getPosition() < config.positiveLimit.getRotations()) || (speed < 0 &&
+                externalEncoder.get().getPosition() > config.negativeLimit.getRotations()))
+            {
+                feedback.setSetpoint(speed);
+            }
+            else
+            {
+                feedback.setSetpoint(0);
+            }
+        }
+        else
+        {
+            controller.set(speed);
+        }
+    }
+    /**
+     * Sets the speed of the rotating arm joint and sets the default speed feedback.
+     * @param speed the speed as is relevant to the feedback.
+     * @param feedback the feedback for speed control.
+     */
     public void setSpeed(double speed, NFRFeedbackProvider feedback)
     {
         this.feedback = feedback;
@@ -234,6 +264,7 @@ public class NFRRotatingArmJoint extends NFRArmJoint
         protected final DoubleSupplier supplier;
         /**
          * Creates a new DefaultCommand
+         * @param feedback the speed feedback to be used
          * @param supplier the supplier for the speed of the arm
          */
         public DefaultCommand(NFRFeedbackProvider feedback, DoubleSupplier supplier)
@@ -252,7 +283,8 @@ public class NFRRotatingArmJoint extends NFRArmJoint
     }
     /**
      * Gets the default rotating arm command
-     * @param supplier a supplier for the arm movement (ie joystick input)
+     * @param feedback the speed feedback to be used
+     * @param supplier the supplier for the speed of the arm
      * @return the default rotating arm command
      */
     public Command getDefaultRotatingArmCommand(NFRFeedbackProvider feedback, DoubleSupplier supplier)
@@ -268,6 +300,7 @@ public class NFRRotatingArmJoint extends NFRArmJoint
         protected final NFRFeedbackProvider positionalFeedback;
         /**
          * Creates a new set angle.
+         * @param feedback the positional feedback that should call the setSpeed
          * @param targetAngle the target angle for the arm to go to.
          */
         public SetAngle(NFRFeedbackProvider positionalFeedback, Rotation2d targetAngle)
@@ -293,7 +326,7 @@ public class NFRRotatingArmJoint extends NFRArmJoint
             positionalFeedback.runFeedback(getRotation().getRotations());
         }
         /**
-         * Returns whether within 5 degrees of target angle
+         * Returns whether within tolerance of setpoint
          */
         @Override
         public boolean isFinished()
@@ -303,6 +336,7 @@ public class NFRRotatingArmJoint extends NFRArmJoint
     }
     /**
      * Gets the set angle command
+     * @param positionalFeedback the positional feedback that should call the setSpeed
      * @param targetAngle target angle for arm to go to
      * @return the set angle command
      */
@@ -351,11 +385,18 @@ public class NFRRotatingArmJoint extends NFRArmJoint
             )
         ));
     }
+    /**
+     * Returns the current speed of the joint.
+     * @return speed in rotations per second
+     */
     public Rotation2d getSpeed()
     {
         return Rotation2d.fromRotations(externalEncoder.isPresent() ? externalEncoder.get().getVelocity() :
             controller.getSelectedEncoder().getVelocity());
     }
+    /**
+     * Checks to see if it robot is enabled, and then updates feedback.
+     */
     @Override
     public void periodic()
     {

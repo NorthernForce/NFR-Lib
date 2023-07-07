@@ -75,11 +75,4 @@ public abstract class NFRDrive extends NFRSubsystem
      * @return a stop command
      */
     public abstract Command getStopCommand(NFRFeedbackProvider leftFeedback, NFRFeedbackProvider rightFeedback);
-    /**
-     * Gets a command to drive the robot forward a set amount of meters at a set speed. Uses encoders.
-     * @param meters the distance to drive
-     * @return a command to drive forward
-     */
-    public abstract Command getDriveMetersCommand(double meters, double tolerance, NFRFeedbackProvider leftFeedback,
-        NFRFeedbackProvider rightFeedback);
 }

@@ -213,6 +213,27 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
         this.pidController = pidController;
         this.feedback = null;
     }
+    public void setSpeed(double speed)
+    {
+        if (feedback != null)
+        {
+            if (!externalEncoder.isPresent() || (speed > 0 && (config.useLimitSwitches ? openLimitSwitch.get().getAsBoolean() :
+                externalEncoder.get().getPosition() < config.openRotation.getRotations())) || (speed < 0 &&
+                (config.useLimitSwitches ? closedLimitSwitch.get().getAsBoolean() :
+                externalEncoder.get().getPosition() > config.closedRotation.getRotations())))
+            {
+                feedback.setSetpoint(speed);
+            }
+            else
+            {
+                feedback.setSetpoint(0);
+            }
+        }
+        else
+        {
+            controller.set(speed);
+        }
+    }
     public void setSpeed(NFRFeedbackProvider feedback, double speed)
     {
         this.feedback = feedback;
@@ -275,7 +296,7 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
         @Override
         public void end(boolean interrupted)
         {
-            controller.set(0);
+            setSpeed(0);
         }
     }
     /**
@@ -333,7 +354,7 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
         @Override
         public void end(boolean interrupted)
         {
-            controller.set(0);
+            setSpeed(0);
         }
     }
     /**

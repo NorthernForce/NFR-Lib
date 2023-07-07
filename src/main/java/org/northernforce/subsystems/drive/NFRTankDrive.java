@@ -35,8 +35,6 @@ public class NFRTankDrive extends NFRDrive
     public static class NFRTankDriveConfiguration extends NFRDriveConfiguration
     {
         protected final double trackWidth, gearRatio, wheelRadius, moi, mass, maxSpeed, maxThetaVelocity;
-        protected final int velocityPidSlot, positionPidSlot;
-        protected final boolean useClosedLoopControl, useClosedLoopBrake, useTrapezoidalPositioning;
         protected final DCMotor gearbox;
         /**
          * Creates a new NFRTankDriveConfiguration.
@@ -61,8 +59,7 @@ public class NFRTankDrive extends NFRDrive
          * @param gearbox the gearbox that the controller is controlling. Only necessary if simulation is used.
          */
         public NFRTankDriveConfiguration(String name, double trackWidth, double gearRatio, double wheelRadius, double moi,
-            double mass, double maxSpeed, double maxThetaVelocity, int velocityPidSlot, int positionPidSlot,
-            boolean useClosedLoopControl, boolean useClosedLoopBrake, boolean useTrapezoidalPositioning, DCMotor gearbox)
+            double mass, double maxSpeed, double maxThetaVelocity, DCMotor gearbox)
         {
             super(name);
             this.trackWidth = trackWidth;
@@ -72,12 +69,7 @@ public class NFRTankDrive extends NFRDrive
             this.moi = moi;
             this.mass = mass;
             this.maxSpeed = maxSpeed;
-            this.velocityPidSlot = velocityPidSlot;
-            this.positionPidSlot = positionPidSlot;
-            this.useClosedLoopControl = useClosedLoopControl;
-            this.useClosedLoopBrake = useClosedLoopBrake;
             this.maxThetaVelocity = maxThetaVelocity;
-            this.useTrapezoidalPositioning = useTrapezoidalPositioning;
         }
     }
     protected final DifferentialDriveKinematics kinematics;
@@ -181,7 +173,9 @@ public class NFRTankDrive extends NFRDrive
     }
     /**
      * Sets the chassis to a specific speed of vx, vy, and vtheta.
-     * @param speeds
+     * @param leftFeedback the speed feedback for the left side
+     * @param rightFeedback the speed feedback for the right side
+     * @param speeds the target speeds of the chassis
      */
     @Override
     public void setChassisSpeeds(NFRFeedbackProvider leftFeedback, NFRFeedbackProvider rightFeedback, ChassisSpeeds speeds)
@@ -195,6 +189,8 @@ public class NFRTankDrive extends NFRDrive
     }
     /**
      * Gets the default drive command that uses double suppliers (from controllers) to move.
+     * @param leftFeedback the speed feedback for the left side
+     * @param rightFeedback the speed feedback for the right side
      * @param suppliers the suppliers. Two for arcade, three for swerve.
      * @return Default drive command for subsystem
      */
@@ -228,14 +224,13 @@ public class NFRTankDrive extends NFRDrive
      */
     protected class DriveMeters extends CommandBase
     {
-        protected final double meters, tolerance;
+        protected final double meters;
         protected final NFRFeedbackProvider leftFeedback, rightFeedback;
         protected double startingLeft, startingRight;
-        public DriveMeters(double meters, double tolerance, NFRFeedbackProvider leftFeedback, NFRFeedbackProvider rightFeedback)
+        public DriveMeters(double meters,  NFRFeedbackProvider leftFeedback, NFRFeedbackProvider rightFeedback)
         {
             addRequirements(NFRTankDrive.this);
             this.meters = meters;
-            this.tolerance = tolerance;
             this.leftFeedback = leftFeedback;
             this.rightFeedback = rightFeedback;
         }
@@ -261,15 +256,16 @@ public class NFRTankDrive extends NFRDrive
         }
     }
     /**
-     * Gets a command to drive the robot forward a set amount of meters at a set speed. Uses encoders.
+     * Gets a command to drive the robot forward a set amount of meters. Uses encoders.
      * @param meters the distance to drive
+     * @param leftFeedback the positional feedback for the left side
+     * @param rightFeedback the positional feedback for the right side
      * @return a command to drive forward
      */
-    @Override
-    public Command getDriveMetersCommand(double meters, double tolerance, NFRFeedbackProvider leftFeedback,
+    public Command getDriveMetersCommand(double meters, NFRFeedbackProvider leftFeedback,
         NFRFeedbackProvider rightFeedback)
     {
-        return new DriveMeters(meters, tolerance, leftFeedback, rightFeedback);
+        return new DriveMeters(meters, leftFeedback, rightFeedback);
     }
     /**
      * This is the periodic function. In it, the estimator is fed the current information from the encoders and
