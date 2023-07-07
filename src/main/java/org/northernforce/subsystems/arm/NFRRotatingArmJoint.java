@@ -300,7 +300,7 @@ public class NFRRotatingArmJoint extends NFRArmJoint
         protected final NFRFeedbackProvider positionalFeedback;
         /**
          * Creates a new set angle.
-         * @param feedback the positional feedback that should call the setSpeed
+         * @param positionalFeedback the positional feedback that should call the setSpeed
          * @param targetAngle the target angle for the arm to go to.
          */
         public SetAngle(NFRFeedbackProvider positionalFeedback, Rotation2d targetAngle)

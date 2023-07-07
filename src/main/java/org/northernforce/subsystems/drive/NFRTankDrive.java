@@ -48,14 +48,6 @@ public class NFRTankDrive extends NFRDrive
          * meters/s.
          * @param maxThetaVelocity the max angular velocity of the robot. Best estimation is used for closed loop
          * control. It is in radians/s.
-         * @param velocityPidSlot the index of the pid slot that contains the velocity closed-loop configuration.
-         * @param positionPidSlot the index of the pid slot that contains the position closed-loop configuration.
-         * @param useClosedLoopControl whether or not to use closed loop control (going absolute speeds) for the
-         * default command.
-         * @param useClosedLoopBrake whether or not to use basic braking (just setting motor to zero) or using
-         * closed-loop control to brake the robot for the stop command.
-         * @param useTrapezoidalPositioning whether or not to use the more advanced trapezoidal positioning to get to
-         * location. Must be tuned.
          * @param gearbox the gearbox that the controller is controlling. Only necessary if simulation is used.
          */
         public NFRTankDriveConfiguration(String name, double trackWidth, double gearRatio, double wheelRadius, double moi,
