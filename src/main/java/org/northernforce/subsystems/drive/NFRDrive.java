@@ -1,13 +1,9 @@
 package org.northernforce.subsystems.drive;
 
-import java.util.function.DoubleSupplier;
-
 import org.northernforce.subsystems.NFRSubsystem;
-import org.northernforce.util.NFRFeedbackProvider;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * The NFRDrive is an interface for all subsystems and provides common functionality among them.
@@ -57,22 +53,4 @@ public abstract class NFRDrive extends NFRSubsystem
      * @return chassis speeds which holds vx, vy, and vtheta.
      */
     public abstract ChassisSpeeds getChassisSpeeds();
-    /**
-     * Sets the chassis to a specific speed of vx, vy, and vtheta.
-     * @param speeds
-     */
-    public abstract void setChassisSpeeds(NFRFeedbackProvider leftFeedback, NFRFeedbackProvider rightFeedback,
-        ChassisSpeeds speeds);
-    /**
-     * Gets the default drive command that uses double suppliers (from controllers) to move.
-     * @param suppliers the suppliers. Two for arcade, three for swerve.
-     * @return Default drive command for subsystem
-     */
-    public abstract Command getDefaultDriveCommand(NFRFeedbackProvider leftFeedback, NFRFeedbackProvider rightFeedback,
-        DoubleSupplier... suppliers);
-    /**
-     * Gets a command that stops the robot. Finishes when stopped.
-     * @return a stop command
-     */
-    public abstract Command getStopCommand(NFRFeedbackProvider leftFeedback, NFRFeedbackProvider rightFeedback);
 }

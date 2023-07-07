@@ -169,7 +169,6 @@ public class NFRTankDrive extends NFRDrive
      * @param rightFeedback the speed feedback for the right side
      * @param speeds the target speeds of the chassis
      */
-    @Override
     public void setChassisSpeeds(NFRFeedbackProvider leftFeedback, NFRFeedbackProvider rightFeedback, ChassisSpeeds speeds)
     {
         var wheelSpeeds = kinematics.toWheelSpeeds(speeds);
@@ -186,7 +185,6 @@ public class NFRTankDrive extends NFRDrive
      * @param suppliers the suppliers. Two for arcade, three for swerve.
      * @return Default drive command for subsystem
      */
-    @Override
     public Command getDefaultDriveCommand(NFRFeedbackProvider leftFeedback, NFRFeedbackProvider rightFeedback,
         DoubleSupplier... suppliers)
     {
@@ -202,7 +200,6 @@ public class NFRTankDrive extends NFRDrive
      * Gets a command that stops the robot. Finishes when stopped.
      * @return a stop command
      */
-    @Override
     public Command getStopCommand(NFRFeedbackProvider leftFeedback, NFRFeedbackProvider rightFeedback) {
         return Commands.deadline(Commands.waitUntil(() -> {
             return Math.abs(leftSide.getSelectedEncoder().getVelocity()) <= 0.1
