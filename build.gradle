@@ -18,8 +18,8 @@ sourceSets
   }
 }
 
-ext.pubVersion = '0.0.1'
-ext.json_version = "1.0"
+ext.pubVersion = '2023.2.1.2'
+ext.json_version = "2023.2.1.2"
 
 apply plugin: "cpp"
 apply plugin: "java"
