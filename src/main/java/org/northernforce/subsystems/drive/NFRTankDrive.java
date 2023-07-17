@@ -230,4 +230,20 @@ public class NFRTankDrive extends NFRDrive
         return new DifferentialDriveWheelSpeeds(leftSide.getSelectedEncoder().getVelocity(),
             rightSide.getSelectedEncoder().getVelocity());
     }
+    /**
+     * Gets the controller that the left side uses.
+     * @return the controller that the left side uses.
+     */
+    public NFRMotorController getLeftSide()
+    {
+        return leftSide;
+    }
+    /**
+     * Gets the controller that the right side uses.
+     * @return the controller that the right side uses.
+     */
+    public NFRMotorController getRightSide()
+    {
+        return rightSide;
+    }
 }
