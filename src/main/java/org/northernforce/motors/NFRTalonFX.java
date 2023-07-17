@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.northernforce.encoders.NFRAbsoluteEncoder;
+import org.northernforce.encoders.NFRCANCoder;
 import org.northernforce.encoders.NFREncoder;
 
 import com.ctre.phoenix6.StatusSignal;
@@ -226,6 +227,14 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
             TalonFXConfiguration config = new TalonFXConfiguration();
             getConfigurator().refresh(config);
             config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+        }
+        else if (NFRCANCoder.class.isAssignableFrom(encoder.getClass()))
+        {
+            selectedEncoder = encoder;
+            TalonFXConfiguration config = new TalonFXConfiguration();
+            getConfigurator().refresh(config);
+            config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+            config.Feedback.FeedbackRemoteSensorID = ((NFRCANCoder)encoder).getEncoder().getDeviceID();
         }
         else
         {
