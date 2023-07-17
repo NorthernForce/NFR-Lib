@@ -99,6 +99,26 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
             this.closedRotation = Optional.of(closedRotation);
             return this;
         }
+        /**
+         * With use limits
+         * @param useLimits whether to use limits
+         * @return this
+         */
+        public NFRSimpleMotorClawConfiguration withUseLimits(boolean useLimits)
+        {
+            this.useLimits = useLimits;
+            return this;
+        }
+        /**
+         * With use integrated limits
+         * @param useIntegratedLimits whether to use the motor controller's ability to use integrated limits.
+         * @return this
+         */
+        public NFRSimpleMotorClawConfiguration withUseIntegratedLimits(boolean useIntegratedLimits)
+        {
+            this.useIntegratedLimits = useIntegratedLimits;
+            return this;
+        }
     }
     protected final NFRSimpleMotorClawConfiguration config;
     protected final NFRMotorController controller;
@@ -227,5 +247,13 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
         {
             controller.setVelocity(pidSlot, 0);
         }
+    }
+    /**
+     * Gets the controller that the joint uses.
+     * @return the controller that the joint uses.
+     */
+    public NFRMotorController getController()
+    {
+        return controller;
     }
 }
