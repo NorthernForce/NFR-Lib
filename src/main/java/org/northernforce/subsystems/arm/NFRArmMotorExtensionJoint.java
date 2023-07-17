@@ -144,7 +144,10 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
             }
         }
     }
-    
+    /**
+     * Returns whether it is extended.
+     * @return whether it is extended.
+     */
     public boolean isExtended()
     {
         if (extendedLimitSwitch.isPresent())
@@ -161,6 +164,10 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
         }
         return false;
     }
+    /**
+     * Returns whether it is retracted.
+     * @return whether it is retracted.
+     */
     public boolean isRetracted()
     {
         if (retractedLimitSwitch.isPresent())
@@ -177,6 +184,10 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
         }
         return false;
     }
+    /**
+     * Sets the open-loop speed.
+     * @param speed the speed to run at between [-1, 1]
+     */
     public void setOpenLoop(double speed)
     {
         if (speed > 0 && (!config.useLimits || config.useIntegratedLimits || !isExtended()))
@@ -192,6 +203,11 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
             motor.set(0);
         }
     }
+    /**
+     * Sets the closed-loop speed.
+     * @param speed the speed to run at relative to the motor
+     * @param pidSlot the pid slot of the velocity closed-loop.
+     */
     public void setClosedLoop(double speed, int pidSlot)
     {
         if (speed > 0 && (!config.useLimits || config.useIntegratedLimits || !isExtended()))
@@ -221,6 +237,10 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
     public Transform3d getEndState() {
         return config.originOffset.plus(new Transform3d(new Translation3d(getLength(), 0, 0), new Rotation3d()));
     }
+    /**
+     * Gets the motor controller controlling the extension.
+     * @return a NFRMotorController.
+     */
     public NFRMotorController getController()
     {
         return motor;
