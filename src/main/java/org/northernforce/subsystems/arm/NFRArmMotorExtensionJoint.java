@@ -2,43 +2,17 @@ package org.northernforce.subsystems.arm;
 
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 
 import org.northernforce.encoders.NFREncoder;
 import org.northernforce.motors.NFRMotorController;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj2.command.CommandBase;
 
 
 /** Creates an NFRArmMotorExtensionJoint. */
 public class NFRArmMotorExtensionJoint extends NFRArmJoint{
-
-    private final NFRArmMotorExtensionJointConfiguration config;
-    private NFRMotorController motor;
-    private Optional<NFREncoder> externalEncoder;
-    private Optional<PIDController> pidController;
-
-    /**
-     * Creates a new NFRArmMotorExtensionJoint
-     * @param config the corresponding config class
-     * @param motor the motor to use
-     * @param externalEncoder the encoder to use
-     * @param pidController the pid controller
-     */
-    public NFRArmMotorExtensionJoint(NFRArmMotorExtensionJointConfiguration config, NFRMotorController motor, Optional<NFREncoder> externalEncoder, Optional<PIDController> pidController) {
-        super(config);
-        this.config = config;
-        this.externalEncoder = externalEncoder;
-        if(externalEncoder.isPresent()) {
-            this.externalEncoder.get().setConversionFactor(config.metersPerRotation);
-        } else {
-            motor.getSelectedEncoder().setConversionFactor(config.metersPerRotation);
-        }
-    }
 
     /**
      *  the config for the {@link NFRArmMotorExtensionJoint} class
@@ -54,12 +28,9 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
         protected Transform3d originOffset;
         protected double retractedArmLength;
         protected double extendedArmLength;
-        protected int pidSlot;
-        protected double metersPerRotation;
-        protected double positiveLimit;
-        protected double negativeLimit;
-        protected boolean useTrapezoidalPositioning;
-        protected double tolerance;
+        protected Optional<Double> extendedLimit = Optional.empty();
+        protected Optional<Double> retractedLimit = Optional.empty();
+        protected boolean useLimits = false, useIntegratedLimits = false;
 
         /**
          * Creates the configuration for an arm motor extension
@@ -76,21 +47,16 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
          * more explanation in the {@link NFRArmJointConfiguration} super class
          * @param retractedArmLength The length of the arm while fully retracted
          * @param extendedArmLength The length of the arm while fully extended
-         * @param pidSlot the pidSlot to use for the motor, either a encoder or PIDController will be preferred
-         * @param metersPerRotation the number of meters the arm will extend or retract per rotation
-         * @param useTrapezoidalPositioning set to true to use useTrapezoidalPositioning
-         * @param tolerance the acceptable tolerance in meters
          */
         public NFRArmMotorExtensionJointConfiguration(String name, Transform3d originOffset, 
-            double retractedArmLength, double extendedArmLength, int pidSlot, double metersPerRotation, boolean useTrapezoidalPositioning, double tolerance) {
+            double retractedArmLength, double extendedArmLength, double extendedLimit, double retractedLimit)
+        {
             super(name);
             this.originOffset = originOffset;
             this.retractedArmLength = retractedArmLength;
             this.extendedArmLength = extendedArmLength;
-            this.pidSlot = pidSlot;
-            this.metersPerRotation = metersPerRotation;
-            this.useTrapezoidalPositioning = useTrapezoidalPositioning;
-            this.tolerance = tolerance;
+            this.extendedLimit = Optional.of(extendedLimit);
+            this.retractedLimit = Optional.of(retractedLimit);
         }
 
         /**
@@ -125,340 +91,122 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
         }
 
         /**
-         * set the pidSlot
-         * @param pidSlot The length of the arm while fully retracted
+         * set the extended limit
+         * @param extendedLimit the extended limit
          * @return returns this for chaining
          */
-        public NFRArmMotorExtensionJointConfiguration withPidSlot(int pidSlot) {
-            this.pidSlot = pidSlot;
-            return this;
-        }
-        
-        /**
-         * set the metersPerRotation
-         * @param metersPerRotation the meters per one rotation of the motor
-         * @return returns this for chaining
-         */
-        public NFRArmMotorExtensionJointConfiguration withMetersPerRotation(double metersPerRotation) {
-            this.metersPerRotation = metersPerRotation;
-            return this;
-        }
-
-        /**
-         * set useTrapezoidalPositioning
-         * @param useTrapezoidalPositioning whether or not to use Trapezoidal Positioning
-         * @return returns this for chaining
-         */
-        public NFRArmMotorExtensionJointConfiguration withUseTrapezoidalPositioning(boolean useTrapezoidalPositioning) {
-            this.useTrapezoidalPositioning = useTrapezoidalPositioning;
-            return this;
-        }
-        
-        /**
-         * set the tolerance
-         * @param tolerance the tolerance in meters
-         * @return returns this for chaining
-         */
-        public NFRArmMotorExtensionJointConfiguration withTolerance(double tolerance) {
-            this.tolerance = tolerance;
-            return this;
-        }
-
-        /**
-         * set the positive limit
-         * @param positiveLimit the positive limit
-         * @return returns this for chaining
-         */
-        public NFRArmMotorExtensionJointConfiguration withPositiveLimit(double positiveLimit) {
-            this.positiveLimit = positiveLimit;
+        public NFRArmMotorExtensionJointConfiguration withExtendedLimit(double extendedLimit) {
+            this.extendedLimit = Optional.of(extendedLimit);
             return this;
         }
 
         /**
          * set the negative limit
-         * @param negativeLimit the negative distance limit
+         * @param retractedLimit the retracted distance limit
          * @return returns this for chaining
          */
-        public NFRArmMotorExtensionJointConfiguration withNegativeLimit(double negativeLimit) {
-            this.negativeLimit = negativeLimit;
+        public NFRArmMotorExtensionJointConfiguration withRetractedLimit(double retractedLimit) {
+            this.retractedLimit = Optional.of(retractedLimit);
             return this;
         }
     }
 
+    private final NFRArmMotorExtensionJointConfiguration config;
+    private final NFRMotorController motor;
+    private final Optional<NFREncoder> externalEncoder;
+    private final Optional<BooleanSupplier> retractedLimitSwitch, extendedLimitSwitch;
+
     /**
-     * the default class for the {@link NFRArmMotorExtensionJoint}
+     * Creates a new NFRArmMotorExtensionJoint
+     * @param config the corresponding config class
+     * @param motor the motor to use
+     * @param externalEncoder the encoder to use
      */
-    public class DefaultCommand extends CommandBase {
-        /** the supplier to control the speed used in the default command */
-        protected DoubleSupplier speedSupplier;
-
-        /**
-         * creates a new default command
-         * @param speedSupplier the speed to use for extending or retracting the arm
-         */
-        public DefaultCommand(DoubleSupplier speedSupplier) {
-            addRequirements(NFRArmMotorExtensionJoint.this);
-            this.speedSupplier = speedSupplier;
-        }
-
-        /**
-         * Executes and checks whether outside of limits
-         */
-        @Override
-        public void execute()
+    public NFRArmMotorExtensionJoint(NFRArmMotorExtensionJointConfiguration config, NFRMotorController motor,
+        Optional<NFREncoder> externalEncoder, Optional<BooleanSupplier> retractedLimitSwitch,
+        Optional<BooleanSupplier> extendedLimitSwitch)
+    {
+        super(config);
+        this.config = config;
+        this.externalEncoder = externalEncoder;
+        this.motor = motor;
+        this.retractedLimitSwitch = retractedLimitSwitch;
+        this.extendedLimitSwitch = extendedLimitSwitch;
+        if (config.useLimits && config.useIntegratedLimits && motor.getSelectedEncoder() != null)
         {
-            double targetSpeed = speedSupplier.getAsDouble();
-            if (externalEncoder.isPresent() && getLength() <= config.negativeLimit &&
-                targetSpeed < 0)
+            if (config.extendedLimit.isPresent())
             {
-                targetSpeed = 0;
+                motor.setPositiveLimit(config.extendedLimit.get());
             }
-            else if (externalEncoder.isPresent() && getLength() >= config.positiveLimit &&
-                targetSpeed > 0)
+            if (config.retractedLimit.isPresent())
             {
-                targetSpeed = 0;
+                motor.setNegativeLimit(config.retractedLimit.get());
             }
-            motor.set(targetSpeed);
-        }
-    }
-
-    /**
-     * gets the default command for the {@link NFRArmMotorExtensionJoint} class
-     * @param speedSupplier to control the extension
-     * @return the command
-     */
-    public DefaultCommand getDefaultCommand(DoubleSupplier speedSupplier) {
-        return new DefaultCommand(speedSupplier);
-    }
-
-    /**
-     * the set length command for the {@link NFRArmMotorExtensionJoint} class
-     */
-    public class setLength extends CommandBase {
-        protected final double targetDistance;
-        /**
-         * Creates a new set length.
-         * @param targetDistance the distance past the retracted length
-         */
-        public setLength(double targetDistance)
-        {
-            addRequirements(NFRArmMotorExtensionJoint.this);
-            this.targetDistance = targetDistance;
-        }
-        /**
-         * Initializes the command which resets the pid controller or sets the internal closed-loop control.
-         */
-        @Override
-        public void initialize()
-        {
-            if (pidController.isPresent())
-            {
-                pidController.get().reset();
-                pidController.get().setSetpoint(targetDistance);
-            }
-            else
-            {
-                if (config.useTrapezoidalPositioning)
-                {
-                    motor.setPositionTrapezoidal(config.pidSlot, targetDistance);
-                }
-                else
-                {
-                    motor.setPosition(config.pidSlot, targetDistance);
-                }
-            }
-        }
-        /**
-         * If using pid controller, computes closed loop control
-         */
-        @Override
-        public void execute()
-        {
-            if (pidController.isPresent()) {
-                double targetSpeed = pidController.get().calculate(getLength());
-                if (externalEncoder.isPresent() && getLength() <= config.negativeLimit &&
-                    targetSpeed < 0) {
-                    targetSpeed = 0;
-                }
-                else if (externalEncoder.isPresent() && getLength() >= config.positiveLimit &&
-                    targetSpeed > 0) {
-                    targetSpeed = 0;
-                }
-                motor.set(targetSpeed);
-            }
-        }
-        /**
-         * Returns whether within tolerance of the angle
-         */
-        @Override
-        public boolean isFinished()
-        {
-            return Math.abs(getLength() - targetDistance) <= config.tolerance;
-        }
-    }
-
-    /**
-     * gets the set length command for the {@link NFRArmMotorExtensionJoint} class
-     * @param targetDistance the distance to extend or retract to.
-     * @return the command
-     */
-    public setLength getSetLengthCommand(double targetDistance) {
-        return new setLength(targetDistance);
-    }
-
-    /**
-     * the extend by speed command for the {@link NFRArmMotorExtensionJoint} class
-     */
-    public class ExtendBySpeed extends CommandBase {
-        /**
-         * the speed to extend at
-         */
-        protected double speed;
-
-        /**
-         * creates a new extend by speed command
-         * @param speed the speed to extend at
-         */
-        public ExtendBySpeed(double speed) {
-            addRequirements(NFRArmMotorExtensionJoint.this);
-            this.speed = speed;
-        }
-
-        @Override
-        public void initialize() {
-            motor.set(speed);
-        }
-
-        @Override
-        public boolean isFinished() {
-            return config.retractedArmLength + getLength() < config.extendedArmLength;
         }
     }
     
-    /**
-     * gets the extend by speed command for the {@link NFRArmMotorExtensionJoint} class
-     * @param speed the speed to extend at
-     * @return the command
-     */
-    public ExtendBySpeed getExtendBySpeedCommand(double speed) {
-        return new ExtendBySpeed(speed);
-    }
-
-    /**
-     * the retract by speed class for the {@link NFRArmMotorExtensionJoint} class
-     */
-    public class RetractBySpeed extends CommandBase {
-        protected double speed;
-
-        /**
-         * creates a new retract by speed command
-         * @param speed the speed to retract at
-         */
-        public RetractBySpeed(double speed) {
-            addRequirements(NFRArmMotorExtensionJoint.this);
-            this.speed = speed;
+    public boolean isExtended()
+    {
+        if (extendedLimitSwitch.isPresent())
+        {
+            return extendedLimitSwitch.get().getAsBoolean();
         }
-
-        @Override
-        public void initialize() {
+        else if (externalEncoder.isPresent())
+        {
+            return externalEncoder.get().getPosition() >= config.extendedArmLength;
+        }
+        else if (motor.getSelectedEncoder() != null)
+        {
+            return motor.getSelectedEncoder().getPosition() >= config.extendedArmLength;
+        }
+        return false;
+    }
+    public boolean isRetracted()
+    {
+        if (retractedLimitSwitch.isPresent())
+        {
+            return extendedLimitSwitch.get().getAsBoolean();
+        }
+        else if (externalEncoder.isPresent())
+        {
+            return externalEncoder.get().getPosition() <= config.retractedArmLength;
+        }
+        else if (motor.getSelectedEncoder() != null)
+        {
+            return motor.getSelectedEncoder().getPosition() <= config.retractedArmLength;
+        }
+        return false;
+    }
+    public void setOpenLoop(double speed)
+    {
+        if (speed > 0 && (!config.useLimits || config.useIntegratedLimits || !isExtended()))
+        {
             motor.set(speed);
         }
-
-        @Override
-        public boolean isFinished() {
-            return getLength() <= 0 + config.tolerance;
+        else if (speed < 0 && (!config.useLimits || config.useIntegratedLimits || !isRetracted()))
+        {
+            motor.set(speed);
+        }
+        else
+        {
+            motor.set(0);
         }
     }
-    
-    /**
-     * gets the retract by speed command for the {@link NFRArmMotorExtensionJoint} class
-     * @param speed the speed to retract at
-     * @return the command
-     */
-    public RetractBySpeed getRetractBySpeedCommand(double speed) {
-        return new RetractBySpeed(speed);
-    }
-
-    /**
-     * gets the extend by PID command for the {@link NFRArmMotorExtensionJoint} class
-     * @return the command
-     */
-    public setLength getExtendByPIDCommand() {
-        return new setLength(config.extendedArmLength - config.retractedArmLength);
-    }
-
-    /**
-     * gets the retract by PID command for the {@link NFRArmMotorExtensionJoint} class
-     * @return the command
-     */
-    public setLength getRetractByPIDCommand() {
-        return new setLength(0);
-    }
-
-    /**
-     * the extend until boolean class for the {@link NFRArmMotorExtensionJoint} class
-     */
-    public class ExtendUntilBoolean extends ExtendBySpeed {
-        protected BooleanSupplier stopCondition;
-
-        /**
-         * creates a new extend until boolean
-         * @param speed the speed to extend at
-         * @param stopCondition boolean supplier should return true when the command should stop
-         */
-        public ExtendUntilBoolean(double speed, BooleanSupplier stopCondition) {
-            super(speed);
-            this.stopCondition = stopCondition;
+    public void setClosedLoop(double speed, int pidSlot)
+    {
+        if (speed > 0 && (!config.useLimits || config.useIntegratedLimits || !isExtended()))
+        {
+            motor.setVelocity(pidSlot, speed);
         }
-
-        @Override
-        public boolean isFinished() {
-            return stopCondition.getAsBoolean();
+        else if (speed < 0 && (!config.useLimits || config.useIntegratedLimits || !isRetracted()))
+        {
+            motor.setVelocity(pidSlot, speed);
+        }
+        else
+        {
+            motor.setVelocity(pidSlot, 0);
         }
     }
-
-    /**
-     * the retract until boolean class for the {@link NFRArmMotorExtensionJoint} class
-     */
-    public class RetractUntilBoolean extends RetractBySpeed {
-        protected BooleanSupplier stopCondition;
-
-        /**
-         * creates a new retract until boolean
-         * @param speed the speed to retract at
-         * @param stopCondition boolean supplier should return true when the command should stop
-         */
-        public RetractUntilBoolean(double speed, BooleanSupplier stopCondition) {
-            super(speed);
-            this.stopCondition = stopCondition;
-        }
-
-        @Override
-        public boolean isFinished() {
-            return stopCondition.getAsBoolean();
-        }
-    }
-
-    /**
-     * gets the retract until boolean command for the {@link NFRArmMotorExtensionJoint} class
-     * @param speed the speed to retract at
-     * @param condition the boolean supplier condition to end the command
-     * @return the command
-     */
-    public RetractUntilBoolean getRetractUntilBooleanCommand(double speed, BooleanSupplier condition) {
-        return new RetractUntilBoolean(speed, condition);
-    }
-
-    /**
-     * gets the extend until boolean command for the {@link NFRArmMotorExtensionJoint} class
-     * @param speed the speed to retract at
-     * @param condition the boolean supplier condition to end the command
-     * @return the command
-     */
-    public ExtendUntilBoolean getExtendUntilBooleanCommand(double speed, BooleanSupplier condition) {
-        return new ExtendUntilBoolean(speed, condition);
-    }
-
     /**
      * gets the length of the arm length in this case is the distance past the fully retracted point
      * @return returns the length as defined above
@@ -469,9 +217,12 @@ public class NFRArmMotorExtensionJoint extends NFRArmJoint{
         else dLength = motor.getSelectedEncoder().getPosition();
         return dLength;
     }
-
     @Override
     public Transform3d getEndState() {
         return config.originOffset.plus(new Transform3d(new Translation3d(getLength(), 0, 0), new Rotation3d()));
+    }
+    public NFRMotorController getController()
+    {
+        return motor;
     }
 }
