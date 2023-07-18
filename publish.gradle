@@ -44,39 +44,6 @@ def artifactGroupId = 'org.northernforce'
 def baseArtifactId = 'nfrlib'
 def javaBaseName = "org_northernforce_ID_${baseArtifactId}-java_cls"
 
-// task cppHeadersZip(type: Zip) {
-//     destinationDirectory = outputsFolder
-//     archiveBaseName = zipBaseName
-//     classifier = "headers"
-
-//     from(licenseFile) {
-//         into '/'
-//     }
-
-//     from('src/main/native/include') {
-//         into '/'
-//     }
-// }
-
-// task cppSourceZip(type: Zip) {
-//     destinationDirectory = outputsFolder
-//     archiveBaseName = zipBaseName
-//     classifier = "sources"
-
-//     from(licenseFile) {
-//         into '/'
-//     }
-
-//     from('src/main/native/cpp') {
-//         into '/'
-//     }
-// }
-
-// build.dependsOn cppHeadersZip
-// addTaskToCopyAllOutputs(cppHeadersZip)
-// build.dependsOn cppSourceZip
-// addTaskToCopyAllOutputs(cppSourceZip)
-
 task sourcesJar(type: Jar, dependsOn: classes) {
     archiveClassifier = 'sources'
     from sourceSets.main.allSource
@@ -159,17 +126,6 @@ model {
         def taskList = generateVendorJson
 
         publications {
-            // cpp(MavenPublication) {
-            //     taskList.each {
-            //         artifact it
-            //     }
-            //     artifact cppHeadersZip
-            //     artifact cppSourceZip
-
-            //     artifactId = "${baseArtifactId}-cpp"
-            //     groupId artifactGroupId
-            //     version pubVersion
-            // }
 
             if(project.hasProperty("pubs.publishJava")) {
                 java(MavenPublication) {
