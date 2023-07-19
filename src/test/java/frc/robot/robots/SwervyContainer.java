@@ -14,13 +14,16 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 
 public class SwervyContainer implements NFRRobotContainer
 {
     private final NFRSwerveDrive drive;
+    private final Field2d field;
     public SwervyContainer()
     {
         NFRSwerveModule[] modules = new NFRSwerveModule[] {
@@ -40,6 +43,8 @@ public class SwervyContainer implements NFRRobotContainer
             new Translation2d(-0.581025, -0.581025)
         };
         drive = new NFRSwerveDrive(driveConfig, modules, offsets, new NFRNavX());
+        field = new Field2d();
+        Shuffleboard.getTab("Swerve").add("Field", field);
     }
     @Override
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
@@ -70,5 +75,10 @@ public class SwervyContainer implements NFRRobotContainer
     public Map<String, Pose2d> getStartingLocations()
     {
         return Map.of("Unnecessary", new Pose2d());
+    }
+    @Override
+    public void periodic()
+    {
+        field.setRobotPose(drive.getEstimatedPose());
     }
 }
