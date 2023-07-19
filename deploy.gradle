@@ -1,0 +1,57 @@
+deploy {
+    targets {
+        roborio(getTargetTypeClass('RoboRIO')) {
+            // Team number is loaded either from the .wpilib/wpilib_preferences.json
+            // or from command line. If not found an exception will be thrown.
+            // You can use getTeamOrDefault(team) instead of getTeamNumber if you
+            // want to store a team number in this file.
+            team = project.findProperty("frc.team") ?: 172
+            debug = project.findProperty("frc.debug") ?: false
+
+            artifacts {
+                // First part is artifact name, 2nd is artifact type
+                // getTargetTypeClass is a shortcut to get the class type using a string
+
+                frcJava(getArtifactTypeClass('FRCJavaArtifact')) {
+                }
+
+                // Static files artifact
+                frcStaticFileDeploy(getArtifactTypeClass('FileTreeArtifact')) {
+                    files = project.fileTree('src/main/deploy')
+                    directory = '/home/lvuser/deploy'
+                }
+            }
+        }
+    }
+}
+dependencies {
+    roborioDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.roborio)
+    roborioDebug wpi.java.vendor.jniDebug(wpi.platforms.roborio)
+    roborioRelease wpi.java.deps.wpilibJniRelease(wpi.platforms.roborio)
+    roborioRelease wpi.java.vendor.jniRelease(wpi.platforms.roborio)
+    nativeDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.desktop)
+    nativeDebug wpi.java.vendor.jniDebug(wpi.platforms.desktop)
+    simulationDebug wpi.sim.enableDebug()
+    nativeRelease wpi.java.deps.wpilibJniRelease(wpi.platforms.desktop)
+    nativeRelease wpi.java.vendor.jniRelease(wpi.platforms.desktop)
+    simulationRelease wpi.sim.enableRelease()
+}
+def deployArtifact = deploy.targets.roborio.artifacts.frcJava
+def outputsFolder = file("$buildDir/outputs")
+wpi.sim.addGui().defaultEnabled = true
+wpi.sim.addDriverstation()
+task testJar(type: Jar, dependsOn: classes) {
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    destinationDirectory = outputsFolder
+    manifest {
+        attributes 'Main-Class': 'frc.robot.Main'
+    }
+    from sourceSets.main.output
+    from sourceSets.test.output
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+deployArtifact.jarTask = testJar
+wpi.java.configureExecutableTasks(testJar)
+tasks.withType(JavaCompile) {
+    options.compilerArgs.add '-XDstringConcat=inline'
+}
