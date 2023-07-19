@@ -98,8 +98,8 @@ public class NFRSwerveDrive extends NFRDrive
         SwerveModuleState[] newStates = new SwerveModuleState[states.length];
         for (int i = 0; i < states.length; i++)
         {
-            newStates[i].speedMetersPerSecond = states[i].speedMetersPerSecond * config.maxSpeed;
-            newStates[i].angle = states[i].angle;
+            newStates[i] = new SwerveModuleState(states[i].speedMetersPerSecond * config.maxSpeed,
+                states[i].angle);
         }
         return newStates;
     }
