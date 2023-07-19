@@ -39,7 +39,8 @@ if (project.hasProperty('releaseMode')) {
 // Apply Java configuration
 apply from: 'config.gradle'
 
-dependencies {
+dependencies
+{
     implementation "edu.wpi.first.cscore:cscore-java:${wpilibVersion}"
     implementation "edu.wpi.first.cameraserver:cameraserver-java:${wpilibVersion}"
     implementation "edu.wpi.first.ntcore:ntcore-java:${wpilibVersion}"
