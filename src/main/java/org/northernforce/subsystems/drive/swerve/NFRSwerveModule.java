@@ -3,13 +3,19 @@ package org.northernforce.subsystems.drive.swerve;
 import java.util.Optional;
 
 import org.northernforce.encoders.NFRAbsoluteEncoder;
+import org.northernforce.encoders.NFRCANCoder;
+import org.northernforce.motors.MotorEncoderMismatchException;
 import org.northernforce.motors.NFRMotorController;
+import org.northernforce.motors.NFRTalonFX;
 import org.northernforce.subsystems.NFRSubsystem;
+
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
@@ -145,5 +151,52 @@ public class NFRSwerveModule extends NFRSubsystem
             turnController.getSelectedEncoder().addSimulationPosition(turnSim.getAngularVelocityRPM() / 60 * 0.02);
             turnController.getSelectedEncoder().setSimulationVelocity(turnSim.getAngularVelocityRPM() / 60);
         }
+    }
+    public static final class Mk3SwerveConstants
+    {
+        public static final double kDriveGearRatioSlow = 8.16;
+        public static final double kDriveGearRatioFast = 6.86;
+        public static final double kTurnGearRatio = 12.8;
+        public static final double kWheelRadius = Units.inchesToMeters(2);
+        public static final double kWheelCircumference = kWheelRadius * 2 * Math.PI;
+        public static final double kTurnMaxSpeed = 100;
+        public static final double kDriveMaxSpeed = 100;
+    }
+    public static NFRSwerveModule createMk3Slow(String name, int driveID, int turnID, int cancoderID)
+    {
+        NFRSwerveModuleConfiguration config = new NFRSwerveModuleConfiguration("Front Left Module")
+            .withGearRatios(Mk3SwerveConstants.kDriveGearRatioSlow, Mk3SwerveConstants.kTurnGearRatio)
+            .withGearboxes(DCMotor.getFalcon500(1), DCMotor.getFalcon500(1))
+            .withMOIs(0.5, 0.5);
+        TalonFXConfiguration driveConfig = new TalonFXConfiguration();
+        driveConfig.CurrentLimits.SupplyCurrentLimit = 40;
+        driveConfig.CurrentLimits.SupplyCurrentThreshold = 60;
+        driveConfig.CurrentLimits.SupplyTimeThreshold = 0.5;
+        driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        driveConfig.Slot0.kP = 0.2;
+        driveConfig.Slot0.kV = 12 / Mk3SwerveConstants.kDriveMaxSpeed;
+        NFRTalonFX driveMotor = new NFRTalonFX(driveConfig, driveID);
+        driveMotor.getSelectedEncoder().setConversionFactor(Mk3SwerveConstants.kWheelCircumference /
+            Mk3SwerveConstants.kDriveGearRatioSlow);
+        TalonFXConfiguration turnConfig = new TalonFXConfiguration();
+        turnConfig.CurrentLimits.SupplyCurrentLimit = 40;
+        turnConfig.CurrentLimits.SupplyCurrentThreshold = 60;
+        turnConfig.CurrentLimits.SupplyTimeThreshold = 0.5;
+        turnConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        turnConfig.MotionMagic.MotionMagicCruiseVelocity = Mk3SwerveConstants.kTurnGearRatio * 8;
+        turnConfig.MotionMagic.MotionMagicAcceleration = turnConfig.MotionMagic.MotionMagicCruiseVelocity * 4;
+        turnConfig.Slot0.kP = 0.1;
+        turnConfig.Slot0.kV = 12 / Mk3SwerveConstants.kTurnMaxSpeed;
+        NFRTalonFX turnMotor = new NFRTalonFX(turnConfig, turnID);
+        NFRCANCoder cancoder = new NFRCANCoder(cancoderID);
+        try
+        {
+            turnMotor.setSelectedEncoder(cancoder);
+        }
+        catch (MotorEncoderMismatchException e)
+        {
+            e.printStackTrace();
+        }
+        return new NFRSwerveModule(config, driveMotor, turnMotor, Optional.empty());
     }
 }
