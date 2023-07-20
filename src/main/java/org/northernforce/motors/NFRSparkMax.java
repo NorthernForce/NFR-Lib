@@ -526,4 +526,9 @@ public class NFRSparkMax extends CANSparkMax implements NFRMotorController
     {
         enableSoftLimit(SoftLimitDirection.kForward, false);
     }
+    @Override
+    public double getTargetPosition()
+    {
+        return 0;
+    }
 }

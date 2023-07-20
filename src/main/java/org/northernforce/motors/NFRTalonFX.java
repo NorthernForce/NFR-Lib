@@ -409,4 +409,9 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
         configuration.ForwardSoftLimitEnable = false;
         getConfigurator().apply(configuration);
     }
+    @Override
+    public double getTargetPosition()
+    {
+        return getClosedLoopReference().getValue();
+    }
 }

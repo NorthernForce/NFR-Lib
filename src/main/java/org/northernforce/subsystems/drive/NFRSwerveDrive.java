@@ -15,21 +15,9 @@ public class NFRSwerveDrive extends NFRDrive
 {
     public static class NFRSwerveDriveConfiguration extends NFRDriveConfiguration
     {
-        protected double maxSpeed;
         public NFRSwerveDriveConfiguration(String name)
         {
             super(name);
-            maxSpeed = 0;
-        }
-        public NFRSwerveDriveConfiguration(String name, double maxSpeed)
-        {
-            super(name);
-            this.maxSpeed = maxSpeed;
-        }
-        public NFRSwerveDriveConfiguration withMaxSpeed(double maxSpeed)
-        {
-            this.maxSpeed = maxSpeed;
-            return this;
         }
     }
     protected final NFRSwerveDriveConfiguration config;
@@ -93,14 +81,9 @@ public class NFRSwerveDrive extends NFRDrive
     {
         return kinematics.toSwerveModuleStates(speeds);
     }
-    public SwerveModuleState[] scaleSpeeds(SwerveModuleState[] states)
+    @Override
+    public void periodic()
     {
-        SwerveModuleState[] newStates = new SwerveModuleState[states.length];
-        for (int i = 0; i < states.length; i++)
-        {
-            newStates[i] = new SwerveModuleState(states[i].speedMetersPerSecond * config.maxSpeed,
-                states[i].angle);
-        }
-        return newStates;
+        poseEstimator.update(gyro.getGyroYaw(), getPositions());
     }
 }
