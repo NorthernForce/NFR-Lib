@@ -2,6 +2,8 @@ package frc.robot.robots;
 
 import java.util.Map;
 
+import org.northernforce.commands.NFRTankDriveStop;
+import org.northernforce.commands.NFRTankDriveWithJoystick;
 import org.northernforce.gyros.NFRNavX;
 import org.northernforce.motors.NFRSparkMax;
 import org.northernforce.subsystems.drive.NFRTankDrive;
@@ -35,12 +37,6 @@ public class SquishyContainer implements NFRRobotContainer {
             0.6,
             Units.lbsToKilograms(40),
             Units.feetToMeters(12),
-            Units.degreesToRadians(270),
-            0,
-            1,
-            true,
-            true,
-            false,
             DCMotor.getNeo550(2)
         );
         NFRSparkMax leftSide = new NFRSparkMax(MotorType.kBrushless, 1, 3);
@@ -63,16 +59,18 @@ public class SquishyContainer implements NFRRobotContainer {
             XboxController.class.isAssignableFrom(manipulatorHID.getClass()))
         {
             XboxController driverController = (XboxController)driverHID;
-            drive.setDefaultCommand(drive.getDefaultDriveCommand(
+            drive.setDefaultCommand(new NFRTankDriveWithJoystick(
+                drive,
                 () -> {
                     return MathUtil.applyDeadband(-driverController.getLeftY(), 0.07);
                 },
                 () -> {
                     return MathUtil.applyDeadband(-driverController.getRightX(), 0.07);
-                }
+                },
+                0
             ));
             new JoystickButton(driverController, XboxController.Button.kB.value)
-                .whileTrue(drive.getStopCommand());
+                .whileTrue(new NFRTankDriveStop(drive, 0.1));
         }
     }
     @Override
