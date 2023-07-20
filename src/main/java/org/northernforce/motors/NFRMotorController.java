@@ -142,4 +142,5 @@ public interface NFRMotorController extends MotorController
      * Disables the negative limit.
      */
     public void disableNegativeLimit();
+    public double getTargetPosition();
 }

@@ -92,4 +92,8 @@ public class NFRSwerveModuleSetState extends CommandBase
             module.setTurnSpeed(pidController.calculate(module.getRotation().getRotations()));
         }
     }
+    public SwerveModuleState getTargetState()
+    {
+        return state;
+    }
 }

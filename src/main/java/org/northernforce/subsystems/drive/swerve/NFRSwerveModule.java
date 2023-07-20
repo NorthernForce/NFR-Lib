@@ -16,6 +16,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
@@ -24,7 +25,7 @@ public class NFRSwerveModule extends NFRSubsystem
     public static class NFRSwerveModuleConfiguration extends NFRSubsystemConfiguration
     {
         protected DCMotor driveGearbox, turnGearbox;
-        protected double driveGearRatio, turnGearRatio, driveMOI, turnMOI;
+        protected double driveGearRatio, turnGearRatio, driveMOI, turnMOI, maxSpeed;
         public NFRSwerveModuleConfiguration(String name)
         {
             super(name);
@@ -34,9 +35,10 @@ public class NFRSwerveModule extends NFRSubsystem
             turnGearRatio = 0;
             driveMOI = 0;
             turnMOI = 0;
+            maxSpeed = 0;
         }
         public NFRSwerveModuleConfiguration(String name, DCMotor driveGearbox, DCMotor turnGearbox,
-            double driveGearRatio, double turnGearRatio, double driveMOI, double turnMOI)
+            double driveGearRatio, double turnGearRatio, double driveMOI, double turnMOI, double maxSpeed)
         {
             super(name);
             this.driveGearbox = driveGearbox;
@@ -45,6 +47,7 @@ public class NFRSwerveModule extends NFRSubsystem
             this.turnGearRatio = turnGearRatio;
             this.driveMOI = driveMOI;
             this.turnMOI = turnMOI;
+            this.maxSpeed = maxSpeed;
         }
         public NFRSwerveModuleConfiguration withGearboxes(DCMotor driveGearbox, DCMotor turnGearbox)
         {
@@ -62,6 +65,11 @@ public class NFRSwerveModule extends NFRSubsystem
         {
             this.driveMOI = driveMOI;
             this.turnMOI = turnMOI;
+            return this;
+        }
+        public NFRSwerveModuleConfiguration withMaxSpeed(double maxSpeed)
+        {
+            this.maxSpeed = maxSpeed;
             return this;
         }
     }
@@ -139,8 +147,8 @@ public class NFRSwerveModule extends NFRSubsystem
         turnSim.setInputVoltage(turnController.getSimulationOutputVoltage());
         driveSim.update(0.02);
         turnSim.update(0.02);
-        driveController.getSelectedEncoder().addSimulationPosition(turnSim.getAngularVelocityRPM() / 60 * 0.02);
-        driveController.getSelectedEncoder().setSimulationVelocity(turnSim.getAngularVelocityRPM() / 60);
+        driveController.getSelectedEncoder().addSimulationPosition(driveSim.getAngularVelocityRPM() / 60 * 0.02);
+        driveController.getSelectedEncoder().setSimulationVelocity(driveSim.getAngularVelocityRPM() / 60);
         if (externalEncoder.isPresent())
         {
             externalEncoder.get().addAbsoluteSimulationPosition(turnSim.getAngularVelocityRPM() / 60 * 0.02);
@@ -152,6 +160,24 @@ public class NFRSwerveModule extends NFRSubsystem
             turnController.getSelectedEncoder().setSimulationVelocity(turnSim.getAngularVelocityRPM() / 60);
         }
     }
+    public SwerveModuleState scaleSpeed(SwerveModuleState state)
+    {
+        return new SwerveModuleState(state.speedMetersPerSecond * config.maxSpeed, state.angle);
+    }
+    @Override
+    public void initSendable(SendableBuilder builder)
+    {
+        builder.addDoubleProperty("Velocity", () -> getVelocity(), null);
+        builder.addDoubleProperty("Angle", () -> getRotation().getDegrees(), null);
+        builder.addDoubleProperty("Target Angle", () -> turnController.getTargetPosition(), null);
+        if (RobotBase.isSimulation())
+        {
+            builder.addDoubleProperty("Drive - Simulation Voltage", driveController::getSimulationOutputVoltage, null);
+            builder.addDoubleProperty("Turn - Simulation Voltage", turnController::getSimulationOutputVoltage, null);
+            builder.addDoubleProperty("Drive - Estimated Speed", driveSim::getAngularVelocityRPM, null);
+            builder.addDoubleProperty("Turn - Estimated Speed", turnSim::getAngularVelocityRPM, null);
+        }
+    }
     public static final class Mk3SwerveConstants
     {
         public static final double kDriveGearRatioSlow = 8.16;
@@ -159,22 +185,27 @@ public class NFRSwerveModule extends NFRSubsystem
         public static final double kTurnGearRatio = 12.8;
         public static final double kWheelRadius = Units.inchesToMeters(2);
         public static final double kWheelCircumference = kWheelRadius * 2 * Math.PI;
-        public static final double kTurnMaxSpeed = 100;
-        public static final double kDriveMaxSpeed = 100;
+        public static final double kDriveMaxSpeed = Units.feetToMeters(13);
+        public static final double kDriveV = 12 / (kDriveMaxSpeed * kDriveGearRatioSlow / kWheelCircumference);
+        public static final double kDriveP = 0.5;
+        public static final double kTurnMaxSpeed = 1;
+        public static final double kTurnV = 12 / (kTurnMaxSpeed);
+        public static final double kTurnP = 1;
     }
     public static NFRSwerveModule createMk3Slow(String name, int driveID, int turnID, int cancoderID)
     {
         NFRSwerveModuleConfiguration config = new NFRSwerveModuleConfiguration("Front Left Module")
             .withGearRatios(Mk3SwerveConstants.kDriveGearRatioSlow, Mk3SwerveConstants.kTurnGearRatio)
             .withGearboxes(DCMotor.getFalcon500(1), DCMotor.getFalcon500(1))
-            .withMOIs(0.5, 0.5);
+            .withMOIs(1.2, 1.2)
+            .withMaxSpeed(Mk3SwerveConstants.kDriveMaxSpeed);
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
         driveConfig.CurrentLimits.SupplyCurrentLimit = 40;
         driveConfig.CurrentLimits.SupplyCurrentThreshold = 60;
         driveConfig.CurrentLimits.SupplyTimeThreshold = 0.5;
         driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        driveConfig.Slot0.kP = 0.2;
-        driveConfig.Slot0.kV = 12 / Mk3SwerveConstants.kDriveMaxSpeed;
+        driveConfig.Slot0.kP = Mk3SwerveConstants.kDriveP;
+        driveConfig.Slot0.kV = Mk3SwerveConstants.kDriveV;
         NFRTalonFX driveMotor = new NFRTalonFX(driveConfig, driveID);
         driveMotor.getSelectedEncoder().setConversionFactor(Mk3SwerveConstants.kWheelCircumference /
             Mk3SwerveConstants.kDriveGearRatioSlow);
@@ -185,8 +216,9 @@ public class NFRSwerveModule extends NFRSubsystem
         turnConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         turnConfig.MotionMagic.MotionMagicCruiseVelocity = Mk3SwerveConstants.kTurnGearRatio * 8;
         turnConfig.MotionMagic.MotionMagicAcceleration = turnConfig.MotionMagic.MotionMagicCruiseVelocity * 4;
-        turnConfig.Slot0.kP = 0.1;
-        turnConfig.Slot0.kV = 12 / Mk3SwerveConstants.kTurnMaxSpeed;
+        turnConfig.Slot0.kP = Mk3SwerveConstants.kTurnP;
+        turnConfig.Slot0.kV = Mk3SwerveConstants.kTurnV;
+        turnConfig.ClosedLoopGeneral.ContinuousWrap = true;
         NFRTalonFX turnMotor = new NFRTalonFX(turnConfig, turnID);
         NFRCANCoder cancoder = new NFRCANCoder(cancoderID);
         try
