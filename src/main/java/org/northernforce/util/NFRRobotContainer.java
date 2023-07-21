@@ -2,6 +2,7 @@ package org.northernforce.util;
 
 import java.util.Map;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -45,4 +46,9 @@ public interface NFRRobotContainer
      * @return all of the starting locations
      */
     public Map<String, Pose2d> getStartingLocations();
+    /**
+     * Gets the default autonomous option in case none is selected.
+     * @return the default autonomous.
+     */
+    public Pair<String, Command> getDefaultAutonomous();
 }
