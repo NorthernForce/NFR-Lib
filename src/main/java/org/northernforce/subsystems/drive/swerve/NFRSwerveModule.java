@@ -11,6 +11,7 @@ import org.northernforce.subsystems.NFRSubsystem;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -133,11 +134,13 @@ public class NFRSwerveModule extends NFRSubsystem
     {
         if (useTrapezoidalPositioning)
         {
-            turnController.setPositionTrapezoidal(pidSlot, position.getRotations());
+            turnController.setPositionTrapezoidal(pidSlot,
+                MathUtil.inputModulus(position.getRotations(), 0, 1));
         }
         else
         {
-            turnController.setPosition(pidSlot, position.getRotations());
+            turnController.setPosition(pidSlot, position.getRotations(),
+                MathUtil.inputModulus(position.getRotations(), 0, 1));
         }
     }
     @Override
@@ -170,6 +173,7 @@ public class NFRSwerveModule extends NFRSubsystem
         builder.addDoubleProperty("Velocity", () -> getVelocity(), null);
         builder.addDoubleProperty("Angle", () -> getRotation().getDegrees(), null);
         builder.addDoubleProperty("Target Angle", () -> turnController.getTargetPosition(), null);
+        builder.addDoubleProperty("Angle Rotations", () -> turnController.getSelectedEncoder().getPosition(), null);
         if (RobotBase.isSimulation())
         {
             builder.addDoubleProperty("Drive - Simulation Voltage", driveController::getSimulationOutputVoltage, null);
@@ -189,8 +193,8 @@ public class NFRSwerveModule extends NFRSubsystem
         public static final double kDriveV = 12 / (kDriveMaxSpeed * kDriveGearRatioSlow / kWheelCircumference);
         public static final double kDriveP = 0.5;
         public static final double kTurnMaxSpeed = 1;
-        public static final double kTurnV = 12 / (kTurnMaxSpeed);
-        public static final double kTurnP = 1;
+        public static final double kTurnD = 0.2;
+        public static final double kTurnP = 30;
     }
     public static NFRSwerveModule createMk3Slow(String name, int driveID, int turnID, int cancoderID)
     {
@@ -217,7 +221,7 @@ public class NFRSwerveModule extends NFRSubsystem
         turnConfig.MotionMagic.MotionMagicCruiseVelocity = Mk3SwerveConstants.kTurnGearRatio * 8;
         turnConfig.MotionMagic.MotionMagicAcceleration = turnConfig.MotionMagic.MotionMagicCruiseVelocity * 4;
         turnConfig.Slot0.kP = Mk3SwerveConstants.kTurnP;
-        turnConfig.Slot0.kV = Mk3SwerveConstants.kTurnV;
+        turnConfig.Slot0.kD = Mk3SwerveConstants.kTurnD;
         turnConfig.ClosedLoopGeneral.ContinuousWrap = true;
         NFRTalonFX turnMotor = new NFRTalonFX(turnConfig, turnID);
         NFRCANCoder cancoder = new NFRCANCoder(cancoderID);
