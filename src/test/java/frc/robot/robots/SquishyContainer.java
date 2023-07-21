@@ -11,6 +11,7 @@ import org.northernforce.util.NFRRobotContainer;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
@@ -78,7 +79,7 @@ public class SquishyContainer implements NFRRobotContainer {
     @Override
     public Map<String, Command> getAutonomousOptions()
     {
-        return Map.of("Do nothing", new InstantCommand());
+        return Map.of();
     }
     @Override
     public Map<String, Pose2d> getStartingLocations()
@@ -89,5 +90,10 @@ public class SquishyContainer implements NFRRobotContainer {
     public void periodic()
     {
         field.setRobotPose(drive.getEstimatedPose());
+    }
+    @Override
+    public Pair<String, Command> getDefaultAutonomous()
+    {
+        return Pair.of("Do Nothing", new InstantCommand());
     }
 }
