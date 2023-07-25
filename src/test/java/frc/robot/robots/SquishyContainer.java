@@ -17,6 +17,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -30,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 public class SquishyContainer implements NFRRobotContainer {
     private final NFRTankDrive drive;
     private final Field2d field;
+    private final ROSCoprocessor coprocessor;
     public SquishyContainer()
     {
         NFRTankDriveConfiguration config = new NFRTankDriveConfiguration(
@@ -57,7 +59,13 @@ public class SquishyContainer implements NFRRobotContainer {
         ROSCoprocessorConfiguration coprocessorConfig = new ROSCoprocessorConfiguration("xavier")
             .withHostname("northernforce-desktop")
             .withPort(5809);
-        ROSCoprocessor coprocessor = new ROSCoprocessor(coprocessorConfig);
+        coprocessor = new ROSCoprocessor(coprocessorConfig);
+        coprocessor.onConnect(() -> {
+            coprocessor.subscribePose(pose -> {
+                field.setRobotPose(pose);
+            });
+        });
+        coprocessor.startConnecting();
         Shuffleboard.getTab("Main").add("Xavier", coprocessor);
     }
     @Override
@@ -89,12 +97,18 @@ public class SquishyContainer implements NFRRobotContainer {
     @Override
     public Map<String, Pose2d> getStartingLocations()
     {
-        return Map.of("Unnecessary", new Pose2d());
+        return Map.of("Unnecessary", new Pose2d(),
+            "Random Pose", new Pose2d(5, 5, Rotation2d.fromDegrees(120)));
+    }
+    @Override
+    public void setInitialPose(Pose2d pose)
+    {
+        coprocessor.publishSetPose(pose);
     }
     @Override
     public void periodic()
     {
-        field.setRobotPose(drive.getEstimatedPose());
+        coprocessor.publishOdometry(drive.getOdometry().getPoseMeters(), drive.getChassisSpeeds());
     }
     @Override
     public void setInitialPose(Pose2d pose)
