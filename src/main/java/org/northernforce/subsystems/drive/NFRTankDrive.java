@@ -9,6 +9,7 @@ import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -143,6 +144,7 @@ public class NFRTankDrive extends NFRDrive
     protected final NFRMotorController leftSide, rightSide;
     protected final DifferentialDrive robotDrive;
     protected final DifferentialDrivePoseEstimator estimator;
+    protected final DifferentialDriveOdometry odometry;
     protected final NFRGyro gyro;
     protected final DifferentialDrivetrainSim simulator;
     protected final NFRTankDriveConfiguration config;
@@ -177,6 +179,8 @@ public class NFRTankDrive extends NFRDrive
         estimator = new DifferentialDrivePoseEstimator(kinematics, gyro.getGyroYaw(),
             leftSide.getSelectedEncoder().getPosition(), rightSide.getSelectedEncoder().getPosition(),
             new Pose2d());
+        odometry = new DifferentialDriveOdometry(gyro.getGyroYaw(),
+            leftSide.getSelectedEncoder().getPosition(), rightSide.getSelectedEncoder().getPosition());
         if (RobotBase.isSimulation())
         {
             simulator = new DifferentialDrivetrainSim(
@@ -247,6 +251,15 @@ public class NFRTankDrive extends NFRDrive
             leftSide.getSelectedEncoder().getPosition(),
             rightSide.getSelectedEncoder().getPosition()
         );
+        odometry.update(
+            gyro.getGyroYaw(),
+            leftSide.getSelectedEncoder().getPosition(),
+            rightSide.getSelectedEncoder().getPosition()
+        );
+    }
+    public DifferentialDriveOdometry getOdometry()
+    {
+        return odometry;
     }
     /**
      * This is the simulation periodic function. The simulator is fed the inputs from the motors, and the simulation
