@@ -51,4 +51,5 @@ public interface NFRRobotContainer
      * @return the default autonomous.
      */
     public Pair<String, Command> getDefaultAutonomous();
+    public void setInitialPose(Pose2d pose);
 }
