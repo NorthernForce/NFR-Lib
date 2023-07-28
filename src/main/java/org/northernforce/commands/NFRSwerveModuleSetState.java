@@ -6,6 +6,9 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
+/**
+ * The command responsible for setting the state of a swerve module.
+ */
 public class NFRSwerveModuleSetState extends CommandBase
 {
     protected final NFRSwerveModule module;
@@ -13,6 +16,14 @@ public class NFRSwerveModuleSetState extends CommandBase
     protected final boolean useTrapezoidalPositioning, useVelocityClosedLoop, usePositionalClosedLoop;
     protected final PIDController pidController;
     protected SwerveModuleState state;
+    /**
+     * Creates a new NFRSwerveModuleSetState.
+     * @param module the module instance.
+     * @param velocityPidSlot the velocity pid slot for closed-loop control
+     * @param positionalPidSlot the positional pid slot for closed-loop control
+     * @param useTrapezoidalPositioning whether to use advanced trapezoidal positioning (ex. motion magic) for control
+     * (not yet recommended).
+     */
     public NFRSwerveModuleSetState(NFRSwerveModule module, int velocityPidSlot, int positionalPidSlot,
         boolean useTrapezoidalPositioning)
     {
@@ -26,6 +37,12 @@ public class NFRSwerveModuleSetState extends CommandBase
         pidController = null;
         state = null;
     }
+    /**
+     * Creates a new NFRSwerveModuleSetState.
+     * @param module the module instance.
+     * @param velocityPidSlot the velocity pid slot for closed-loop control
+     * @param pidController the pid controller for the turning.
+     */
     public NFRSwerveModuleSetState(NFRSwerveModule module, int velocityPidSlot, PIDController pidController)
     {
         addRequirements(module);
@@ -38,6 +55,11 @@ public class NFRSwerveModuleSetState extends CommandBase
         this.pidController = pidController;
         state = null;
     }
+    /**
+     * Creates a new NFRSwerveModuleSetState.
+     * @param module the module instance.
+     * @param pidController the pid controller for the turning.
+     */
     public NFRSwerveModuleSetState(NFRSwerveModule module, PIDController pidController)
     {
         addRequirements(module);
@@ -50,6 +72,13 @@ public class NFRSwerveModuleSetState extends CommandBase
         this.pidController = pidController;
         state = null;
     }
+    /**
+     * Creates a new NFRSwerveModuleSetState.
+     * @param module the module instance.
+     * @param positionalPidSlot the positional pid slot for closed-loop control
+     * @param useTrapezoidalPositioning whether to use advanced trapezoidal positioning (ex. motion magic) for control
+     * (not yet recommended).
+     */
     public NFRSwerveModuleSetState(NFRSwerveModule module, int positionalPidSlot,
         boolean useTrapezoidalPositioning)
     {
@@ -63,6 +92,10 @@ public class NFRSwerveModuleSetState extends CommandBase
         pidController = null;
         state = null;
     }
+    /**
+     * Stets the target state of the module.
+     * @param state the target speed and rotation.
+     */
     public void setTargetState(SwerveModuleState state)
     {
         this.state = state;
@@ -84,6 +117,9 @@ public class NFRSwerveModuleSetState extends CommandBase
             pidController.setSetpoint(state.angle.getRotations());
         }
     }
+    /**
+     * Updates feedback as needed.
+     */
     @Override
     public void execute()
     {
@@ -92,6 +128,10 @@ public class NFRSwerveModuleSetState extends CommandBase
             module.setTurnSpeed(pidController.calculate(module.getRotation().getRotations()));
         }
     }
+    /**
+     * Gets the target state.
+     * @return the target state (speed and rotation).
+     */
     public SwerveModuleState getTargetState()
     {
         return state;
