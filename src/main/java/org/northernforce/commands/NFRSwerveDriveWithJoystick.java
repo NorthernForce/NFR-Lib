@@ -67,6 +67,9 @@ public class NFRSwerveDriveWithJoystick extends CommandBase
                 drive.getModules()[i].getRotation()) : states[i]);
         }
     }
+    /**
+     * Stops all of the setState commands.
+     */
     @Override
     public void end(boolean interrupted)
     {
