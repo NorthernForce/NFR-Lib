@@ -10,6 +10,7 @@ import org.northernforce.motors.NFRTalonFX;
 import org.northernforce.subsystems.NFRSubsystem;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -139,8 +140,7 @@ public class NFRSwerveModule extends NFRSubsystem
         }
         else
         {
-            turnController.setPosition(pidSlot, position.getRotations(),
-                MathUtil.inputModulus(position.getRotations(), 0, 1));
+            turnController.setPosition(pidSlot, MathUtil.inputModulus(position.getRotations(), 0, 1));
         }
     }
     @Override
@@ -190,38 +190,36 @@ public class NFRSwerveModule extends NFRSubsystem
         public static final double kWheelRadius = Units.inchesToMeters(2);
         public static final double kWheelCircumference = kWheelRadius * 2 * Math.PI;
         public static final double kDriveMaxSpeed = Units.feetToMeters(13);
-        public static final double kDriveV = 12 / (kDriveMaxSpeed * kDriveGearRatioSlow / kWheelCircumference);
-        public static final double kDriveP = 0.5;
-        public static final double kTurnMaxSpeed = 1;
-        public static final double kTurnD = 0.2;
-        public static final double kTurnP = 30;
+        public static final double kDriveP = 1;
+        public static final double kTurnP = 2;
     }
-    public static NFRSwerveModule createMk3Slow(String name, int driveID, int turnID, int cancoderID)
+    public static NFRSwerveModule createMk3Slow(String name, int driveID, int turnID, int cancoderID, boolean invertDrive)
     {
-        NFRSwerveModuleConfiguration config = new NFRSwerveModuleConfiguration("Front Left Module")
+        NFRSwerveModuleConfiguration config = new NFRSwerveModuleConfiguration(name)
             .withGearRatios(Mk3SwerveConstants.kDriveGearRatioSlow, Mk3SwerveConstants.kTurnGearRatio)
             .withGearboxes(DCMotor.getFalcon500(1), DCMotor.getFalcon500(1))
             .withMOIs(1.2, 1.2)
             .withMaxSpeed(Mk3SwerveConstants.kDriveMaxSpeed);
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
-        driveConfig.CurrentLimits.SupplyCurrentLimit = 40;
-        driveConfig.CurrentLimits.SupplyCurrentThreshold = 60;
+        driveConfig.CurrentLimits.SupplyCurrentLimit = 60;
+        driveConfig.CurrentLimits.SupplyCurrentThreshold = 90;
         driveConfig.CurrentLimits.SupplyTimeThreshold = 0.5;
         driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         driveConfig.Slot0.kP = Mk3SwerveConstants.kDriveP;
-        driveConfig.Slot0.kV = Mk3SwerveConstants.kDriveV;
+        driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        driveConfig.MotorOutput.DutyCycleNeutralDeadband = 0.1;
         NFRTalonFX driveMotor = new NFRTalonFX(driveConfig, driveID);
         driveMotor.getSelectedEncoder().setConversionFactor(Mk3SwerveConstants.kWheelCircumference /
             Mk3SwerveConstants.kDriveGearRatioSlow);
+        driveMotor.setInverted(invertDrive);
         TalonFXConfiguration turnConfig = new TalonFXConfiguration();
-        turnConfig.CurrentLimits.SupplyCurrentLimit = 40;
-        turnConfig.CurrentLimits.SupplyCurrentThreshold = 60;
+        turnConfig.CurrentLimits.SupplyCurrentLimit = 60;
+        turnConfig.CurrentLimits.SupplyCurrentThreshold = 90;
         turnConfig.CurrentLimits.SupplyTimeThreshold = 0.5;
         turnConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        turnConfig.MotionMagic.MotionMagicCruiseVelocity = Mk3SwerveConstants.kTurnGearRatio * 8;
-        turnConfig.MotionMagic.MotionMagicAcceleration = turnConfig.MotionMagic.MotionMagicCruiseVelocity * 4;
         turnConfig.Slot0.kP = Mk3SwerveConstants.kTurnP;
-        turnConfig.Slot0.kD = Mk3SwerveConstants.kTurnD;
+        turnConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        driveConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.4;
         turnConfig.ClosedLoopGeneral.ContinuousWrap = true;
         NFRTalonFX turnMotor = new NFRTalonFX(turnConfig, turnID);
         NFRCANCoder cancoder = new NFRCANCoder(cancoderID);
