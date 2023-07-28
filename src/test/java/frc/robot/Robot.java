@@ -10,6 +10,8 @@ import org.northernforce.util.NFRRobotChooser;
 import org.northernforce.util.NFRRobotContainer;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -39,7 +41,15 @@ public class Robot extends TimedRobot {
     container = new NFRRobotChooser(() -> new SwervyContainer(), Map.of("Squishy", () -> new SquishyContainer(),
       "Swervy", () -> new SwervyContainer()))
       .getNFRRobotContainer();
-    XboxController driverController = new XboxController(0);
+    GenericHID driverController;
+    if (DriverStation.getJoystickIsXbox(0))
+    {
+      driverController = new XboxController(0);
+    }
+    else
+    {
+      driverController = new GenericHID(0);
+    }
     XboxController manipulatorController = new XboxController(1);
     container.bindOI(driverController, manipulatorController);
     poseChooser = new SendableChooser<>();
