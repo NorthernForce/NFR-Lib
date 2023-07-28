@@ -527,6 +527,10 @@ public class NFRSparkMax extends CANSparkMax implements NFRMotorController
     {
         enableSoftLimit(SoftLimitDirection.kForward, false);
     }
+    /**
+     * Returns the target position that the closed-loop control is attemped to reach.
+     * @return target position in units native to the encoder.
+     */
     @Override
     public double getTargetPosition()
     {

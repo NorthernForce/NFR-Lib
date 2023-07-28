@@ -411,6 +411,10 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
         configuration.ForwardSoftLimitEnable = false;
         getConfigurator().apply(configuration);
     }
+    /**
+     * Returns the target position that the closed-loop control is attemped to reach.
+     * @return target position in units native to the encoder.
+     */
     @Override
     public double getTargetPosition()
     {
