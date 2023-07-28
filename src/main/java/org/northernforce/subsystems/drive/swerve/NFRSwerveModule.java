@@ -22,12 +22,22 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
+/**
+ * Class responsible for generic swerve modules.
+ */
 public class NFRSwerveModule extends NFRSubsystem
 {
+    /**
+     * The configuration for a swerve module.
+     */
     public static class NFRSwerveModuleConfiguration extends NFRSubsystemConfiguration
     {
         protected DCMotor driveGearbox, turnGearbox;
         protected double driveGearRatio, turnGearRatio, driveMOI, turnMOI, maxSpeed;
+        /**
+         * Creates a new basic swerve module configuration. All doubles are initialized to zero.
+         * @param name the name of the swerve module (ex. Back Left)
+         */
         public NFRSwerveModuleConfiguration(String name)
         {
             super(name);
@@ -39,6 +49,17 @@ public class NFRSwerveModule extends NFRSubsystem
             turnMOI = 0;
             maxSpeed = 0;
         }
+        /**
+         * Creates a new swerve module configuration.
+         * @param name the name of the swerve module (ex. Back Left)
+         * @param driveGearbox the gearbox for the drive motor. Only needed for simulation.
+         * @param turnGearbox the gearbox for the turn motor. Only needed for simulation.
+         * @param driveGearRatio the gear ratio for the drive shaft. Only used in simulation.
+         * @param turnGearRatio the gear ratio for the turn shaft. Only used in simulation.
+         * @param driveMOI the drive moment of inertia. Only used in simulation.
+         * @param turnMOI the turn moment of inertia. Only used in simulation.
+         * @param maxSpeed the maximum speed of the drive. Used for closed-loop conversions from [-1, 1] to [-maxSpeed, maxSpeed].
+         */
         public NFRSwerveModuleConfiguration(String name, DCMotor driveGearbox, DCMotor turnGearbox,
             double driveGearRatio, double turnGearRatio, double driveMOI, double turnMOI, double maxSpeed)
         {
@@ -51,24 +72,47 @@ public class NFRSwerveModule extends NFRSubsystem
             this.turnMOI = turnMOI;
             this.maxSpeed = maxSpeed;
         }
+        /**
+         * With gearboxes.
+         * @param driveGearbox the gearbox for the drive motor. Only needed for simulation.
+         * @param turnGearbox the gearbox for the turn motor. Only needed for simulation.
+         * @return this
+         */
         public NFRSwerveModuleConfiguration withGearboxes(DCMotor driveGearbox, DCMotor turnGearbox)
         {
             this.driveGearbox = driveGearbox;
             this.turnGearbox = turnGearbox;
             return this;
         }
+        /**
+         * With gear ratios.
+         * @param driveGearRatio the gear ratio for the drive shaft. Only used in simulation.
+         * @param turnGearRatio the gear ratio for the turn shaft. Only used in simulation.
+         * @return
+         */
         public NFRSwerveModuleConfiguration withGearRatios(double driveGearRatio, double turnGearRatio)
         {
             this.driveGearRatio = driveGearRatio;
             this.turnGearRatio = turnGearRatio;
             return this;
         }
+        /**
+         * With moments of inertias.
+         * @param driveMOI the drive moment of inertia. Only used in simulation.
+         * @param turnMOI the turn moment of inertia. Only used in simulation.
+         * @return this
+         */
         public NFRSwerveModuleConfiguration withMOIs(double driveMOI, double turnMOI)
         {
             this.driveMOI = driveMOI;
             this.turnMOI = turnMOI;
             return this;
         }
+        /**
+         * With maximum speed of drive.
+         * @param maxSpeed the maximum speed of the drive. Used for closed-loop conversions from [-1, 1] to [-maxSpeed, maxSpeed].
+         * @return this
+         */
         public NFRSwerveModuleConfiguration withMaxSpeed(double maxSpeed)
         {
             this.maxSpeed = maxSpeed;
@@ -79,6 +123,13 @@ public class NFRSwerveModule extends NFRSubsystem
     protected final NFRMotorController driveController, turnController;
     protected final Optional<NFRAbsoluteEncoder> externalEncoder;
     protected final FlywheelSim driveSim, turnSim;
+    /**
+     * Creates a new NFRSwerveModule.
+     * @param config the configuration for the swerve module.
+     * @param driveController the drive controller.
+     * @param turnController the turn controller.
+     * @param externalEncoder the external encoder, if not linked directly to the turnController.
+     */
     public NFRSwerveModule(NFRSwerveModuleConfiguration config, NFRMotorController driveController,
         NFRMotorController turnController, Optional<NFRAbsoluteEncoder> externalEncoder)
     {
@@ -98,39 +149,78 @@ public class NFRSwerveModule extends NFRSubsystem
             turnSim = null;
         }
     }
+    /**
+     * Gets the current rotation of the swerve module.
+     * @return Rotation2d representing current swerve module rotation.
+     */
     public Rotation2d getRotation()
     {
         return externalEncoder.isPresent() ? Rotation2d.fromRotations(externalEncoder.get().getAbsolutePosition())
             : Rotation2d.fromRotations(turnController.getSelectedEncoder().getPosition());
     }
+    /**
+     * Gets the velocity of the swerve module.
+     * @return velocity in units according to selected encoder.
+     */
     public double getVelocity()
     {
         return driveController.getSelectedEncoder().getVelocity();
     }
+    /**
+     * Gets the state of the swerve module.
+     * @return the state (the rotation and speed)
+     */
     public SwerveModuleState getState()
     {
         return new SwerveModuleState(getVelocity(), getRotation());
     }
+    /**
+     * Gets the distance driven by the swerve module.
+     * @return the distance driven by the swerve module.
+     */
     public double getDistance()
     {
         return driveController.getSelectedEncoder().getPosition();
     }
+    /**
+     * Gets the position of the swerve module.
+     * @return the position (the rotation and distance)
+     */
     public SwerveModulePosition getPosition()
     {
         return new SwerveModulePosition(getDistance(), getRotation());
     }
+    /**
+     * Sets the speed of the drive motor using open-loop control.
+     * @param velocity the speed of the drive motor between [-1, 1]
+     */
     public void setDriveSpeed(double velocity)
     {
         driveController.set(velocity);
     }
+    /**
+     * Sets the speed of the drive motor using closed-loop control.
+     * @param velocity the speed of the drive motor in units relative to the selected encoder.
+     * @param pidSlot the pid slot for closed-loop control.
+     */
     public void setDriveSpeed(double velocity, int pidSlot)
     {
         driveController.setVelocity(pidSlot, velocity);
     }
+    /**
+     * Sets the speed of the turn motor using open-loop control.
+     * @param velocity the turn speed of the motor controller between [-1, 1].
+     */
     public void setTurnSpeed(double velocity)
     {
         turnController.set(velocity);
     }
+    /**
+     * Sets the position of the turn motor using closed-loop control.
+     * @param position the target rotation of the module.
+     * @param pidSlot the pid slot of the closed-loop control.
+     * @param useTrapezoidalPositioning whether to use trapezoidal positioning.
+     */
     public void setTurnPosition(Rotation2d position, int pidSlot, boolean useTrapezoidalPositioning)
     {
         if (useTrapezoidalPositioning)
@@ -143,6 +233,9 @@ public class NFRSwerveModule extends NFRSubsystem
             turnController.setPosition(pidSlot, MathUtil.inputModulus(position.getRotations(), 0, 1));
         }
     }
+    /**
+     * Updates the simulation model.
+     */
     @Override
     public void simulationPeriodic()
     {
@@ -163,10 +256,19 @@ public class NFRSwerveModule extends NFRSubsystem
             turnController.getSelectedEncoder().setSimulationVelocity(turnSim.getAngularVelocityRPM() / 60);
         }
     }
+    /**
+     * Scales the speed of the swerve module state based on the configuration's max speed.
+     * @param state the initial state
+     * @return the scaled state
+     */
     public SwerveModuleState scaleSpeed(SwerveModuleState state)
     {
         return new SwerveModuleState(state.speedMetersPerSecond * config.maxSpeed, state.angle);
     }
+    /**
+     * Initializes the sendable data that is passed when published to network tables.
+     * @param builder the SendableBuilder
+     */
     @Override
     public void initSendable(SendableBuilder builder)
     {
@@ -182,6 +284,9 @@ public class NFRSwerveModule extends NFRSubsystem
             builder.addDoubleProperty("Turn - Estimated Speed", turnSim::getAngularVelocityRPM, null);
         }
     }
+    /**
+     * Constants for the Mk3 swerve module.
+     */
     public static final class Mk3SwerveConstants
     {
         public static final double kDriveGearRatioSlow = 8.16;
@@ -193,6 +298,15 @@ public class NFRSwerveModule extends NFRSubsystem
         public static final double kDriveP = 1;
         public static final double kTurnP = 2;
     }
+    /**
+     * Creates a traditional Mk3 swerve module with standard gearing and two falcon 500s, as well as a cancoder.
+     * @param name the name of the module
+     * @param driveID the id of the drive motor.
+     * @param turnID the id of the turn motor.
+     * @param cancoderID the id of the cancoder.
+     * @param invertDrive whether to invert the drive motor.
+     * @return
+     */
     public static NFRSwerveModule createMk3Slow(String name, int driveID, int turnID, int cancoderID, boolean invertDrive)
     {
         NFRSwerveModuleConfiguration config = new NFRSwerveModuleConfiguration(name)
