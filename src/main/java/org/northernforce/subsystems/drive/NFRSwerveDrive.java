@@ -5,6 +5,7 @@ import org.northernforce.subsystems.drive.swerve.NFRSwerveModule;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -85,5 +86,9 @@ public class NFRSwerveDrive extends NFRDrive
     public void periodic()
     {
         poseEstimator.update(gyro.getGyroYaw(), getPositions());
+    }
+    public Rotation2d getRotation()
+    {
+        return gyro.getGyroYaw();
     }
 }
