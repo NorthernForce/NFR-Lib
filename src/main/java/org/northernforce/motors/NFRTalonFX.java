@@ -12,8 +12,8 @@ import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.PositionDutyCycle;
+import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -132,8 +132,8 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
     }
     private final TalonFXSimState simState;
     private final ArrayList<TalonFX> followers;
-    private final PositionVoltage positionVoltage = new PositionVoltage(0);
-    private final VelocityVoltage velocityVoltage = new VelocityVoltage(0);
+    private final PositionDutyCycle positionDutyCycle = new PositionDutyCycle(0);
+    private final VelocityDutyCycle velocityDutyCycle = new VelocityDutyCycle(0);
     private final MotionMagicVoltage motionMagicVoltage = new MotionMagicVoltage(0);
     private NFREncoder selectedEncoder;
     private final IntegratedEncoder integratedEncoder;
@@ -221,6 +221,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
             TalonFXConfiguration config = new TalonFXConfiguration();
             getConfigurator().refresh(config);
             config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+            getConfigurator().apply(config);
         }
         else if (NFRCANCoder.class.isAssignableFrom(encoder.getClass()))
         {
@@ -229,6 +230,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
             getConfigurator().refresh(config);
             config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
             config.Feedback.FeedbackRemoteSensorID = ((NFRCANCoder)encoder).getEncoder().getDeviceID();
+            getConfigurator().apply(config);
         }
         else
         {
@@ -282,7 +284,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
     @Override
     public void setVelocity(int pidSlot, double velocity)
     {
-        setControl(velocityVoltage.withVelocity(velocity / getSelectedEncoder().getConversionFactor()).withSlot(pidSlot));
+        setControl(velocityDutyCycle.withVelocity(velocity / getSelectedEncoder().getConversionFactor()).withSlot(pidSlot));
     }
     /**
      * Sets the velocity of the motor using closed-loop feedback. Must use a configured pid slot.
@@ -294,7 +296,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
     @Override
     public void setVelocity(int pidSlot, double velocity, double arbitraryFeedforward)
     {
-        setControl(velocityVoltage.withVelocity(velocity / getSelectedEncoder().getConversionFactor()).withSlot(pidSlot)
+        setControl(velocityDutyCycle.withVelocity(velocity / getSelectedEncoder().getConversionFactor()).withSlot(pidSlot)
             .withFeedForward(arbitraryFeedforward));
     }
     /**
@@ -305,7 +307,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
     @Override
     public void setPosition(int pidSlot, double position)
     {
-        setControl(positionVoltage.withPosition(position / getSelectedEncoder().getConversionFactor()).withSlot(pidSlot));
+        setControl(positionDutyCycle.withPosition(position / getSelectedEncoder().getConversionFactor()).withSlot(pidSlot));
     }
     /**
      * Sets the position of the motor using closed-loop feedback. Must use a configured pid slot.
@@ -317,7 +319,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
     @Override
     public void setPosition(int pidSlot, double position, double arbitraryFeedforward)
     {
-        setControl(positionVoltage.withPosition(position / getSelectedEncoder().getConversionFactor()).withSlot(pidSlot)
+        setControl(positionDutyCycle.withPosition(position / getSelectedEncoder().getConversionFactor()).withSlot(pidSlot)
             .withFeedForward(arbitraryFeedforward));
     }
     /**
