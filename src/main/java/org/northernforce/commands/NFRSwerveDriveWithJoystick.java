@@ -13,9 +13,10 @@ public class NFRSwerveDriveWithJoystick extends CommandBase
     protected final NFRSwerveDrive drive;
     protected final NFRSwerveModuleSetState[] setStateCommands;
     protected final DoubleSupplier xSupplier, ySupplier, thetaSupplier;
-    protected final boolean optimize;
+    protected final boolean optimize, fieldRelative;
     public NFRSwerveDriveWithJoystick(NFRSwerveDrive drive, NFRSwerveModuleSetState[] setStateCommands,
-        DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier thetaSupplier, boolean optimize)
+        DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier thetaSupplier, boolean optimize,
+        boolean fieldRelative)
     {
         addRequirements(drive);
         this.drive = drive;
@@ -24,6 +25,7 @@ public class NFRSwerveDriveWithJoystick extends CommandBase
         this.ySupplier = ySupplier;
         this.thetaSupplier = thetaSupplier;
         this.optimize = optimize;
+        this.fieldRelative = fieldRelative;
     }
     @Override
     public void initialize()
@@ -37,6 +39,8 @@ public class NFRSwerveDriveWithJoystick extends CommandBase
     public void execute()
     {
         ChassisSpeeds speeds = new ChassisSpeeds(xSupplier.getAsDouble(), ySupplier.getAsDouble(), thetaSupplier.getAsDouble());
+        if (fieldRelative)
+            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation());
         SwerveModuleState[] states = drive.toModuleStates(speeds);
         for (int i = 0; i < states.length; i++)
         {
