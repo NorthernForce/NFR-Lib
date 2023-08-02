@@ -41,17 +41,6 @@ public class Robot extends TimedRobot {
     container = new NFRRobotChooser(() -> new SwervyContainer(), Map.of("Squishy", () -> new SquishyContainer(),
       "Swervy", () -> new SwervyContainer()))
       .getNFRRobotContainer();
-    GenericHID driverController;
-    if (DriverStation.getJoystickIsXbox(0))
-    {
-      driverController = new XboxController(0);
-    }
-    else
-    {
-      driverController = new GenericHID(0);
-    }
-    XboxController manipulatorController = new XboxController(1);
-    container.bindOI(driverController, manipulatorController);
     poseChooser = new SendableChooser<>();
     autonomousChooser = new SendableChooser<>();
     for (var pair : container.getStartingLocations().entrySet())
@@ -108,6 +97,17 @@ public class Robot extends TimedRobot {
     {
       autonomousCommand.cancel();
     }
+    GenericHID driverController;
+    if (DriverStation.getJoystickIsXbox(0))
+    {
+      driverController = new XboxController(0);
+    }
+    else
+    {
+      driverController = new GenericHID(0);
+    }
+    XboxController manipulatorController = new XboxController(1);
+    container.bindOI(driverController, manipulatorController);
   }
 
   /** This function is called periodically during operator control. */
