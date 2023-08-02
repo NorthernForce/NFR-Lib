@@ -153,7 +153,7 @@ public class SwervyContainer implements NFRRobotContainer
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
     {
         XboxController manipulatorController = (XboxController)manipulatorHID;
-        if (driverHID instanceof XboxController && manipulatorHID instanceof XboxController)
+        if (driverHID instanceof XboxController)
         {
             XboxController driverController = (XboxController)driverHID;
             drive.setDefaultCommand(new NFRSwerveDriveWithJoystick(drive, setStateCommands,
