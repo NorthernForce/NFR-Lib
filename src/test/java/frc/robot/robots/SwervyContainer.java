@@ -1,8 +1,10 @@
 package frc.robot.robots;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.northernforce.commands.NFRSwerveDriveWithJoystick;
+import org.northernforce.commands.NFRSwerveDriveWithJoystickAbsolute;
 import org.northernforce.commands.NFRSwerveModuleSetState;
 import org.northernforce.gyros.NFRNavX;
 import org.northernforce.subsystems.drive.NFRSwerveDrive;
@@ -11,15 +13,21 @@ import org.northernforce.subsystems.drive.swerve.NFRSwerveModule;
 import org.northernforce.util.NFRRobotContainer;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 public class SwervyContainer implements NFRRobotContainer
 {
@@ -59,6 +67,9 @@ public class SwervyContainer implements NFRRobotContainer
             .withWidget(BuiltInWidgets.kGyro);
         Shuffleboard.getTab("Swerve").addDouble("Back Right Angle", () -> drive.getModules()[3].getRotation().getDegrees())
             .withWidget(BuiltInWidgets.kGyro);
+        SmartDashboard.putNumber("Theta P", 0);
+        SmartDashboard.putNumber("Theta I", 0);
+        SmartDashboard.putNumber("Theta D", 0);
     }
     @Override
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
@@ -81,14 +92,32 @@ public class SwervyContainer implements NFRRobotContainer
                 () -> -MathUtil.applyDeadband(driverController.getLeftX(), 0.1),
                 () -> -MathUtil.applyDeadband(driverController.getRightX(), 0.1),
                 true, true));
+            new JoystickButton(driverController, XboxController.Button.kB.value)
+                .onTrue(Commands.runOnce(drive::clearRotation));
         }
         else
         {
-            drive.setDefaultCommand(new NFRSwerveDriveWithJoystick(drive, commands,
-                () -> MathUtil.applyDeadband(driverHID.getRawAxis(1), 0.1),
-                () -> MathUtil.applyDeadband(driverHID.getRawAxis(0), 0.1),
-                () -> -MathUtil.applyDeadband(driverHID.getRawAxis(4), 0.1),
-                true, true));
+            // drive.setDefaultCommand(new NFRSwerveDriveWithJoystick(drive, commands,
+            //     () -> -MathUtil.applyDeadband(driverHID.getRawAxis(1), 0.1),
+            //     () -> -MathUtil.applyDeadband(driverHID.getRawAxis(0), 0.1),
+            //     () -> -MathUtil.applyDeadband(driverHID.getRawAxis(4), 0.1),
+            //     true, true));
+            drive.setDefaultCommand(new NFRSwerveDriveWithJoystickAbsolute(drive, commands,
+                () -> -MathUtil.applyDeadband(driverHID.getRawAxis(1), 0.1),
+                () -> -MathUtil.applyDeadband(driverHID.getRawAxis(0), 0.1),
+                () -> {
+                    if (driverHID.getPOV() == -1)
+                    {
+                        return Optional.empty();
+                    }
+                    else
+                    {
+                        return Optional.of(Rotation2d.fromDegrees(driverHID.getPOV()));
+                    }
+                },
+                true, true, new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(360, 720))));
+            new JoystickButton(driverHID, 5)
+                .onTrue(Commands.runOnce(drive::clearRotation));
         }
     }
     @Override
