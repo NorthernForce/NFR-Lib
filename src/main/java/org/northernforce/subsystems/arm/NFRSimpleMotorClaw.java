@@ -2,17 +2,12 @@ package org.northernforce.subsystems.arm;
 
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 
 import org.northernforce.encoders.NFREncoder;
 import org.northernforce.motors.NFRMotorController;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.Commands;
 
 /**
  * This is a simple motor claw joint that is intented for a claw that is controlled by a motor, in which one direction opens,
@@ -26,10 +21,8 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
     public static class NFRSimpleMotorClawConfiguration extends NFRArmJointConfiguration
     {
         protected Transform3d originOffset, offsetToEndOfClaw;
-        protected boolean useLimitSwitches, usePidControl, useTrapezoidalPidControl;
-        protected Rotation2d openRotation, closedRotation;
-        protected int positionalPidSlot;
-        protected double openSpeed, closeSpeed;
+        protected Optional<Rotation2d> openRotation, closedRotation;
+        protected boolean useLimits, useIntegratedLimits;
         /**
          * Simple constructor that initializes values to default values (ie. 0 for double).
          * @param name the unique name of the motor claw.
@@ -39,46 +32,32 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
             super(name);
             originOffset = new Transform3d();
             offsetToEndOfClaw = new Transform3d();
-            useLimitSwitches = false;
-            usePidControl = false;
-            useTrapezoidalPidControl = false;
-            openRotation = new Rotation2d();
-            closedRotation = new Rotation2d();
-            positionalPidSlot = 0;
-            openSpeed = 0;
-            closeSpeed = 0;
+            openRotation = Optional.empty();
+            closedRotation = Optional.empty();
+            useLimits = false;
+            useIntegratedLimits = false;
         }
         /**
          * Constructs the configuration. Takes in all of the possible parameters.
          * @param name the unique name of the motor claw.
          * @param originOffset the offset from the end of the previous joint to the start of this joint.
          * @param offsetToEndOfClaw the offset from the start of the claw to the end of the claw/focal point.
-         * @param useLimitSwitches whether to use limit switches to prevent the motor from going too far, or whether
-         * to use the encoder.
-         * @param usePidControl whether to use pid control to open/close or to simple drive until at a limit. Needs encoder
-         * @param useTrapezoidalPidControl whether to use trapezoidal pid control to open/close or to simple drive until at a
-         * limit. Needs encoder
          * @param openRotation the open encoder rotation if the claw is open. 
          * @param closedRotation the closed encoder rotation if the claw is closed.
-         * @param positionalPidSlot the slot of the internal pid loop, if any.
-         * @param openSpeed the speed to open if using consistent speed instead of pid.
-         * @param closeSpeed the speed to close if using consistent speed instead of pid.
+         * @param useLimits whether to use limits
+         * @param useIntegratedLimits whether to use the motor controller's ability to use integrated limits.
          */
         public NFRSimpleMotorClawConfiguration(String name, Transform3d originOffset,
-            Transform3d offsetToEndOfClaw, boolean useLimitSwitches, boolean usePidControl, boolean useTrapezoidalPidControl,
-            Rotation2d openRotation, Rotation2d closedRotation, int positionalPidSlot, double openSpeed, double closeSpeed)
+            Transform3d offsetToEndOfClaw, Rotation2d openRotation, Rotation2d closedRotation, boolean useLimits,
+            boolean useIntegratedLimits)
         {
             super(name);
             this.originOffset = originOffset;
             this.offsetToEndOfClaw = offsetToEndOfClaw;
-            this.useLimitSwitches = useLimitSwitches;
-            this.usePidControl = usePidControl;
-            this.useTrapezoidalPidControl = useTrapezoidalPidControl;
-            this.openRotation = openRotation;
-            this.closedRotation = closedRotation;
-            this.positionalPidSlot = positionalPidSlot;
-            this.openSpeed = openSpeed;
-            this.closeSpeed = closeSpeed;
+            this.openRotation = Optional.empty();
+            this.closedRotation = Optional.empty();
+            this.useLimits = useLimits;
+            this.useIntegratedLimits = useIntegratedLimits;
         }
         /**
          * With origin offset
@@ -101,45 +80,13 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
             return this;
         }
         /**
-         * With use limit switches
-         * @param useLimitSwitches whether to use limit switches to prevent the motor from going too far, or whether
-         * to use the encoder.
-         * @return this
-         */
-        public NFRSimpleMotorClawConfiguration withUseLimitSwitches(boolean useLimitSwitches)
-        {
-            this.useLimitSwitches = useLimitSwitches;
-            return this;
-        }
-        /**
-         * With use pid control
-         * @param usePidControl whether to use pid control to open/close or to simple drive until at a limit. Needs encoder
-         * @return this
-         */
-        public NFRSimpleMotorClawConfiguration withUsePidControl(boolean usePidControl)
-        {
-            this.usePidControl = usePidControl;
-            return this;
-        }
-        /**
-         * With use trapezoidal pid control
-         * @param useTrapezoidalPidControl whether to use trapezoidal pid control to open/close or to simple drive until at a
-         * limit. Needs encoder
-         * @return this
-         */
-        public NFRSimpleMotorClawConfiguration withTrapezoidalPidControl(boolean useTrapezoidalPidControl)
-        {
-            this.useTrapezoidalPidControl = useTrapezoidalPidControl;
-            return this;
-        }
-        /**
          * With open rotation
          * @param openRotation the open encoder rotation if the claw is open. 
          * @return this
          */
         public NFRSimpleMotorClawConfiguration withOpenRotation(Rotation2d openRotation)
         {
-            this.openRotation = openRotation;
+            this.openRotation = Optional.of(openRotation);
             return this;
         }
         /**
@@ -149,43 +96,32 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
          */
         public NFRSimpleMotorClawConfiguration withClosedRotation(Rotation2d closedRotation)
         {
-            this.closedRotation = closedRotation;
+            this.closedRotation = Optional.of(closedRotation);
             return this;
         }
         /**
-         * With positional pid slot
-         * @param positionalPidSlot the slot of the internal pid loop, if any.
+         * With use limits
+         * @param useLimits whether to use limits
          * @return this
          */
-        public NFRSimpleMotorClawConfiguration withPositionalPidSlot(int positionalPidSlot)
+        public NFRSimpleMotorClawConfiguration withUseLimits(boolean useLimits)
         {
-            this.positionalPidSlot = positionalPidSlot;
+            this.useLimits = useLimits;
             return this;
         }
         /**
-         * With open speed
-         * @param openSpeed the speed to open if using consistent speed instead of pid.
+         * With use integrated limits
+         * @param useIntegratedLimits whether to use the motor controller's ability to use integrated limits.
          * @return this
          */
-        public NFRSimpleMotorClawConfiguration withOpenSpeed(double openSpeed)
+        public NFRSimpleMotorClawConfiguration withUseIntegratedLimits(boolean useIntegratedLimits)
         {
-            this.openSpeed = openSpeed;
-            return this;
-        }
-        /**
-         * With close speed
-         * @param closeSpeed the speed to close if using consistent speed instead of pid.
-         * @return this
-         */
-        public NFRSimpleMotorClawConfiguration withCloseSpeed(double closeSpeed)
-        {
-            this.closeSpeed = closeSpeed;
+            this.useIntegratedLimits = useIntegratedLimits;
             return this;
         }
     }
     protected final NFRSimpleMotorClawConfiguration config;
     protected final NFRMotorController controller;
-    protected final Optional<PIDController> pidController;
     protected final Optional<BooleanSupplier> closedLimitSwitch, openLimitSwitch;
     protected final Optional<NFREncoder> externalEncoder;
     /**
@@ -195,11 +131,10 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
      * @param externalEncoder the optional external encoder if encoder cannot be directly linked to motor
      * @param closedLimitSwitch the closed limit switch, optional
      * @param openLimitSwitch the open limit switch, optional
-     * @param pidController the pid controller, if not using internal
      */
     public NFRSimpleMotorClaw(NFRSimpleMotorClawConfiguration config, NFRMotorController controller,
         Optional<NFREncoder> externalEncoder, Optional<BooleanSupplier> closedLimitSwitch,
-        Optional<BooleanSupplier> openLimitSwitch, Optional<PIDController> pidController)
+        Optional<BooleanSupplier> openLimitSwitch)
     {
         super(config);
         this.config = config;
@@ -207,169 +142,17 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
         this.externalEncoder = externalEncoder;
         this.closedLimitSwitch = closedLimitSwitch;
         this.openLimitSwitch = openLimitSwitch;
-        this.pidController = pidController;
-    }
-    /**
-     * The command to open the claw
-     */
-    protected class OpenCommand extends CommandBase
-    {
-        public OpenCommand()
+        if (externalEncoder.isEmpty() && controller.getSelectedEncoder() != null && config.useLimits && config.useIntegratedLimits)
         {
-            addRequirements(NFRSimpleMotorClaw.this);
-        }
-        @Override
-        public void initialize()
-        {
-            if (config.usePidControl && externalEncoder.isEmpty() && pidController.isEmpty())
+            if (config.openRotation.isPresent())
             {
-                if (config.useTrapezoidalPidControl)
-                {
-                    controller.setPositionTrapezoidal(config.positionalPidSlot, config.openRotation.getRotations());
-                }
-                else
-                {
-                    controller.setPosition(config.positionalPidSlot, config.openRotation.getRotations());
-                }
+                controller.setPositiveLimit(config.openRotation.get().getRotations());
             }
-            else if (pidController.isPresent())
+            if (config.closedRotation.isPresent())
             {
-                pidController.get().reset();
-                pidController.get().setSetpoint(config.openRotation.getRotations());
+                controller.setNegativeLimit(config.closedRotation.get().getRotations());
             }
         }
-        @Override
-        public void execute()
-        {
-            if (config.usePidControl && pidController.isPresent())
-            {
-                if (externalEncoder.isPresent())
-                {
-                    controller.set(pidController.get().calculate(externalEncoder.get().getPosition()));
-                }
-                else
-                {
-                    controller.set(pidController.get().calculate(controller.getSelectedEncoder().getPosition()));
-                }
-            }
-            else
-            {
-                controller.set(config.openSpeed);
-            }
-        }
-        @Override
-        public boolean isFinished()
-        {
-            if (config.useLimitSwitches)
-            {
-                return openLimitSwitch.get().getAsBoolean();
-            }
-            else
-            {
-                if (externalEncoder.isPresent())
-                {
-                    return externalEncoder.get().getPosition() > config.openRotation.getRotations();
-                }
-                else
-                {
-                    return controller.getSelectedEncoder().getPosition() > config.openRotation.getRotations();
-                }
-            }
-        }
-        @Override
-        public void end(boolean interrupted)
-        {
-            controller.set(0);
-        }
-    }
-    /**
-     * Returns the command to open the claw. Either goes directly to position or uses pid depending on config.
-     * @return the command to open the claw
-     */
-    public Command getOpenCommand()
-    {
-        return new OpenCommand();
-    }
-    /**
-     * The command to close the claw
-     */
-    protected class CloseCommand extends CommandBase
-    {
-        public CloseCommand()
-        {
-            addRequirements(NFRSimpleMotorClaw.this);
-        }
-        @Override
-        public void initialize()
-        {
-            if (config.usePidControl && externalEncoder.isEmpty() && pidController.isEmpty())
-            {
-                if (config.useTrapezoidalPidControl)
-                {
-                    controller.setPositionTrapezoidal(config.positionalPidSlot, config.closedRotation.getRotations());
-                }
-                else
-                {
-                    controller.setPosition(config.positionalPidSlot, config.closedRotation.getRotations());
-                }
-            }
-            else if (pidController.isPresent())
-            {
-                pidController.get().reset();
-                pidController.get().setSetpoint(config.closedRotation.getRotations());
-            }
-        }
-        @Override
-        public void execute()
-        {
-            if (config.usePidControl && pidController.isPresent())
-            {
-                if (externalEncoder.isPresent())
-                {
-                    controller.set(pidController.get().calculate(externalEncoder.get().getPosition()));
-                }
-                else
-                {
-                    controller.set(pidController.get().calculate(controller.getSelectedEncoder().getPosition()));
-                }
-            }
-            else
-            {
-                controller.set(config.closeSpeed);
-            }
-        }
-        @Override
-        public boolean isFinished()
-        {
-            if (config.useLimitSwitches)
-            {
-                return closedLimitSwitch.get().getAsBoolean();
-            }
-            else
-            {
-                if (externalEncoder.isPresent())
-                {
-                    return externalEncoder.get().getPosition() > config.closedRotation.getRotations();
-                }
-                else
-                {
-                    return controller.getSelectedEncoder().getPosition() > config.closedRotation.getRotations();
-                }
-            }
-        }
-        @Override
-        public void end(boolean interrupted)
-        {
-            controller.set(0);
-        }
-    }
-    /**
-     * Returns the command to close the claw. Either goes directly to position or uses pid depending on config.
-     * @return the command to close the claw
-     */
-    public Command getCloseCommand()
-    {
-        return new CloseCommand();
     }
     /**
      * Checks whether the claw is closed
@@ -377,21 +160,22 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
      */
     public boolean isClosed()
     {
-        if (config.useLimitSwitches)
+        if (closedLimitSwitch.isPresent())
         {
             return closedLimitSwitch.get().getAsBoolean();
         }
-        else
+        else if (config.closedRotation.isPresent())
         {
-            if (externalEncoder.isEmpty())
+            if (externalEncoder.isEmpty() && controller.getSelectedEncoder() != null)
             {
-                return controller.getSelectedEncoder().getPosition() <= config.closedRotation.getRotations();
+                return controller.getSelectedEncoder().getPosition() <= config.closedRotation.get().getRotations();
             }
-            else
+            else if (externalEncoder.isPresent())
             {
-                return externalEncoder.get().getPosition() <= config.closedRotation.getRotations();
+                return externalEncoder.get().getPosition() <= config.closedRotation.get().getRotations();
             }
         }
+        return false;
     }
     /**
      * Checks whether the claw is open
@@ -399,68 +183,22 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
      */
     public boolean isOpen()
     {
-        if (config.useLimitSwitches)
+        if (openLimitSwitch.isPresent())
         {
             return openLimitSwitch.get().getAsBoolean();
         }
-        else
+        else if (config.openRotation.isPresent())
         {
-            if (externalEncoder.isEmpty())
+            if (externalEncoder.isEmpty() && controller.getSelectedEncoder() != null)
             {
-                return controller.getSelectedEncoder().getPosition() >= config.openRotation.getRotations();
+                return controller.getSelectedEncoder().getPosition() >= config.openRotation.get().getRotations();
             }
-            else
+            else if (externalEncoder.isPresent())
             {
-                return externalEncoder.get().getPosition() >= config.openRotation.getRotations();
+                return externalEncoder.get().getPosition() >= config.openRotation.get().getRotations();
             }
         }
-    }
-    /**
-     * Gets a manual control command that allows someone to manually set the claw to open/closed
-     * @param closeSupplier a binary set close
-     * @param openSupplier a binary set open
-     * @return the manual control command
-     */
-    public Command getManualControlCommand(BooleanSupplier closeSupplier, BooleanSupplier openSupplier)
-    {
-        return Commands.run(() -> {
-            if (closeSupplier.getAsBoolean() && !isClosed())
-            {
-                controller.set(config.closeSpeed);
-            }
-            else if (openSupplier.getAsBoolean() && !isOpen())
-            {
-                controller.set(config.openSpeed);
-            }
-            else
-            {
-                controller.set(0);
-            }
-        }, this);
-    }
-    /**
-     * Gets a manual control command that allows someone to manually set the claw to open/closed
-     * @param closeSupplier a double set close
-     * @param openSupplier a double set open
-     * @return the manual control command
-     */
-    public Command getManualControlCommand(DoubleSupplier closeSupplier, DoubleSupplier openSupplier)
-    {
-        return Commands.run(() -> {
-            double speed = closeSupplier.getAsDouble() * config.closeSpeed + openSupplier.getAsDouble() * config.openSpeed;
-            if (speed > 0 == config.openSpeed > 0 && !isOpen())
-            {
-                controller.set(speed);
-            }
-            else if (speed > 0 == config.closeSpeed > 0 && !isClosed())
-            {
-                controller.set(speed);
-            }
-            else
-            {
-                controller.set(0);
-            }
-        }, this);
+        return false;
     }
     /**
      * Gets the end state of the claw (static)
@@ -470,5 +208,52 @@ public class NFRSimpleMotorClaw extends NFRArmJoint
     public Transform3d getEndState()
     {
         return config.originOffset.plus(config.offsetToEndOfClaw);
+    }
+    /**
+     * Sets the speed of the motor using open-loop control.
+     * @param speed between [-1, 1]
+     */
+    public void setOpenLoop(double speed)
+    {
+        if (speed > 0 && (!config.useLimits || config.useIntegratedLimits || !isOpen()))
+        {
+            controller.set(speed);
+        }
+        else if (speed < 0 && (!config.useLimits || config.useIntegratedLimits || !isClosed()))
+        {
+            controller.set(speed);
+        }
+        else
+        {
+            controller.set(0);
+        }
+    }
+    /**
+     * Sets the speed of the motor using closed-loop control.
+     * @param speed relative to the motor
+     * @param pidSlot the pid slot for velocity closed-loop control.
+     */
+    public void setClosedLoop(double speed, int pidSlot)
+    {
+        if (speed > 0 && (!config.useLimits || config.useIntegratedLimits || !isOpen()))
+        {
+            controller.setVelocity(pidSlot, speed);
+        }
+        else if (speed < 0 && (!config.useLimits || config.useIntegratedLimits || !isClosed()))
+        {
+            controller.setVelocity(pidSlot, speed);
+        }
+        else
+        {
+            controller.setVelocity(pidSlot, 0);
+        }
+    }
+    /**
+     * Gets the controller that the joint uses.
+     * @return the controller that the joint uses.
+     */
+    public NFRMotorController getController()
+    {
+        return controller;
     }
 }

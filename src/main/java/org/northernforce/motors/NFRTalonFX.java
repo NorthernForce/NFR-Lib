@@ -366,19 +366,51 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
         followers.get(idx).setControl(new Follower(getDeviceID(), true));
     }
     /**
-     * Sets up limits that prevent the motor from moving in all modes when past these limits.
-     * @param positiveLimit in selected sensor units
-     * @param negativeLimit in selected sensor units
+     * Sets up a limit that prevent the motor from moving in all modes when past this limit.
+     * @param positiveLimit in selected sensor units.
      */
     @Override
-    public void setupLimits(double positiveLimit, double negativeLimit)
+    public void setPositiveLimit(double positiveLimit)
+    {
+        SoftwareLimitSwitchConfigs configuration = new SoftwareLimitSwitchConfigs();
+        getConfigurator().refresh(configuration);
+        configuration.ReverseSoftLimitEnable = true;
+        configuration.ReverseSoftLimitThreshold = positiveLimit / getSelectedEncoder().getConversionFactor();
+        getConfigurator().apply(configuration);
+    }
+    /**
+     * Disables the positive limit.
+     */
+    @Override
+    public void disablePositiveLimit()
+    {
+        SoftwareLimitSwitchConfigs configuration = new SoftwareLimitSwitchConfigs();
+        getConfigurator().refresh(configuration);
+        configuration.ReverseSoftLimitEnable = false;
+        getConfigurator().apply(configuration);
+    }
+    /**
+     * Sets up a limit that prevent the motor from moving in all modes when past this limit.
+     * @param negativeLimit in selected sensor units.
+     */
+    @Override
+    public void setNegativeLimit(double negativeLimit)
     {
         SoftwareLimitSwitchConfigs configuration = new SoftwareLimitSwitchConfigs();
         getConfigurator().refresh(configuration);
         configuration.ForwardSoftLimitEnable = true;
         configuration.ForwardSoftLimitThreshold = negativeLimit / getSelectedEncoder().getConversionFactor();
-        configuration.ReverseSoftLimitEnable = true;
-        configuration.ReverseSoftLimitThreshold = positiveLimit / getSelectedEncoder().getConversionFactor();
+        getConfigurator().apply(configuration);
+    }
+    /**
+     * Disables the negative limit.
+     */
+    @Override
+    public void disableNegativeLimit()
+    {
+        SoftwareLimitSwitchConfigs configuration = new SoftwareLimitSwitchConfigs();
+        getConfigurator().refresh(configuration);
+        configuration.ForwardSoftLimitEnable = false;
         getConfigurator().apply(configuration);
     }
 }

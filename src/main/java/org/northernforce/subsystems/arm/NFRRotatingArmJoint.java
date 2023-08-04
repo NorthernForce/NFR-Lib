@@ -1,12 +1,10 @@
 package org.northernforce.subsystems.arm;
 
 import java.util.Optional;
-import java.util.function.DoubleSupplier;
 
 import org.northernforce.encoders.NFREncoder;
 import org.northernforce.motors.NFRMotorController;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -14,8 +12,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
 
 /**
  * A common subsystem for rotating arm joints.
@@ -28,9 +24,9 @@ public class NFRRotatingArmJoint extends NFRArmJoint
     public static class NFRRotatingArmJointConfiguration extends NFRArmJointConfiguration
     {
         protected Transform3d originOffset = new Transform3d();
-        protected Rotation2d positiveLimit = null, negativeLimit = null, encoderOffset = new Rotation2d();
-        protected int positionalPidSlot = 0;
-        protected boolean useTrapezoidalPositioning = false, simulateGravity = false;
+        protected Optional<Rotation2d> positiveLimit = Optional.empty(), negativeLimit = Optional.empty();
+        protected Rotation2d encoderOffset = new Rotation2d();
+        protected boolean simulateGravity = false, useLimits = false, useIntegratedLimits = false;
         protected DCMotor gearbox = null;
         protected double gearRatio = 1, length = 0, mass = 0;
         /**
@@ -47,8 +43,6 @@ public class NFRRotatingArmJoint extends NFRArmJoint
          * @param originOffset the offset from the end of the previous joint, or from the center of the chassis.
          * @param positiveLimit the positive limit of the arm joint.
          * @param negativeLimit the negative limit of the arm joint.
-         * @param positionalPidSlot the slot index of the position pid configuration
-         * @param useTrapezoidalPositioning whether to use trapezoidal positioning
          * @param gearbox the gearbox of the motor. Only necessary if using simulation.
          * @param gearRatio the gear ratio of the motor. Only necessary if using simulation.
          * @param length the length of the arm in meters.
@@ -58,20 +52,20 @@ public class NFRRotatingArmJoint extends NFRArmJoint
          * @param simulateGravity whether or not to simulate gravity.
          */
         public NFRRotatingArmJointConfiguration(String name, Transform3d originOffset, Rotation2d positiveLimit,
-            Rotation2d negativeLimit, int positionalPidSlot, boolean useTrapezoidalPositioning, DCMotor gearbox,
-            double gearRatio, double length, double mass, Rotation2d encoderOffset, boolean simulateGravity)
+            Rotation2d negativeLimit, DCMotor gearbox, double gearRatio, double length, double mass,
+            Rotation2d encoderOffset, boolean simulateGravity, boolean useLimits, boolean useIntegratedLimits)
         {
             super(name);
             this.originOffset = originOffset;
-            this.positiveLimit = positiveLimit;
-            this.negativeLimit = negativeLimit;
-            this.positionalPidSlot = positionalPidSlot;
-            this.useTrapezoidalPositioning = useTrapezoidalPositioning;
+            this.positiveLimit = Optional.of(positiveLimit);
+            this.negativeLimit = Optional.of(negativeLimit);
             this.gearbox = gearbox;
             this.gearRatio = gearRatio;
             this.length = length;
             this.mass = mass;
             this.simulateGravity = simulateGravity;
+            this.useLimits = useLimits;
+            this.useIntegratedLimits = useIntegratedLimits;
         }
         /**
          * With origin offset.
@@ -91,28 +85,8 @@ public class NFRRotatingArmJoint extends NFRArmJoint
          */
         public NFRRotatingArmJointConfiguration withLimits(Rotation2d positiveLimit, Rotation2d negativeLimit)
         {
-            this.positiveLimit = positiveLimit;
-            this.negativeLimit = negativeLimit;
-            return this;
-        }
-        /**
-         * With position pid slot.
-         * @param positionalPidSlot the slot index of the position pid configuration
-         * @return configuration instance
-         */
-        public NFRRotatingArmJointConfiguration withPositionPidSlot(int positionalPidSlot)
-        {
-            this.positionalPidSlot = positionalPidSlot;
-            return this;
-        }
-        /**
-         * With use trapezoidal positioning.
-         * @param useTrapezoidalPositioning whether to use trapezoidal positioning
-         * @return configuration instance
-         */
-        public NFRRotatingArmJointConfiguration withUseTrapezoidalPositioning(boolean useTrapezoidalPositioning)
-        {
-            this.useTrapezoidalPositioning = useTrapezoidalPositioning;
+            this.positiveLimit = Optional.of(positiveLimit);
+            this.negativeLimit = Optional.of(negativeLimit);
             return this;
         }
         /**
@@ -176,35 +150,54 @@ public class NFRRotatingArmJoint extends NFRArmJoint
             this.simulateGravity = simulateGravity;
             return this;
         }
+        /**
+         * With use limits
+         * @param useLimits whether to use limits
+         * @return this
+         */
+        public NFRRotatingArmJointConfiguration withUseLimits(boolean useLimits)
+        {
+            this.useLimits = useLimits;
+            return this;
+        }
+        /**
+         * With use integrated limits
+         * @param useIntegratedLimits whether to use the motor controller's ability to use integrated limits.
+         * @return this
+         */
+        public NFRRotatingArmJointConfiguration withUseIntegratedLimits(boolean useIntegratedLimits)
+        {
+            this.useIntegratedLimits = useIntegratedLimits;
+            return this;
+        }
     }
     protected final NFRRotatingArmJointConfiguration config;
     protected final NFRMotorController controller;
     protected final Optional<NFREncoder> externalEncoder;
-    protected final Optional<PIDController> pidController;
     protected final SingleJointedArmSim armSim;
     /**
      * Creates a new NFRRotatingArmJoint
      * @param config the configuration of the nfr rotating arm joint
      * @param controller the motor controller for the rotating arm joint
      * @param externalEncoder the optional external encoder
-     * @param pidController the optional pid controller if external encoder is present
      */
     public NFRRotatingArmJoint(NFRRotatingArmJointConfiguration config, NFRMotorController controller,
-        Optional<NFREncoder> externalEncoder, Optional<PIDController> pidController)
+        Optional<NFREncoder> externalEncoder)
     {
         super(config);
         this.config = config;
         this.controller = controller;
         this.externalEncoder = externalEncoder;
-        this.pidController = pidController;
-        if (externalEncoder.isEmpty())
+        if (externalEncoder.isEmpty() && config.useLimits && config.useIntegratedLimits &&
+            controller.getSelectedEncoder() != null)
         {
-            if (config.positiveLimit != null && config.negativeLimit != null)
+            if (config.positiveLimit.isPresent())
             {
-                controller.setupLimits(
-                    config.positiveLimit.minus(config.encoderOffset).getRotations(),
-                    config.negativeLimit.minus(config.encoderOffset).getRotations()
-                );
+                controller.setPositiveLimit(config.positiveLimit.get().minus(config.encoderOffset).getRotations());
+            }
+            if (config.negativeLimit.isPresent())
+            {
+                controller.setNegativeLimit(config.negativeLimit.get().minus(config.encoderOffset).getRotations());
             }
         }
         if (RobotBase.isSimulation())
@@ -214,8 +207,8 @@ public class NFRRotatingArmJoint extends NFRArmJoint
                 config.gearRatio,
                 SingleJointedArmSim.estimateMOI(config.length, config.mass),
                 config.length,
-                config.negativeLimit.getRadians(),
-                config.positiveLimit.getRadians(),
+                config.negativeLimit.get().getRadians(),
+                config.positiveLimit.get().getRadians(),
                 config.simulateGravity
             );
         }
@@ -236,132 +229,6 @@ public class NFRRotatingArmJoint extends NFRArmJoint
         else
             return Rotation2d.fromDegrees(controller.getSelectedEncoder().getPosition())
                 .plus(config.encoderOffset);
-    }
-    /**
-     * The default command for the NFRRotatingArmJoint.
-     */
-    public class DefaultCommand extends CommandBase
-    {
-        protected final DoubleSupplier supplier;
-        /**
-         * Creates a new DefaultCommand
-         * @param supplier the supplier for the speed of the arm
-         */
-        public DefaultCommand(DoubleSupplier supplier)
-        {
-            addRequirements(NFRRotatingArmJoint.this);
-            this.supplier = supplier;
-        }
-        /**
-         * Executes and checks whether outside of limits
-         */
-        @Override
-        public void execute()
-        {
-            double targetSpeed = supplier.getAsDouble();
-            if (externalEncoder.isPresent() && config.negativeLimit != null &&
-                getRotation().minus(config.negativeLimit).getDegrees() <= 0 &&
-                targetSpeed < 0)
-            {
-                targetSpeed = 0;
-            }
-            else if (externalEncoder.isPresent() && config.positiveLimit != null &&
-                getRotation().minus(config.positiveLimit).getDegrees() >= 0 &&
-                targetSpeed > 0)
-            {
-                targetSpeed = 0;
-            }
-            controller.set(targetSpeed);
-        }
-    }
-    /**
-     * Gets the default rotating arm command
-     * @param supplier a supplier for the arm movement (ie joystick input)
-     * @return the default rotating arm command
-     */
-    public Command getDefaultRotatingArmCommand(DoubleSupplier supplier)
-    {
-        return new DefaultCommand(supplier);
-    }
-    /**
-     * The set angle command for the NFRRotatingArmJoint.
-     */
-    public class SetAngle extends CommandBase
-    {
-        protected final Rotation2d targetAngle;
-        /**
-         * Creates a new set angle.
-         * @param targetAngle the target angle for the arm to go to.
-         */
-        public SetAngle(Rotation2d targetAngle)
-        {
-            addRequirements(NFRRotatingArmJoint.this);
-            this.targetAngle = targetAngle;
-        }
-        /**
-         * Initializes the command which resets the pid controller or sets the internal closed-loop control.
-         */
-        @Override
-        public void initialize()
-        {
-            if (pidController.isPresent())
-            {
-                pidController.get().reset();
-                pidController.get().setSetpoint(targetAngle.getDegrees());
-            }
-            else
-            {
-                if (config.useTrapezoidalPositioning)
-                {
-                    controller.setPositionTrapezoidal(config.positionalPidSlot, targetAngle.minus(config.encoderOffset).getRotations());
-                }
-                else
-                {
-                    controller.setPosition(config.positionalPidSlot, targetAngle.minus(config.encoderOffset).getRotations());
-                }
-            }
-        }
-        /**
-         * If using pid controller, computes closed loop control
-         */
-        @Override
-        public void execute()
-        {
-            if (pidController.isPresent())
-            {
-                double targetSpeed = pidController.get().calculate(getRotation().getDegrees());
-                if (externalEncoder.isPresent() && config.negativeLimit != null &&
-                    getRotation().minus(config.negativeLimit).getDegrees() <= 0 &&
-                    targetSpeed < 0)
-                {
-                    targetSpeed = 0;
-                }
-                else if (externalEncoder.isPresent() && config.positiveLimit != null &&
-                    getRotation().minus(config.positiveLimit).getDegrees() >= 0 &&
-                    targetSpeed > 0)
-                {
-                    targetSpeed = 0;
-                }
-                controller.set(targetSpeed);
-            }
-        }
-        /**
-         * Returns whether within 5 degrees of target angle
-         */
-        @Override
-        public boolean isFinished()
-        {
-            return Math.abs(getRotation().minus(targetAngle).getDegrees()) <= 5;
-        }
-    }
-    /**
-     * Gets the set angle command
-     * @param targetAngle target angle for arm to go to
-     * @return the set angle command
-     */
-    public Command getSetAngleCommand(Rotation2d targetAngle)
-    {
-        return new SetAngle(targetAngle);
     }
     /**
      * Updates the simulation data.
@@ -392,9 +259,11 @@ public class NFRRotatingArmJoint extends NFRArmJoint
     }
     /**
      * Returns the end state between the last joint and the end of this joint.
+     * @return the end state
      */
     @Override
-    public Transform3d getEndState() {
+    public Transform3d getEndState()
+    {
         return config.originOffset.plus(new Transform3d(
             new Translation3d(),
             new Rotation3d(
@@ -403,5 +272,90 @@ public class NFRRotatingArmJoint extends NFRArmJoint
                 0
             )
         ));
+    }
+    /**
+     * Checks to see if at the positive limit.
+     * @return whether the arm is equal to or past the positive limit.
+     */
+    public boolean atPositiveLimit()
+    {
+        if (config.positiveLimit.isPresent())
+        {
+            if (externalEncoder.isEmpty() && controller.getSelectedEncoder() != null)
+            {
+                return controller.getSelectedEncoder().getPosition() >= config.positiveLimit.get().getRotations();
+            }
+            else if (externalEncoder.isPresent())
+            {
+                return externalEncoder.get().getPosition() >= config.positiveLimit.get().getRotations();
+            }
+        }
+        return false;
+    }
+    /**
+     * Checks to see if at the negative limit.
+     * @return whether the arm is equal to or past the negative limit.
+     */
+    public boolean atNegativeLimit()
+    {
+        if (config.negativeLimit.isPresent())
+        {
+            if (externalEncoder.isEmpty() && controller.getSelectedEncoder() != null)
+            {
+                return controller.getSelectedEncoder().getPosition() <= config.negativeLimit.get().getRotations();
+            }
+            else if (externalEncoder.isPresent())
+            {
+                return externalEncoder.get().getPosition() <= config.negativeLimit.get().getRotations();
+            }
+        }
+        return false;
+    }
+    /**
+     * Sets the open loop speed of the motor.
+     * @param speed the speed between [-1, 1]
+     */
+    public void setOpenLoop(double speed)
+    {
+        if (speed > 0 && (!config.useLimits || config.useIntegratedLimits || !atPositiveLimit()))
+        {
+            controller.set(speed);
+        }
+        else if (speed < 0 && (!config.useLimits || config.useIntegratedLimits || !atNegativeLimit()))
+        {
+            controller.set(speed);
+        }
+        else
+        {
+            controller.set(0);
+        }
+    }
+    /**
+     * Sets the closed-loop speed of the motor.
+     * @param speed the speed relative to the motor.
+     * @param pidSlot the pid slot of the velocity closed-loop control.
+     */
+    public void setClosedLoop(double speed, int pidSlot)
+    {
+        if (speed > 0 && (!config.useLimits || config.useIntegratedLimits || !atPositiveLimit()))
+        {
+            controller.setVelocity(pidSlot, speed);
+        }
+        else if (speed < 0 && (!config.useLimits || config.useIntegratedLimits || !atNegativeLimit()))
+        {
+            controller.setVelocity(pidSlot, speed);
+        }
+        else
+        {
+            controller.setVelocity(pidSlot, 0);
+        }
+    }
+    /**
+     * Gets the controller that the joint uses.
+     * @return the controller that the joint uses.
+     */
+    public NFRMotorController getController()
+    {
+        return controller;
     }
 }

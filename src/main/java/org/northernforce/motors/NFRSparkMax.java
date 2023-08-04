@@ -492,14 +492,39 @@ public class NFRSparkMax extends CANSparkMax implements NFRMotorController
         followers.get(idx).follow(this, true);
     }
     /**
-     * Sets up limits that prevent the motor from moving in all modes when past these limits.
-     * @param positiveLimit in selected sensor units
-     * @param negativeLimit in selected sensor units
+     * Sets up a limit that prevent the motor from moving in all modes when past this limit.
+     * @param positiveLimit in selected sensor units.
      */
     @Override
-    public void setupLimits(double positiveLimit, double negativeLimit)
+    public void setPositiveLimit(double positiveLimit)
+    {
+        setSoftLimit(SoftLimitDirection.kReverse, (float)positiveLimit);
+        enableSoftLimit(SoftLimitDirection.kReverse, true);
+    }
+    /**
+     * Disables the positive limit.
+     */
+    @Override
+    public void disablePositiveLimit()
+    {
+        enableSoftLimit(SoftLimitDirection.kReverse, false);
+    }
+    /**
+     * Sets up a limit that prevent the motor from moving in all modes when past this limit.
+     * @param negativeLimit in selected sensor units.
+     */
+    @Override
+    public void setNegativeLimit(double negativeLimit)
     {
         setSoftLimit(SoftLimitDirection.kForward, (float)negativeLimit);
-        setSoftLimit(SoftLimitDirection.kReverse, (float)positiveLimit);
-    }    
+        enableSoftLimit(SoftLimitDirection.kForward, true);
+    }
+    /**
+     * Disables the negative limit.
+     */
+    @Override
+    public void disableNegativeLimit()
+    {
+        enableSoftLimit(SoftLimitDirection.kForward, false);
+    }
 }
