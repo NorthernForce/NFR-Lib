@@ -50,6 +50,8 @@ public class Robot extends TimedRobot {
     {
       autonomousChooser.addOption(pair.getKey(), pair.getValue());
     }
+    var pair = container.getDefaultAutonomous();
+    autonomousChooser.addOption(pair.getFirst(), pair.getSecond());
     Shuffleboard.getTab("Autonomous").add("Starting location?", poseChooser);
     Shuffleboard.getTab("Autonomous").add("Autonomous routine?", autonomousChooser);
   }
