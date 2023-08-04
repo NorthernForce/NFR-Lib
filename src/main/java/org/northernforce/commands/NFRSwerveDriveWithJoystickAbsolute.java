@@ -18,7 +18,7 @@ public class NFRSwerveDriveWithJoystickAbsolute extends CommandBase
 {
     protected final NFRSwerveDrive drive;
     protected final NFRSwerveModuleSetState[] setStateCommands;
-    protected final DoubleSupplier xSupplier, ySupplier;
+    protected final DoubleSupplier xSupplier, ySupplier, thetaSpeedSupplier;
     protected final Supplier<Optional<Rotation2d>> thetaSupplier;
     protected final boolean optimize, fieldRelative;
     protected final ProfiledPIDController thetaController;
@@ -29,13 +29,14 @@ public class NFRSwerveDriveWithJoystickAbsolute extends CommandBase
      * @param xSupplier the x supplier for the ChassisSpeeds.
      * @param ySupplier the y supplier for the ChassisSpeeds.
      * @param thetaSupplier the theta supplier for the ChassisSpeeds.
+     * @param thetaSpeedSupplier the theta velocity supplier if the thetaSupplier is empty.
      * @param optimize whether to optimize swerve module positions.
      * @param fieldRelative use field relative control.
      * @param thetaController the pid controller to control the theta velocity
      */
     public NFRSwerveDriveWithJoystickAbsolute(NFRSwerveDrive drive, NFRSwerveModuleSetState[] setStateCommands,
-        DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<Optional<Rotation2d>> thetaSupplier, boolean optimize,
-        boolean fieldRelative, ProfiledPIDController thetaController)
+        DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<Optional<Rotation2d>> thetaSupplier,
+        DoubleSupplier thetaSpeedSupplier, boolean optimize, boolean fieldRelative, ProfiledPIDController thetaController)
     {
         addRequirements(drive);
         this.drive = drive;
@@ -43,6 +44,7 @@ public class NFRSwerveDriveWithJoystickAbsolute extends CommandBase
         this.xSupplier = xSupplier;
         this.ySupplier = ySupplier;
         this.thetaSupplier = thetaSupplier;
+        this.thetaSpeedSupplier = thetaSpeedSupplier;
         this.optimize = optimize;
         this.fieldRelative = fieldRelative;
         this.thetaController = thetaController;
@@ -75,7 +77,7 @@ public class NFRSwerveDriveWithJoystickAbsolute extends CommandBase
         }
         else
         {
-            thetaSpeed = 0;
+            thetaSpeed = thetaSpeedSupplier.getAsDouble();
         }
         SmartDashboard.putNumber("Theta Speed", thetaSpeed);
         thetaController.setPID(SmartDashboard.getNumber("Theta P", 0), SmartDashboard.getNumber("Theta I", 0), SmartDashboard.getNumber("Theta D", 0));

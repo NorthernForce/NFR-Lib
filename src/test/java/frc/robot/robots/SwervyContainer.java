@@ -188,6 +188,7 @@ public class SwervyContainer implements NFRRobotContainer
                         return Optional.of(Rotation2d.fromDegrees(driverHID.getPOV()));
                     }
                 },
+                () -> -MathUtil.applyDeadband(driverHID.getRawAxis(4), 0.1),
                 true, true, new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(360, 720))));
             new JoystickButton(driverHID, 5)
                 .onTrue(Commands.runOnce(drive::clearRotation));
