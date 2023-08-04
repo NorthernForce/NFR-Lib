@@ -11,6 +11,7 @@ import org.northernforce.subsystems.drive.swerve.NFRSwerveModule;
 import org.northernforce.util.NFRRobotContainer;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -100,6 +101,11 @@ public class SwervyContainer implements NFRRobotContainer
     public Map<String, Pose2d> getStartingLocations()
     {
         return Map.of("Unnecessary", new Pose2d());
+    }
+    @Override
+    public Pair<String, Command> getDefaultAutonomous()
+    {
+        return Pair.of("Haha you got no autonomous", new InstantCommand());
     }
     @Override
     public void periodic()
