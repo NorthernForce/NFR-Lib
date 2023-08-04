@@ -99,6 +99,7 @@ public class Robot extends TimedRobot {
     {
       autonomousCommand.cancel();
     }
+    CommandScheduler.getInstance().getActiveButtonLoop().clear();
     GenericHID driverController;
     if (DriverStation.getJoystickIsXbox(0))
     {
