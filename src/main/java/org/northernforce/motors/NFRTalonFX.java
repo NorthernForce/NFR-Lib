@@ -8,13 +8,12 @@ import org.northernforce.encoders.NFRAbsoluteEncoder;
 import org.northernforce.encoders.NFRCANCoder;
 import org.northernforce.encoders.NFREncoder;
 
-import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.PositionDutyCycle;
+import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -31,15 +30,12 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
      */
     public class IntegratedEncoder implements NFREncoder
     {
-        private final StatusSignal<Double> rotorPositionSignal, rotorVelocitySignal;
         private double conversionFactor;
         /**
          * Creates a new IntegratedEncoder. Should be called internally.
          */
         private IntegratedEncoder()
         {
-            this.rotorPositionSignal = getRotorPosition();
-            this.rotorVelocitySignal = getRotorVelocity();
             conversionFactor = 1;
         }
         /**
@@ -56,8 +52,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
         @Override
         public double getPosition()
         {
-            rotorVelocitySignal.refresh();
-            return rotorPositionSignal.getValue() * conversionFactor;
+            return getRotorPosition().getValue() * conversionFactor;
         }
         /**
          * Sets the inversion of the sensor. Check to see whether the sensor is inverted
@@ -75,8 +70,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
         @Override
         public double getVelocity()
         {
-            rotorVelocitySignal.refresh();
-            return rotorVelocitySignal.getValue();
+            return getRotorVelocity().getValue() * conversionFactor;
         }
         /**
          * Sets the conversion factor. 1 means 1 rotation of the motor.
@@ -138,8 +132,8 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
     }
     private final TalonFXSimState simState;
     private final ArrayList<TalonFX> followers;
-    private final PositionVoltage positionVoltage = new PositionVoltage(0);
-    private final VelocityVoltage velocityVoltage = new VelocityVoltage(0);
+    private final PositionDutyCycle positionDutyCycle = new PositionDutyCycle(0);
+    private final VelocityDutyCycle velocityDutyCycle = new VelocityDutyCycle(0);
     private final MotionMagicVoltage motionMagicVoltage = new MotionMagicVoltage(0);
     private NFREncoder selectedEncoder;
     private final IntegratedEncoder integratedEncoder;
@@ -227,6 +221,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
             TalonFXConfiguration config = new TalonFXConfiguration();
             getConfigurator().refresh(config);
             config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+            getConfigurator().apply(config);
         }
         else if (NFRCANCoder.class.isAssignableFrom(encoder.getClass()))
         {
@@ -235,6 +230,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
             getConfigurator().refresh(config);
             config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
             config.Feedback.FeedbackRemoteSensorID = ((NFRCANCoder)encoder).getEncoder().getDeviceID();
+            getConfigurator().apply(config);
         }
         else
         {
@@ -288,7 +284,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
     @Override
     public void setVelocity(int pidSlot, double velocity)
     {
-        setControl(velocityVoltage.withVelocity(velocity).withSlot(pidSlot));
+        setControl(velocityDutyCycle.withVelocity(velocity / getSelectedEncoder().getConversionFactor()).withSlot(pidSlot));
     }
     /**
      * Sets the velocity of the motor using closed-loop feedback. Must use a configured pid slot.
@@ -300,7 +296,8 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
     @Override
     public void setVelocity(int pidSlot, double velocity, double arbitraryFeedforward)
     {
-       setControl(velocityVoltage.withVelocity(velocity).withSlot(pidSlot).withFeedForward(arbitraryFeedforward));
+        setControl(velocityDutyCycle.withVelocity(velocity / getSelectedEncoder().getConversionFactor()).withSlot(pidSlot)
+            .withFeedForward(arbitraryFeedforward));
     }
     /**
      * Sets the position of the motor using closed-loop feedback. Must use a configured pid slot.
@@ -310,7 +307,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
     @Override
     public void setPosition(int pidSlot, double position)
     {
-        setControl(positionVoltage.withPosition(position).withSlot(pidSlot));
+        setControl(positionDutyCycle.withPosition(position / getSelectedEncoder().getConversionFactor()).withSlot(pidSlot));
     }
     /**
      * Sets the position of the motor using closed-loop feedback. Must use a configured pid slot.
@@ -322,7 +319,8 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
     @Override
     public void setPosition(int pidSlot, double position, double arbitraryFeedforward)
     {
-        setControl(positionVoltage.withPosition(position).withSlot(pidSlot).withFeedForward(arbitraryFeedforward));
+        setControl(positionDutyCycle.withPosition(position / getSelectedEncoder().getConversionFactor()).withSlot(pidSlot)
+            .withFeedForward(arbitraryFeedforward));
     }
     /**
      * Sets the position of the motor using trapezoidal closed-loop feedback. Must use a configured pid slot.
@@ -332,7 +330,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
     @Override
     public void setPositionTrapezoidal(int pidSlot, double position)
     {
-        setControl(motionMagicVoltage.withSlot(pidSlot).withPosition(position));
+        setControl(motionMagicVoltage.withSlot(pidSlot).withPosition(position / getSelectedEncoder().getConversionFactor()));
     }
     /**
      * Sets the position of the motor using trapezoidal closed-loop feedback. Must use a configured pid slot.
@@ -344,7 +342,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
     @Override
     public void setPositionTrapezoidal(int pidSlot, double position, double arbitraryFeedforward)
     {
-        setControl(motionMagicVoltage.withSlot(pidSlot).withPosition(position));
+        setControl(motionMagicVoltage.withSlot(pidSlot).withPosition(position / getSelectedEncoder().getConversionFactor()));
     }
     /**
      * Gets the simulation output voltage that is calculated by inputs to the motor. This should not be used
@@ -412,5 +410,14 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
         getConfigurator().refresh(configuration);
         configuration.ForwardSoftLimitEnable = false;
         getConfigurator().apply(configuration);
+    }
+    /**
+     * Returns the target position that the closed-loop control is attemped to reach.
+     * @return target position in units native to the encoder.
+     */
+    @Override
+    public double getTargetPosition()
+    {
+        return getClosedLoopReference().getValue();
     }
 }

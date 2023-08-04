@@ -10,6 +10,8 @@ import org.northernforce.util.NFRRobotChooser;
 import org.northernforce.util.NFRRobotContainer;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -17,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.robots.SquishyContainer;
+import frc.robot.robots.SwervyContainer;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -35,9 +38,18 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    container = new NFRRobotChooser(() -> new SquishyContainer(), Map.of("Squishy", () -> new SquishyContainer()))
+    container = new NFRRobotChooser(() -> new SwervyContainer(), Map.of("Squishy", () -> new SquishyContainer(),
+      "Swervy", () -> new SwervyContainer()))
       .getNFRRobotContainer();
-    XboxController driverController = new XboxController(0);
+    GenericHID driverController;
+    if (DriverStation.getJoystickIsXbox(0))
+    {
+      driverController = new XboxController(0);
+    }
+    else
+    {
+      driverController = new GenericHID(0);
+    }
     XboxController manipulatorController = new XboxController(1);
     container.bindOI(driverController, manipulatorController);
     poseChooser = new SendableChooser<>();

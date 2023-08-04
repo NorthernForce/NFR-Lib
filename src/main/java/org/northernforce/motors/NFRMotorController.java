@@ -142,4 +142,9 @@ public interface NFRMotorController extends MotorController
      * Disables the negative limit.
      */
     public void disableNegativeLimit();
+    /**
+     * Returns the target position that the closed-loop control is attemped to reach.
+     * @return target position in units native to the encoder.
+     */
+    public double getTargetPosition();
 }
