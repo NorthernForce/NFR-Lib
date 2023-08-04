@@ -21,9 +21,8 @@ sourceSets
   }
 }
 
-
-ext.pubVersion = '0.0.1'
-ext.json_version = "1.0"
+ext.pubVersion = project.findProperty("pubs.version") ?: "unknown"
+ext.json_version = ext.pubVersion
 
 apply plugin: "java"
 
