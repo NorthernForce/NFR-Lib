@@ -312,7 +312,7 @@ public class NFRSwerveModule extends NFRSubsystem
         NFRSwerveModuleConfiguration config = new NFRSwerveModuleConfiguration(name)
             .withGearRatios(Mk3SwerveConstants.kDriveGearRatioSlow, Mk3SwerveConstants.kTurnGearRatio)
             .withGearboxes(DCMotor.getFalcon500(1), DCMotor.getFalcon500(1))
-            .withMOIs(1.2, 1.2)
+            .withMOIs(0.025, 0.004096955)
             .withMaxSpeed(Mk3SwerveConstants.kDriveMaxSpeed);
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
         driveConfig.CurrentLimits.SupplyCurrentLimit = 60;
