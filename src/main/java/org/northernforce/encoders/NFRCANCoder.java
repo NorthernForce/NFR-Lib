@@ -96,7 +96,7 @@ public class NFRCANCoder implements NFRAbsoluteEncoder
     @Override
     public void setEncoderPosition(double position)
     {
-        cancoder.setPosition(position / factor * 180.0);
+        cancoder.setPosition(position / factor);
     }
     /**
      * Sets the simulation position of the encoder. Only use in simulation.
