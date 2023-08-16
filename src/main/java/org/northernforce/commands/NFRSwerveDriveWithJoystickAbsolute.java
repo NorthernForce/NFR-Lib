@@ -48,7 +48,7 @@ public class NFRSwerveDriveWithJoystickAbsolute extends CommandBase
         this.optimize = optimize;
         this.fieldRelative = fieldRelative;
         this.thetaController = thetaController;
-        thetaController.enableContinuousInput(0, 360);
+        thetaController.enableContinuousInput(0, 1);
     }
     /**
      * Initializes the command and schedules the swerve module set state commands.
@@ -67,20 +67,24 @@ public class NFRSwerveDriveWithJoystickAbsolute extends CommandBase
     @Override
     public void execute()
     {
+        thetaController.setPID(
+            SmartDashboard.getNumber("Theta P", 0),
+            SmartDashboard.getNumber("Theta I", 0),
+            SmartDashboard.getNumber("Theta D", 0)
+        );
         var targetTheta = thetaSupplier.get();
         double thetaSpeed;
         if (targetTheta.isPresent())
         {
             thetaSpeed = thetaController.calculate(
-                MathUtil.inputModulus(drive.getRotation().getDegrees(), 0, 360),
-                MathUtil.inputModulus(targetTheta.get().getDegrees(), 0, 360));
+                MathUtil.inputModulus(drive.getRotation().getRotations(), 0, 1),
+                MathUtil.inputModulus(targetTheta.get().getRotations(), 0, 1));
         }
         else
         {
             thetaSpeed = thetaSpeedSupplier.getAsDouble();
         }
         SmartDashboard.putNumber("Theta Speed", thetaSpeed);
-        thetaController.setPID(SmartDashboard.getNumber("Theta P", 0), SmartDashboard.getNumber("Theta I", 0), SmartDashboard.getNumber("Theta D", 0));
         ChassisSpeeds speeds = new ChassisSpeeds(xSupplier.getAsDouble(), ySupplier.getAsDouble(), thetaSpeed);
         if (fieldRelative)
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation());
