@@ -238,6 +238,21 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
         }
     }
     /**
+     * Fuses the cancoder to the rotor sensor, using a combination for more accurate and quicker results.
+     * @param cancoder the cancoder to fuse to the motor controller.
+     * @param rotorToSensor the ratio of the rotor to the sensor.
+     */
+    public void setFusedCANCoder(NFRCANCoder cancoder, double rotorToSensor)
+    {
+        selectedEncoder = cancoder;
+        TalonFXConfiguration config = new TalonFXConfiguration();
+        getConfigurator().refresh(config);
+        config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
+        config.Feedback.FeedbackRemoteSensorID = cancoder.getEncoder().getDeviceID();
+        config.Feedback.RotorToSensorRatio = rotorToSensor;
+        getConfigurator().apply(config);
+    }
+    /**
      * Returns the selected encoder that is linked to the motor controller. By default, the integrated encoder is chosen.
      * @return the selected encoder
      */
