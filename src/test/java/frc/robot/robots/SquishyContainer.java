@@ -56,7 +56,7 @@ public class SquishyContainer implements NFRRobotContainer {
         Shuffleboard.getTab("Autonomous").add("Field", field);
         ROSCoprocessorConfiguration coprocessorConfig = new ROSCoprocessorConfiguration("xavier")
             .withHostname("northernforce-desktop")
-            .withPort(5810);
+            .withPort(5809);
         ROSCoprocessor coprocessor = new ROSCoprocessor(coprocessorConfig);
         Shuffleboard.getTab("Main").add("Xavier", coprocessor);
     }
