@@ -8,6 +8,8 @@ import org.northernforce.gyros.NFRNavX;
 import org.northernforce.subsystems.drive.NFRSwerveDrive;
 import org.northernforce.subsystems.drive.NFRSwerveDrive.NFRSwerveDriveConfiguration;
 import org.northernforce.subsystems.drive.swerve.NFRSwerveModule;
+import org.northernforce.subsystems.ros.ROSCoprocessor;
+import org.northernforce.subsystems.ros.ROSCoprocessor.ROSCoprocessorConfiguration;
 import org.northernforce.util.NFRRobotContainer;
 
 import edu.wpi.first.math.MathUtil;
@@ -26,6 +28,7 @@ public class SwervyContainer implements NFRRobotContainer
 {
     private final NFRSwerveDrive drive;
     private final Field2d field;
+    private final ROSCoprocessor coprocessor;
     public SwervyContainer()
     {
         NFRSwerveModule[] modules = new NFRSwerveModule[] {
@@ -60,6 +63,12 @@ public class SwervyContainer implements NFRRobotContainer
             .withWidget(BuiltInWidgets.kGyro);
         Shuffleboard.getTab("Swerve").addDouble("Back Right Angle", () -> drive.getModules()[3].getRotation().getDegrees())
             .withWidget(BuiltInWidgets.kGyro);
+        ROSCoprocessorConfiguration coprocessorConfig = new ROSCoprocessorConfiguration("xavier")
+            .withHostname("northernforce-desktop")
+            .withPort(5809);
+        coprocessor = new ROSCoprocessor(coprocessorConfig);
+        coprocessor.startConnecting();
+        Shuffleboard.getTab("Main").add("Xavier", coprocessor);
     }
     @Override
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
