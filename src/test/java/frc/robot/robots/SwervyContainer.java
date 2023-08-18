@@ -1,6 +1,5 @@
 package frc.robot.robots;
 
-import java.io.IOException;
 import java.util.Map;
 
 import org.northernforce.commands.NFRSwerveDriveStop;
@@ -12,18 +11,15 @@ import org.northernforce.subsystems.drive.NFRSwerveDrive.NFRSwerveDriveConfigura
 import org.northernforce.subsystems.drive.swerve.NFRSwerveModule;
 import org.northernforce.subsystems.ros.ROSCoprocessor;
 import org.northernforce.subsystems.ros.ROSCoprocessor.ROSCoprocessorConfiguration;
-import org.northernforce.subsystems.ros.isaac_ros_apriltag_interfaces.AprilTagDetection;
-import org.northernforce.subsystems.ros.isaac_ros_apriltag_interfaces.AprilTagDetectionArray;
+import org.northernforce.subsystems.ros.geometry_msgs.PoseWithCovarianceStamped;
 import org.northernforce.util.NFRRobotContainer;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -42,17 +38,8 @@ public class SwervyContainer implements NFRRobotContainer
     private final NFRSwerveDrive drive;
     private final Field2d field;
     private final ROSCoprocessor coprocessor;
-    private AprilTagFieldLayout layout;
     public SwervyContainer()
     {
-        try
-        {
-            layout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
         NFRSwerveModule[] modules = new NFRSwerveModule[] {
             NFRSwerveModule.createMk3Slow("Front Left", 1, 5, 9, false),
             NFRSwerveModule.createMk3Slow("Front Right", 2, 6, 10, true),
@@ -90,8 +77,8 @@ public class SwervyContainer implements NFRRobotContainer
             .withPort(5809);
         coprocessor = new ROSCoprocessor(coprocessorConfig);
         coprocessor.onConnect(() -> {
-            coprocessor.subscribe("realsense/tag_detections",
-                "isaac_ros_apriltag_interfaces/AprilTagDetectionArray", this::recieveDetection);
+            coprocessor.subscribe("realsense/estimated_pose",
+                "geometry_msgs/PoseWithCovarianceStamped", this::recieveDetection);
         });
         coprocessor.startConnecting();
         Shuffleboard.getTab("Main").add("Xavier", coprocessor);
@@ -99,32 +86,24 @@ public class SwervyContainer implements NFRRobotContainer
     public void recieveDetection(Message message)
     {
         System.out.println("Recieved detection.");
-        AprilTagDetectionArray array = AprilTagDetectionArray.fromMessage(message);
-        for (AprilTagDetection detection : array.detections)
-        {
-            var tagPose = layout.getTagPose(detection.id);
-            if (tagPose.isPresent())
-            {
-                var cameraToTag = new Pose3d(
-                    new Translation3d(
-                        detection.pose.pose.getPose().getPosition().getX(),
-                        detection.pose.pose.getPose().getPosition().getY(),
-                        detection.pose.pose.getPose().getPosition().getZ()
-                    ),
-                    new Rotation3d(
-                        new edu.wpi.first.math.geometry.Quaternion(
-                            detection.pose.pose.getPose().getOrientation().getW(),
-                            detection.pose.pose.getPose().getOrientation().getX(),
-                            detection.pose.pose.getPose().getOrientation().getY(),
-                            detection.pose.pose.getPose().getOrientation().getZ()
-                        )
-                    )
-                );
-                Transform3d relativeTransform = tagPose.get().minus(cameraToTag);
-                Pose2d poseEstimate = new Pose3d(relativeTransform.getTranslation(), relativeTransform.getRotation()).toPose2d();
-                drive.addVisionEstimate(detection.pose.header.getStamp().toSec(), poseEstimate);
-            }
-        }
+        PoseWithCovarianceStamped poseStamped = PoseWithCovarianceStamped.fromMessage(message);
+        Pose3d pose = new Pose3d(
+            new Translation3d(
+                poseStamped.pose.getPose().getPosition().getX(),
+                poseStamped.pose.getPose().getPosition().getY(),
+                poseStamped.pose.getPose().getPosition().getZ()
+            ),
+            new Rotation3d(
+                new Quaternion(
+                    poseStamped.pose.getPose().getOrientation().getW(),
+                    poseStamped.pose.getPose().getOrientation().getX(),
+                    poseStamped.pose.getPose().getOrientation().getY(),
+                    poseStamped.pose.getPose().getOrientation().getZ()
+                )
+            )
+        );
+        System.out.println(poseStamped.header.getStamp().secs + "." + poseStamped.header.getStamp().secs);
+        drive.addVisionEstimate(poseStamped.header.getStamp().toSec(), pose.toPose2d());
     }
     @Override
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
