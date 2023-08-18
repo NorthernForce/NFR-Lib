@@ -68,8 +68,12 @@ public class ROSCoprocessor extends NFRSubsystem
     }
     public void subscribe(String topicName, String topicType, Consumer<Message> messageConsumer)
     {
-        Topic topic = new Topic(ros, topicName, topicType);
-        topic.subscribe(new TopicCallback()
+        if (!topics.containsKey(topicName))
+        {
+            Topic topic = new Topic(ros, topicName, topicType);
+            topics.put(topicName, topic);
+        }
+        topics.get(topicName).subscribe(new TopicCallback()
         {
             @Override
             public void handleMessage(Message message)
@@ -77,7 +81,6 @@ public class ROSCoprocessor extends NFRSubsystem
                 messageConsumer.accept(message);
             }
         });
-        topics.put(topic.getName(), topic);
     }
     public void publish(String topicName, String topicType, Message message)
     {
