@@ -29,14 +29,14 @@ public class Header extends Message {
 	 * The message type.
 	 */
 	public static final java.lang.String TYPE = "std_msgs/Header";
-	private final edu.wpi.rail.jrosbridge.primitives.Time stamp;
+	private final org.northernforce.subsystems.ros.primitives.Time stamp;
 	private final java.lang.String frameID;
 
 	/**
 	 * Create a new Header with all empty values.
 	 */
 	public Header() {
-		this(new edu.wpi.rail.jrosbridge.primitives.Time(), "");
+		this(new org.northernforce.subsystems.ros.primitives.Time(), "");
 	}
 
 	/**
@@ -46,7 +46,7 @@ public class Header extends Message {
 	 * @param frameID
 	 *            The frame ID.
 	 */
-	public Header(edu.wpi.rail.jrosbridge.primitives.Time stamp,
+	public Header(org.northernforce.subsystems.ros.primitives.Time stamp,
 			java.lang.String frameID) {
 		// build the JSON object
 		super(Json.createObjectBuilder()
@@ -61,7 +61,7 @@ public class Header extends Message {
 	 * 
 	 * @return The timestamp value of this header.
 	 */
-	public edu.wpi.rail.jrosbridge.primitives.Time getStamp() {
+	public org.northernforce.subsystems.ros.primitives.Time getStamp() {
 		return this.stamp;
 	}
 
@@ -118,10 +118,10 @@ public class Header extends Message {
 	 * @return A Header message based on the given JSON object.
 	 */
 	public static Header fromJsonObject(JsonObject jsonObject) {
-		edu.wpi.rail.jrosbridge.primitives.Time stamp = jsonObject
-				.containsKey(Header.FIELD_STAMP) ? edu.wpi.rail.jrosbridge.primitives.Time
+		org.northernforce.subsystems.ros.primitives.Time stamp = jsonObject
+				.containsKey(Header.FIELD_STAMP) ? org.northernforce.subsystems.ros.primitives.Time
 				.fromJsonObject(jsonObject.getJsonObject(Header.FIELD_STAMP))
-				: new edu.wpi.rail.jrosbridge.primitives.Time();
+				: new org.northernforce.subsystems.ros.primitives.Time();
 		java.lang.String frameID = jsonObject
 				.containsKey(Header.FIELD_FRAME_ID) ? jsonObject
 				.getString(Header.FIELD_FRAME_ID) : "";

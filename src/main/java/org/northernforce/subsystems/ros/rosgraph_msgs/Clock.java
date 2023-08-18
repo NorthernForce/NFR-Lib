@@ -4,7 +4,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import edu.wpi.rail.jrosbridge.messages.Message;
-import edu.wpi.rail.jrosbridge.primitives.Time;
+import org.northernforce.subsystems.ros.primitives.Time;
 
 public class Clock extends Message
 {

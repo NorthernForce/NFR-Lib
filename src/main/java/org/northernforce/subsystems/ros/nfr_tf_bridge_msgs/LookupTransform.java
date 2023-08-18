@@ -5,7 +5,7 @@ import javax.json.JsonObject;
 
 import org.northernforce.subsystems.ros.geometry_msgs.TransformStamped;
 
-import edu.wpi.rail.jrosbridge.primitives.Time;
+import org.northernforce.subsystems.ros.primitives.Time;
 import edu.wpi.rail.jrosbridge.services.ServiceRequest;
 import edu.wpi.rail.jrosbridge.services.ServiceResponse;
 
