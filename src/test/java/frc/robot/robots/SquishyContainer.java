@@ -17,6 +17,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
@@ -61,9 +62,12 @@ public class SquishyContainer implements NFRRobotContainer {
             .withPort(5809);
         coprocessor = new ROSCoprocessor(coprocessorConfig);
         coprocessor.onConnect(() -> {
-            coprocessor.subscribePose(pose -> {
-                field.setRobotPose(pose);
-            });
+            coprocessor.subscribeTransform("map", "base_link", "map_to_base_link", 50,
+                transform -> {
+                    Pose2d pose = new Pose3d(transform.getTranslation(), transform.getRotation()).toPose2d();
+                    field.setRobotPose(pose);
+                }
+            );
         });
         coprocessor.startConnecting();
         Shuffleboard.getTab("Main").add("Xavier", coprocessor);
