@@ -192,10 +192,15 @@ public class NFRSparkMax extends CANSparkMax implements NFRMotorController
     @Override
     public void setSelectedEncoder(NFREncoder encoder) throws MotorEncoderMismatchException
     {
-        if (IntegratedEncoder.class.isAssignableFrom(encoder.getClass()))
+        if (encoder instanceof IntegratedEncoder)
         {
             selectedEncoder = encoder;
             getPIDController().setFeedbackDevice(getEncoder());
+        }
+        else if (encoder instanceof AbsoluteEncoder)
+        {
+            selectedEncoder = encoder;
+            getPIDController().setFeedbackDevice(getAbsoluteEncoder(Type.kDutyCycle));
         }
     }
     /**
