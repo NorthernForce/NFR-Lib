@@ -8,6 +8,8 @@ import org.northernforce.gyros.NFRNavX;
 import org.northernforce.motors.NFRSparkMax;
 import org.northernforce.subsystems.drive.NFRTankDrive;
 import org.northernforce.subsystems.drive.NFRTankDrive.NFRTankDriveConfiguration;
+import org.northernforce.subsystems.ros.ROSCoprocessor;
+import org.northernforce.subsystems.ros.ROSCoprocessor.ROSCoprocessorConfiguration;
 import org.northernforce.util.NFRRobotContainer;
 
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -52,6 +54,11 @@ public class SquishyContainer implements NFRRobotContainer {
         drive = new NFRTankDrive(config, leftSide, rightSide, navx);
         field = new Field2d();
         Shuffleboard.getTab("Autonomous").add("Field", field);
+        ROSCoprocessorConfiguration coprocessorConfig = new ROSCoprocessorConfiguration("xavier")
+            .withHostname("northernforce-desktop")
+            .withPort(5809);
+        ROSCoprocessor coprocessor = new ROSCoprocessor(coprocessorConfig);
+        Shuffleboard.getTab("Main").add("Xavier", coprocessor);
     }
     @Override
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
