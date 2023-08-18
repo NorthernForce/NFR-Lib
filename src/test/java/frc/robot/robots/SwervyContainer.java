@@ -20,7 +20,9 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 public class SwervyContainer implements NFRRobotContainer
 {
@@ -82,6 +84,8 @@ public class SwervyContainer implements NFRRobotContainer
                 () -> -MathUtil.applyDeadband(driverController.getLeftX(), 0.1),
                 () -> -MathUtil.applyDeadband(driverController.getRightX(), 0.1),
                 true, true));
+            new JoystickButton(driverController, XboxController.Button.kB.value)
+                .onTrue(Commands.runOnce(drive::clearRotation));
         }
         else
         {
@@ -90,6 +94,8 @@ public class SwervyContainer implements NFRRobotContainer
                 () -> MathUtil.applyDeadband(driverHID.getRawAxis(0), 0.1),
                 () -> -MathUtil.applyDeadband(driverHID.getRawAxis(4), 0.1),
                 true, true));
+            new JoystickButton(driverHID, 5)
+                .onTrue(Commands.runOnce(drive::clearRotation));
         }
     }
     @Override

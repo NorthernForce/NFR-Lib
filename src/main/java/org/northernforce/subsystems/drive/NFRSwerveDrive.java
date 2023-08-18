@@ -36,6 +36,7 @@ public class NFRSwerveDrive extends NFRDrive
     protected final NFRGyro gyro;
     protected final SwerveDriveKinematics kinematics;
     protected final SwerveDrivePoseEstimator poseEstimator;
+    protected Rotation2d gyroOffset;
     /**
      * Creates a new NFRSwerveDrive.
      * @param config the configuration for the swerve drive.
@@ -52,6 +53,7 @@ public class NFRSwerveDrive extends NFRDrive
         this.gyro = gyro;
         kinematics = new SwerveDriveKinematics(offsets);
         poseEstimator = new SwerveDrivePoseEstimator(kinematics, gyro.getGyroYaw(), getPositions(), new Pose2d());
+        gyroOffset = new Rotation2d();
     }
     /**
      * Returns an array of all of the positions of the swerve modules
@@ -148,6 +150,13 @@ public class NFRSwerveDrive extends NFRDrive
      */
     public Rotation2d getRotation()
     {
-        return gyro.getGyroYaw();
+        return gyro.getGyroYaw().plus(gyroOffset);
+    }
+    /**
+     * Clears rotation reported by the gyroscope by changing the offset. 
+     */
+    public void clearRotation()
+    {
+        gyroOffset = gyro.getGyroYaw().unaryMinus();
     }
 }
