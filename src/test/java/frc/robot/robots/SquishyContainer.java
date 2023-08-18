@@ -108,7 +108,10 @@ public class SquishyContainer implements NFRRobotContainer {
     @Override
     public void periodic()
     {
-        coprocessor.publishOdometry(drive.getOdometry().getPoseMeters(), drive.getChassisSpeeds());
+        if (coprocessor.isConnected())
+        {
+            coprocessor.publishOdometry(drive.getOdometry().getPoseMeters(), drive.getChassisSpeeds());
+        }
     }
     @Override
     public void setInitialPose(Pose2d pose)
