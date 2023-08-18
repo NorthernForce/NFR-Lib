@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 
@@ -37,6 +38,7 @@ public class NFRSwerveDrive extends NFRDrive
     protected final SwerveDriveKinematics kinematics;
     protected final SwerveDrivePoseEstimator poseEstimator;
     protected Rotation2d gyroOffset;
+    protected final SwerveDriveOdometry odometry;
     /**
      * Creates a new NFRSwerveDrive.
      * @param config the configuration for the swerve drive.
@@ -54,6 +56,7 @@ public class NFRSwerveDrive extends NFRDrive
         kinematics = new SwerveDriveKinematics(offsets);
         poseEstimator = new SwerveDrivePoseEstimator(kinematics, gyro.getGyroYaw(), getPositions(), new Pose2d());
         gyroOffset = new Rotation2d();
+        odometry = new SwerveDriveOdometry(kinematics, gyro.getGyroYaw(), getPositions());
     }
     /**
      * Returns an array of all of the positions of the swerve modules
@@ -143,6 +146,11 @@ public class NFRSwerveDrive extends NFRDrive
     public void periodic()
     {
         poseEstimator.update(gyro.getGyroYaw(), getPositions());
+        odometry.update(gyro.getGyroYaw(), getPositions());
+    }
+    public SwerveDriveOdometry getOdometry()
+    {
+        return odometry;
     }
     /**
      * Gets the rotation of the swerve module as reported by the gyroscope.
