@@ -62,6 +62,10 @@ public class ROSCoprocessor extends NFRSubsystem
     {
         onConnects.add(runnable);
     }
+    public boolean isConnected()
+    {
+        return ros.isConnected();
+    }
     public void subscribe(String topicName, String topicType, Consumer<Message> messageConsumer)
     {
         Topic topic = new Topic(ros, topicName, topicType);
