@@ -2,10 +2,18 @@ package org.northernforce.subsystems.ros;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.northernforce.subsystems.NFRSubsystem;
+import org.northernforce.subsystems.ros.geometry_msgs.TransformStamped;
+import org.northernforce.subsystems.ros.nfr_tf_bridge_msgs.LookupTransform;
+import org.northernforce.subsystems.ros.nfr_tf_bridge_msgs.RequestTransform;
+import org.northernforce.subsystems.ros.primitives.Time;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.rail.jrosbridge.Ros;
@@ -195,5 +203,57 @@ public class ROSCoprocessor extends NFRSubsystem
         {
             System.out.println("Could not connect to rosbridge");
         }
+    }
+    public Optional<Transform3d> getTransform(String baseFrame, String childFrame)
+    {
+        var serviceResponse = getService("/lookup_transform", "nfr_tf_bridge_msgs/LookupTransform")
+            .callServiceAndWait(new LookupTransform.Request(baseFrame, childFrame, new Time()));
+        var response = LookupTransform.Response.fromServiceResponse(serviceResponse);
+        if (response.success)
+        {
+            return Optional.of(new Transform3d(
+                new Translation3d(
+                    response.transform.transform.getTranslation().getX(),
+                    response.transform.transform.getTranslation().getY(),
+                    response.transform.transform.getTranslation().getZ()
+                ),
+                new Rotation3d(
+                    new edu.wpi.first.math.geometry.Quaternion(
+                        response.transform.transform.getRotation().getW(),
+                        response.transform.transform.getRotation().getX(),
+                        response.transform.transform.getRotation().getY(),
+                        response.transform.transform.getRotation().getZ()
+                    )
+                )
+            ));
+        }
+        else
+        {
+            return Optional.empty();
+        }
+    }
+    public void subscribeTransform(String base_frame, String child_frame, String topic, double frequency,
+        Consumer<Transform3d> transformConsumer)
+    {
+        publish("request_transform", "nfr_tf_bridge_msgs/RequestTransform",
+            new RequestTransform(frequency, base_frame, child_frame, topic));
+        subscribe(topic, "geometry_msgs/TransformStamped", message -> {
+            TransformStamped transform = TransformStamped.fromMessage(message);
+            transformConsumer.accept(new Transform3d(
+                new Translation3d(
+                    transform.transform.getTranslation().getX(),
+                    transform.transform.getTranslation().getY(),
+                    transform.transform.getTranslation().getZ()
+                ),
+                new Rotation3d(
+                    new edu.wpi.first.math.geometry.Quaternion(
+                        transform.transform.getRotation().getW(),
+                        transform.transform.getRotation().getX(),
+                        transform.transform.getRotation().getY(),
+                        transform.transform.getRotation().getZ()
+                    )
+                )
+            ));
+        });
     }
 }
