@@ -9,6 +9,7 @@ import org.northernforce.subsystems.NFRSubsystem;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.rail.jrosbridge.Ros;
+import edu.wpi.rail.jrosbridge.Service;
 import edu.wpi.rail.jrosbridge.Topic;
 import edu.wpi.rail.jrosbridge.callback.TopicCallback;
 import edu.wpi.rail.jrosbridge.messages.Message;
@@ -44,6 +45,7 @@ public class ROSCoprocessor extends NFRSubsystem
     }
     protected final Ros ros;
     protected final HashMap<String, Topic> topics;
+    protected final HashMap<String, Service> services;
     protected final ArrayList<Runnable> onConnects;
     protected final Notifier tryConnect;
     public ROSCoprocessor(ROSCoprocessorConfiguration config)
@@ -51,6 +53,7 @@ public class ROSCoprocessor extends NFRSubsystem
         super(config);
         ros = new Ros(config.hostname, config.port);
         topics = new HashMap<>();
+        services = new HashMap<>();
         onConnects = new ArrayList<>();
         tryConnect = new Notifier(this::connect);
     }
@@ -95,6 +98,15 @@ public class ROSCoprocessor extends NFRSubsystem
             topics.get(topicName).advertise();
         }
         topics.get(topicName).publish(message);
+    }
+    public Service getService(String servicePath, String serviceType)
+    {
+        if (!services.containsKey(servicePath))
+        {
+            Service service = new Service(ros, servicePath, serviceType);
+            services.put(servicePath, service);
+        }
+        return services.get(servicePath);
     }
     @Override
     public void initSendable(SendableBuilder builder)
