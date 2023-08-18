@@ -1,11 +1,13 @@
 package org.northernforce.subsystems.ros;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
 import org.northernforce.subsystems.NFRSubsystem;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.rail.jrosbridge.Ros;
 import edu.wpi.rail.jrosbridge.Topic;
 import edu.wpi.rail.jrosbridge.callback.TopicCallback;
@@ -42,12 +44,23 @@ public class ROSCoprocessor extends NFRSubsystem
     }
     protected final Ros ros;
     protected final HashMap<String, Topic> topics;
+    protected final ArrayList<Runnable> onConnects;
+    protected final Notifier tryConnect;
     public ROSCoprocessor(ROSCoprocessorConfiguration config)
     {
         super(config);
         ros = new Ros(config.hostname, config.port);
-        ros.connect();
         topics = new HashMap<>();
+        onConnects = new ArrayList<>();
+        tryConnect = new Notifier(this::connect);
+    }
+    public void startConnecting()
+    {
+        tryConnect.startPeriodic(0.5);
+    }
+    public void onConnect(Runnable runnable)
+    {
+        onConnects.add(runnable);
     }
     public void subscribe(String topicName, String topicType, Consumer<Message> messageConsumer)
     {
@@ -70,11 +83,31 @@ public class ROSCoprocessor extends NFRSubsystem
             topic.advertise();
             topics.put(topicName, topic);
         }
+        if (!topics.get(topicName).isAdvertised())
+        {
+            topics.get(topicName).advertise();
+        }
         topics.get(topicName).publish(message);
     }
     @Override
     public void initSendable(SendableBuilder builder)
     {
         builder.addBooleanProperty("Connection", ros::isConnected, null);
+    }
+    public void connect()
+    {
+        if (ros.connect())
+        {
+            System.out.println("Connected");
+            for (var onConnect : onConnects)
+            {
+                onConnect.run();
+            }
+            tryConnect.stop();
+        }
+        else
+        {
+            System.out.println("Could not connect to rosbridge");
+        }
     }
 }
