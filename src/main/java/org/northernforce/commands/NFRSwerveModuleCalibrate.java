@@ -15,6 +15,16 @@ public class NFRSwerveModuleCalibrate extends CommandBase
     /**
      * Creates a new NFRSwerveModuleCalibrate.
      * @param module the module to be calibrated
+     */
+    public NFRSwerveModuleCalibrate(NFRSwerveModule module)
+    {
+        addRequirements(module);
+        this.module = module;
+        this.angle = new Rotation2d();
+    }
+    /**
+     * Creates a new NFRSwerveModuleCalibrate.
+     * @param module the module to be calibrated
      * @param angle the angle to reset to
      */
     public NFRSwerveModuleCalibrate(NFRSwerveModule module, Rotation2d angle)
