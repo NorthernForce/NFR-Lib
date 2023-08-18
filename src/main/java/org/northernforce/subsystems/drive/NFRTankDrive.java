@@ -27,8 +27,23 @@ public class NFRTankDrive extends NFRDrive
      */
     public static class NFRTankDriveConfiguration extends NFRDriveConfiguration
     {
-        protected final double trackWidth, gearRatio, wheelRadius, moi, mass, maxSpeed;
-        protected final DCMotor gearbox;
+        protected double trackWidth, gearRatio, wheelRadius, moi, mass, maxSpeed;
+        protected DCMotor gearbox;
+        /**
+         * Creates a new NFRTankDriveConfiguration.
+         * @param name the unique identifier for the subsystem, eg. "drive"
+         */
+        public NFRTankDriveConfiguration(String name)
+        {
+            super(name);
+            this.trackWidth = 0;
+            this.gearRatio = 0;
+            this.wheelRadius = 0;
+            this.moi = 0;
+            this.mass = 0;
+            this.maxSpeed = 0;
+            this.gearbox = null;
+        }
         /**
          * Creates a new NFRTankDriveConfiguration.
          * @param name the unique identifier for the subsystem, eg. "drive"
@@ -52,6 +67,76 @@ public class NFRTankDrive extends NFRDrive
             this.moi = moi;
             this.mass = mass;
             this.maxSpeed = maxSpeed;
+        }
+        /**
+         * With track width.
+         * @param trackWidth the width of the track in meters.
+         * @return this
+         */
+        public NFRTankDriveConfiguration withTrackWidth(double trackWidth)
+        {
+            this.trackWidth = trackWidth;
+            return this;
+        }
+        /**
+         * With gear ratio.
+         * @param gearRatio the gear ratio between the drive encoder and a rotation of the wheel.
+         * @return this
+         */
+        public NFRTankDriveConfiguration withGearRatio(double gearRatio)
+        {
+            this.gearRatio = gearRatio;
+            return this;
+        }
+        /**
+         * With wheel radius.
+         * @param wheelRadius the radius of the wheel
+         * @return this
+         */
+        public NFRTankDriveConfiguration withWheelRadius(double wheelRadius)
+        {
+            this.wheelRadius = wheelRadius;
+            return this;
+        }
+        /**
+         * With moment of inertia.
+         * @param moi the moment of inertia. ONLY USED IN SIMULATION.
+         * @return this
+         */
+        public NFRTankDriveConfiguration withMOI(double moi)
+        {
+            this.moi = moi;
+            return this;
+        }
+        /**
+         * With mass.
+         * @param mass the mass of the robot in kg. ONLY USED IN SIMULATION.
+         * @return this
+         */
+        public NFRTankDriveConfiguration withMass(double mass)
+        {
+            this.mass = mass;
+            return this;
+        }
+        /**
+         * With max speed.
+         * @param maxSpeed the max speed of the robot used for closed loop control (in m/s). Used for closed loop control.
+         * @return this
+         */
+        public NFRTankDriveConfiguration withMaxSpeed(double maxSpeed)
+        {
+            this.maxSpeed = maxSpeed;
+            return this;
+        }
+        /**
+         * With gearbox.
+         * @param gearbox the gearbox of each drive side. ONLY USED IN SIMULATION.
+         * @return this
+         */
+        public NFRTankDriveConfiguration withGearbox(DCMotor gearbox)
+        {
+            this.gearbox = gearbox;
+            return this;
         }
     }
     protected final DifferentialDriveKinematics kinematics;
