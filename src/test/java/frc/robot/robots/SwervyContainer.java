@@ -134,6 +134,10 @@ public class SwervyContainer implements NFRRobotContainer
         return Pair.of("Haha you got no autonomous", new InstantCommand());
     }
     @Override
+    public void setInitialPose(Pose2d pose)
+    {
+    }
+    @Override
     public void periodic()
     {
         field.setRobotPose(drive.getEstimatedPose());
