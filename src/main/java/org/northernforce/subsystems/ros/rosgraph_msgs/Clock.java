@@ -35,7 +35,7 @@ public class Clock extends Message
     }
     public static Clock fromJsonObject(JsonObject object)
     {
-        Time clock = object.containsKey("header") ? Time.fromJsonObject(object.getJsonObject("clock"))
+        Time clock = object.containsKey("clock") ? Time.fromJsonObject(object.getJsonObject("clock"))
             : new Time();
         return new Clock(clock);
     }
