@@ -22,6 +22,7 @@ import org.northernforce.subsystems.drive.NFRSwerveDrive.NFRSwerveDriveConfigura
 import org.northernforce.subsystems.drive.swerve.NFRSwerveModule;
 import org.northernforce.subsystems.ros.ROSCoprocessor;
 import org.northernforce.subsystems.ros.ROSCoprocessor.ROSCoprocessorConfiguration;
+import org.northernforce.subsystems.ros.geometry_msgs.PoseWithCovarianceStamped;
 import org.northernforce.util.NFRRobotContainer;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -37,6 +38,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.XboxController;
@@ -50,6 +53,7 @@ import frc.robot.FieldConstants;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DropCubeAuto;
 import frc.robot.commands.SwerveSideAuto;
+import edu.wpi.rail.jrosbridge.messages.Message;
 
 public class SwervyContainer implements NFRRobotContainer
 {
@@ -99,6 +103,10 @@ public class SwervyContainer implements NFRRobotContainer
             .withHostname("northernforce-desktop")
             .withPort(5809);
         coprocessor = new ROSCoprocessor(coprocessorConfig);
+        coprocessor.onConnect(() -> {
+            coprocessor.subscribe("realsense/estimated_pose",
+                "geometry_msgs/PoseWithCovarianceStamped", this::recieveDetection);
+        });
         coprocessor.startConnecting();
         Shuffleboard.getTab("Main").add("Xavier", coprocessor);
         Shuffleboard.getTab("Swerve").add("Calibrate", new NFRSwerveDriveCalibrate(drive).ignoringDisable(true));
@@ -148,6 +156,28 @@ public class SwervyContainer implements NFRRobotContainer
             new NFRSwerveModuleSetState(drive.getModules()[3], 0,
                 false)
         };
+    }
+    public void recieveDetection(Message message)
+    {
+        System.out.println("Recieved detection.");
+        PoseWithCovarianceStamped poseStamped = PoseWithCovarianceStamped.fromMessage(message);
+        Pose3d pose = new Pose3d(
+            new Translation3d(
+                poseStamped.pose.getPose().getPosition().getX(),
+                poseStamped.pose.getPose().getPosition().getY(),
+                poseStamped.pose.getPose().getPosition().getZ()
+            ),
+            new Rotation3d(
+                new Quaternion(
+                    poseStamped.pose.getPose().getOrientation().getW(),
+                    poseStamped.pose.getPose().getOrientation().getX(),
+                    poseStamped.pose.getPose().getOrientation().getY(),
+                    poseStamped.pose.getPose().getOrientation().getZ()
+                )
+            )
+        );
+        System.out.println(poseStamped.header.getStamp().secs + "." + poseStamped.header.getStamp().secs);
+        drive.addVisionEstimate(poseStamped.header.getStamp().toSec(), pose.toPose2d());
     }
     @Override
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
