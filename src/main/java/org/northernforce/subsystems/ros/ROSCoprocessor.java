@@ -205,6 +205,12 @@ public class ROSCoprocessor extends NFRSubsystem
             System.out.println("Could not connect to rosbridge");
         }
     }
+    /**
+     * Uses the LookupTransform service to get transform. Not the quickest way to do so if done more than once.
+     * @param baseFrame the base frame of the transform
+     * @param childFrame the child frame of the transform
+     * @return the transform between the base frame and child frame. Only present if successful.
+     */
     public Optional<Transform3d> getTransform(String baseFrame, String childFrame)
     {
         var serviceResponse = getService("/lookup_transform", "nfr_tf_bridge_msgs/LookupTransform")
@@ -233,6 +239,14 @@ public class ROSCoprocessor extends NFRSubsystem
             return Optional.empty();
         }
     }
+    /**
+     * Publishes a transform periodically to a topic.
+     * @param base_frame the base frame of the transform
+     * @param child_frame the child frame of the transform
+     * @param topic the topic to publish the transform to
+     * @param frequency the frequency to publish with (in Hz)
+     * @param transformConsumer the consumer to be called on subscription
+     */
     public void subscribeTransform(String base_frame, String child_frame, String topic, double frequency,
         Consumer<Transform3d> transformConsumer)
     {
@@ -257,6 +271,10 @@ public class ROSCoprocessor extends NFRSubsystem
             ));
         });
     }
+    /**
+     * Publishes a TFMessage containing a list of TransformStamped
+     * @param transforms the transforms to publish
+     */
     public void publishTF(TransformStamped... transforms)
     {
         TFMessage message = new TFMessage(transforms);
