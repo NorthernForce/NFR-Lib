@@ -5,16 +5,34 @@ import java.util.HashMap;
 import java.util.function.Consumer;
 
 import org.northernforce.subsystems.NFRSubsystem;
+import org.northernforce.subsystems.ros.geometry_msgs.PoseStamped;
+import org.northernforce.subsystems.ros.geometry_msgs.PoseWithCovarianceStamped;
+import org.northernforce.subsystems.ros.geometry_msgs.TransformStamped;
+import org.northernforce.subsystems.ros.nav_msgs.Odometry;
+import org.northernforce.subsystems.ros.nfr_tf_bridge_msgs.NFRTFRequest;
 import org.northernforce.subsystems.ros.rosgraph_msgs.Clock;
+import org.northernforce.subsystems.ros.std_msgs.Header;
 import org.northernforce.subsystems.ros.primitives.Time;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.rail.jrosbridge.Ros;
 import edu.wpi.rail.jrosbridge.Service;
 import edu.wpi.rail.jrosbridge.Topic;
 import edu.wpi.rail.jrosbridge.callback.TopicCallback;
 import edu.wpi.rail.jrosbridge.messages.Message;
+import edu.wpi.rail.jrosbridge.messages.geometry.Point;
+import edu.wpi.rail.jrosbridge.messages.geometry.Pose;
+import edu.wpi.rail.jrosbridge.messages.geometry.PoseWithCovariance;
+import edu.wpi.rail.jrosbridge.messages.geometry.Quaternion;
+import edu.wpi.rail.jrosbridge.messages.geometry.Twist;
+import edu.wpi.rail.jrosbridge.messages.geometry.TwistWithCovariance;
+import edu.wpi.rail.jrosbridge.messages.geometry.Vector3;
 
 /**
  * Team 172's implementation of the ROSCoprocessor subsystem which maintains a ROSBridge websocket between the
@@ -206,5 +224,95 @@ public class ROSCoprocessor extends NFRSubsystem
             Clock clock = new Clock(new Time((double)System.currentTimeMillis() / 1000));
             publish("/clock", "rosgraph_msgs/Clock", clock);
         }
+    }
+    public void publishOdometry(Pose2d odometryPose, ChassisSpeeds chassisSpeeds)
+    {
+        Header header = new Header(new Time((double)System.currentTimeMillis() / 1000), "odom");
+        Rotation3d odometryOrientation = new Rotation3d(0, 0, odometryPose.getRotation().getRadians());
+        Quaternion quaternion = new Quaternion(
+            odometryOrientation.getQuaternion().getX(),
+            odometryOrientation.getQuaternion().getY(),
+            odometryOrientation.getQuaternion().getZ(),
+            odometryOrientation.getQuaternion().getW()
+        );
+        PoseWithCovariance pose = new PoseWithCovariance(
+            new Pose(new Point(odometryPose.getX(), odometryPose.getY(), 0), quaternion));
+        TwistWithCovariance twist = new TwistWithCovariance(new Twist(
+            new Vector3(
+                chassisSpeeds.vxMetersPerSecond,
+                chassisSpeeds.vyMetersPerSecond,
+                0
+            ),
+            new Vector3(
+                0,
+                0,
+                chassisSpeeds.omegaRadiansPerSecond
+            )
+        ));
+        Odometry odometry = new Odometry(header, "base_link", pose, twist);
+        publish("/odom", "nav_msgs/Odometry", odometry);
+    }
+    public void publishSetPose(Pose2d pose)
+    {
+        Header header = new Header(new Time((double)System.currentTimeMillis() / 1000), "map");
+        Rotation3d rotation = new Rotation3d(0, 0, pose.getRotation().getRadians());
+        PoseWithCovariance poseWithCovariance = new PoseWithCovariance(new Pose(
+            new Point(pose.getX(), pose.getY(), 0),
+            new Quaternion(
+                rotation.getQuaternion().getX(),
+                rotation.getQuaternion().getY(),
+                rotation.getQuaternion().getZ(),
+                rotation.getQuaternion().getW()
+            )
+        ));
+        PoseWithCovarianceStamped poseStamped = new PoseWithCovarianceStamped(header, poseWithCovariance);
+        publish("/set_pose", "geometry_msgs/PoseWithCovarianceStamped", poseStamped);
+    }
+    public void publishTargetPose(Pose2d targetPose)
+    {
+        Header header = new Header(new Time(Timer.getFPGATimestamp()), "map");
+        Rotation3d rotation = new Rotation3d(0, 0, targetPose.getRotation().getRadians());
+        Pose pose = new Pose(
+            new Point(targetPose.getX(), targetPose.getY(), 0),
+            new Quaternion(
+                rotation.getQuaternion().getX(),
+                rotation.getQuaternion().getY(),
+                rotation.getQuaternion().getZ(),
+                rotation.getQuaternion().getW()
+            )
+        );
+        PoseStamped poseStamped = new PoseStamped(header, pose);
+        publish("/target_pose", "geometry_msgs/PoseStamped", poseStamped);
+    }
+    public void subscribeCommandVelocity(Consumer<ChassisSpeeds> commmandVelocityConsumer)
+    {
+        subscribe("/cmd_vel", "geometry_msgs/Twist", message -> {
+            Twist twist = Twist.fromMessage(message);
+            ChassisSpeeds speeds = new ChassisSpeeds();
+            speeds.vxMetersPerSecond = twist.getLinear().getX();
+            speeds.vyMetersPerSecond = twist.getLinear().getY();
+            speeds.omegaRadiansPerSecond = twist.getAngular().getZ();
+            commmandVelocityConsumer.accept(speeds);
+        });
+    }
+    public void requestTransform(String sourceFrame, String targetFrame, String topic, double updateFrequency)
+    {
+        publish("/requests", "nfr_tf_bridge_msgs/NFRTFRequest", new NFRTFRequest(
+            sourceFrame, targetFrame, topic, updateFrequency));
+    }
+    public void subscribePose(Consumer<Pose2d> poseConsumer)
+    {
+        requestTransform("map", "base_link", "/pose", 50);
+        subscribe("/pose", "geometry_msgs/TransformStamped", message -> {
+            System.out.println("Recieved pose");
+            TransformStamped transform = TransformStamped.fromMessage(message);
+            Rotation3d rotation = new Rotation3d(new edu.wpi.first.math.geometry.Quaternion(
+                transform.transform.getRotation().getX(), transform.transform.getRotation().getY(),
+                transform.transform.getRotation().getZ(), transform.transform.getRotation().getW()
+            ));
+            Pose2d pose = new Pose2d(transform.transform.getTranslation().getX(), transform.transform.getTranslation().getY(),
+                Rotation2d.fromRadians(rotation.getZ()));
+            poseConsumer.accept(pose);
+        });
     }
 }
