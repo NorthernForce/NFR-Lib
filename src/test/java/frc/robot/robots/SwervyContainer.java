@@ -84,7 +84,6 @@ public class SwervyContainer implements NFRRobotContainer
     }
     public void recieveDetection(Message message)
     {
-        System.out.println("Recieved detection.");
         PoseWithCovarianceStamped poseStamped = PoseWithCovarianceStamped.fromMessage(message);
         Pose3d pose = new Pose3d(
             new Translation3d(
@@ -101,7 +100,6 @@ public class SwervyContainer implements NFRRobotContainer
                 )
             )
         );
-        System.out.println(poseStamped.header.getStamp().secs + "." + poseStamped.header.getStamp().secs);
         drive.addVisionEstimate(poseStamped.header.getStamp().toSec(), pose.toPose2d());
     }
     @Override
