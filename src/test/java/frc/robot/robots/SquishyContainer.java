@@ -8,7 +8,6 @@ import org.northernforce.gyros.NFRNavX;
 import org.northernforce.motors.NFRSparkMax;
 import org.northernforce.subsystems.drive.NFRTankDrive;
 import org.northernforce.subsystems.drive.NFRTankDrive.NFRTankDriveConfiguration;
-import org.northernforce.subsystems.ros.ROSCoprocessor;
 import org.northernforce.util.NFRRobotContainer;
 
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -30,7 +29,7 @@ import frc.robot.subsystems.Xavier;
 public class SquishyContainer implements NFRRobotContainer {
     private final NFRTankDrive drive;
     private final Field2d field;
-    private final ROSCoprocessor coprocessor;
+    private final Xavier coprocessor;
     public SquishyContainer()
     {
         NFRTankDriveConfiguration config = new NFRTankDriveConfiguration(
