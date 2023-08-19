@@ -191,7 +191,6 @@ public class NFRSwerveDrive extends NFRDrive
     {
         return odometry.getPoseMeters();
     }
-    
     public SwerveModuleState[] getStopState()
     {
         SwerveModuleState[] states = new SwerveModuleState[modules.length];
