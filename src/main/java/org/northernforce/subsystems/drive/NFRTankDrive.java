@@ -12,6 +12,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -148,6 +149,7 @@ public class NFRTankDrive extends NFRDrive
     protected final NFRGyro gyro;
     protected final DifferentialDrivetrainSim simulator;
     protected final NFRTankDriveConfiguration config;
+    protected final Notifier notifier;
     /**
      * Creates a new NFR Tank Drive.
      * @param config the class containing the configuration parameters.
@@ -193,6 +195,8 @@ public class NFRTankDrive extends NFRDrive
         {
             simulator = null;
         }
+        notifier = new Notifier(this::updateOdometry);
+        notifier.startPeriodic(0.02);
     }
     /**
      * Gets the estimated pose that is a combination of odometry and vision estimates
@@ -246,7 +250,14 @@ public class NFRTankDrive extends NFRDrive
     @Override
     public void periodic()
     {
-        estimator.update(
+    }
+    /**
+     * Updates the odometry and pose estimator with module positions.
+     */
+    public void updateOdometry()
+    {
+        estimator.updateWithTime(
+            System.currentTimeMillis() / 1000,
             gyro.getGyroYaw(),
             leftSide.getSelectedEncoder().getPosition(),
             rightSide.getSelectedEncoder().getPosition()
