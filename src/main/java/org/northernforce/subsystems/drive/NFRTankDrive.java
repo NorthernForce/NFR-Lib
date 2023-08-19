@@ -344,4 +344,8 @@ public class NFRTankDrive extends NFRDrive
     {
         return rightSide;
     }
+    public Pose2d getOdometryPose()
+    {
+        return odometry.getPoseMeters();
+    }
 }
