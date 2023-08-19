@@ -89,7 +89,6 @@ public class SquishyContainer implements NFRRobotContainer {
                 )
             )
         );
-        System.out.println(poseStamped.header.getStamp().secs + "." + poseStamped.header.getStamp().secs);
         drive.addVisionEstimate(poseStamped.header.getStamp().toSec(), pose.toPose2d());
     }
     @Override
