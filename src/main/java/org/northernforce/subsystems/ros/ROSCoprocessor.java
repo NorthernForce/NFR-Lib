@@ -8,6 +8,9 @@ import org.northernforce.subsystems.NFRSubsystem;
 import org.northernforce.subsystems.ros.rosgraph_msgs.Clock;
 import org.northernforce.subsystems.ros.primitives.Time;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.rail.jrosbridge.Ros;
@@ -15,6 +18,11 @@ import edu.wpi.rail.jrosbridge.Service;
 import edu.wpi.rail.jrosbridge.Topic;
 import edu.wpi.rail.jrosbridge.callback.TopicCallback;
 import edu.wpi.rail.jrosbridge.messages.Message;
+import edu.wpi.rail.jrosbridge.messages.geometry.Point;
+import edu.wpi.rail.jrosbridge.messages.geometry.Pose;
+import edu.wpi.rail.jrosbridge.messages.geometry.Quaternion;
+import edu.wpi.rail.jrosbridge.messages.geometry.Twist;
+import edu.wpi.rail.jrosbridge.messages.geometry.Vector3;
 
 /**
  * Team 172's implementation of the ROSCoprocessor subsystem which maintains a ROSBridge websocket between the
@@ -206,5 +214,28 @@ public class ROSCoprocessor extends NFRSubsystem
             Clock clock = new Clock(new Time((double)System.currentTimeMillis() / 1000));
             publish("/clock", "rosgraph_msgs/Clock", clock);
         }
+    }
+    public static Pose fromPose3d(Pose3d pose)
+    {
+        return new Pose(
+            new Point(pose.getX(), pose.getY(), pose.getZ()),
+            new Quaternion(
+                pose.getRotation().getQuaternion().getX(),
+                pose.getRotation().getQuaternion().getY(),
+                pose.getRotation().getQuaternion().getZ(),
+                pose.getRotation().getQuaternion().getW()
+            )
+        );
+    }
+    public static Pose fromPose2d(Pose2d pose)
+    {
+        return fromPose3d(new Pose3d(pose));
+    }
+    public static Twist fromChassisSpeeds(ChassisSpeeds speeds)
+    {
+        return new Twist(
+            new Vector3(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, 0),
+            new Vector3(0, 0, speeds.omegaRadiansPerSecond)
+        );
     }
 }
