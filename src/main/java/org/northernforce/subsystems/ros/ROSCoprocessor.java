@@ -2,10 +2,19 @@ package org.northernforce.subsystems.ros;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.northernforce.subsystems.NFRSubsystem;
+import org.northernforce.subsystems.ros.geometry_msgs.TransformStamped;
+import org.northernforce.subsystems.ros.nfr_tf_bridge_msgs.LookupTransform;
+import org.northernforce.subsystems.ros.nfr_tf_bridge_msgs.RequestTransform;
+import org.northernforce.subsystems.ros.primitives.Time;
+import org.northernforce.subsystems.ros.tf_msgs.TFMessage;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.rail.jrosbridge.Ros;
@@ -195,5 +204,80 @@ public class ROSCoprocessor extends NFRSubsystem
         {
             System.out.println("Could not connect to rosbridge");
         }
+    }
+    /**
+     * Uses the LookupTransform service to get transform. Not the quickest way to do so if done more than once.
+     * @param baseFrame the base frame of the transform
+     * @param childFrame the child frame of the transform
+     * @return the transform between the base frame and child frame. Only present if successful.
+     */
+    public Optional<Transform3d> getTransform(String baseFrame, String childFrame)
+    {
+        var serviceResponse = getService("/lookup_transform", "nfr_tf_bridge_msgs/LookupTransform")
+            .callServiceAndWait(new LookupTransform.Request(baseFrame, childFrame, new Time()));
+        var response = LookupTransform.Response.fromServiceResponse(serviceResponse);
+        if (response.success)
+        {
+            return Optional.of(new Transform3d(
+                new Translation3d(
+                    response.transform.transform.getTranslation().getX(),
+                    response.transform.transform.getTranslation().getY(),
+                    response.transform.transform.getTranslation().getZ()
+                ),
+                new Rotation3d(
+                    new edu.wpi.first.math.geometry.Quaternion(
+                        response.transform.transform.getRotation().getW(),
+                        response.transform.transform.getRotation().getX(),
+                        response.transform.transform.getRotation().getY(),
+                        response.transform.transform.getRotation().getZ()
+                    )
+                )
+            ));
+        }
+        else
+        {
+            return Optional.empty();
+        }
+    }
+    /**
+     * Publishes a transform periodically to a topic.
+     * @param base_frame the base frame of the transform
+     * @param child_frame the child frame of the transform
+     * @param topic the topic to publish the transform to
+     * @param frequency the frequency to publish with (in Hz)
+     * @param transformConsumer the consumer to be called on subscription
+     */
+    public void subscribeTransform(String base_frame, String child_frame, String topic, double frequency,
+        Consumer<Transform3d> transformConsumer)
+    {
+        publish("request_transform", "nfr_tf_bridge_msgs/RequestTransform",
+            new RequestTransform(frequency, base_frame, child_frame, topic));
+        subscribe(topic, "geometry_msgs/TransformStamped", message -> {
+            TransformStamped transform = TransformStamped.fromMessage(message);
+            transformConsumer.accept(new Transform3d(
+                new Translation3d(
+                    transform.transform.getTranslation().getX(),
+                    transform.transform.getTranslation().getY(),
+                    transform.transform.getTranslation().getZ()
+                ),
+                new Rotation3d(
+                    new edu.wpi.first.math.geometry.Quaternion(
+                        transform.transform.getRotation().getW(),
+                        transform.transform.getRotation().getX(),
+                        transform.transform.getRotation().getY(),
+                        transform.transform.getRotation().getZ()
+                    )
+                )
+            ));
+        });
+    }
+    /**
+     * Publishes a TFMessage containing a list of TransformStamped
+     * @param transforms the transforms to publish
+     */
+    public void publishTF(TransformStamped... transforms)
+    {
+        TFMessage message = new TFMessage(transforms);
+        publish("/tf", "tf_msgs/TFMessage", message);
     }
 }
