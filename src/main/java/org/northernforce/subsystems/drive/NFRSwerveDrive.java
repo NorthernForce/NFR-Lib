@@ -167,4 +167,8 @@ public class NFRSwerveDrive extends NFRDrive
     {
         gyroOffset = gyro.getGyroYaw().unaryMinus();
     }
+    public Pose2d getOdometryPose()
+    {
+        return odometry.getPoseMeters();
+    }
 }

@@ -53,4 +53,5 @@ public abstract class NFRDrive extends NFRSubsystem
      * @return chassis speeds which holds vx, vy, and vtheta.
      */
     public abstract ChassisSpeeds getChassisSpeeds();
+    public abstract Pose2d getOdometryPose();
 }
