@@ -9,8 +9,6 @@ import org.northernforce.motors.NFRSparkMax;
 import org.northernforce.subsystems.drive.NFRTankDrive;
 import org.northernforce.subsystems.drive.NFRTankDrive.NFRTankDriveConfiguration;
 import org.northernforce.subsystems.ros.ROSCoprocessor;
-import org.northernforce.subsystems.ros.ROSCoprocessor.ROSCoprocessorConfiguration;
-import org.northernforce.subsystems.ros.geometry_msgs.PoseWithCovarianceStamped;
 import org.northernforce.util.NFRRobotContainer;
 
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -18,10 +16,6 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Quaternion;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -31,11 +25,12 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.rail.jrosbridge.messages.Message;
+import frc.robot.subsystems.Xavier;
 
 public class SquishyContainer implements NFRRobotContainer {
     private final NFRTankDrive drive;
     private final Field2d field;
+    private final ROSCoprocessor coprocessor;
     public SquishyContainer()
     {
         NFRTankDriveConfiguration config = new NFRTankDriveConfiguration(
@@ -59,37 +54,8 @@ public class SquishyContainer implements NFRRobotContainer {
         NFRNavX navx = new NFRNavX();
         drive = new NFRTankDrive(config, leftSide, rightSide, navx);
         field = new Field2d();
-        Shuffleboard.getTab("Autonomous").add("Field", field);
-        ROSCoprocessorConfiguration coprocessorConfig = new ROSCoprocessorConfiguration("xavier")
-            .withHostname("northernforce-desktop")
-            .withPort(5809);
-        ROSCoprocessor coprocessor = new ROSCoprocessor(coprocessorConfig);
-        coprocessor.onConnect(() -> {
-            coprocessor.subscribe("realsense/estimated_pose",
-                "geometry_msgs/PoseWithCovarianceStamped", this::recieveDetection);
-        });
+        coprocessor = new Xavier(drive);
         Shuffleboard.getTab("Main").add("Xavier", coprocessor);
-    }
-    public void recieveDetection(Message message)
-    {
-        System.out.println("Recieved detection.");
-        PoseWithCovarianceStamped poseStamped = PoseWithCovarianceStamped.fromMessage(message);
-        Pose3d pose = new Pose3d(
-            new Translation3d(
-                poseStamped.pose.getPose().getPosition().getX(),
-                poseStamped.pose.getPose().getPosition().getY(),
-                poseStamped.pose.getPose().getPosition().getZ()
-            ),
-            new Rotation3d(
-                new Quaternion(
-                    poseStamped.pose.getPose().getOrientation().getW(),
-                    poseStamped.pose.getPose().getOrientation().getX(),
-                    poseStamped.pose.getPose().getOrientation().getY(),
-                    poseStamped.pose.getPose().getOrientation().getZ()
-                )
-            )
-        );
-        drive.addVisionEstimate(poseStamped.header.getStamp().toSec(), pose.toPose2d());
     }
     @Override
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
