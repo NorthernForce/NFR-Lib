@@ -160,6 +160,10 @@ public class NFRSwerveDrive extends NFRDrive
         odometry.update(gyro.getGyroYaw(), getPositions());
     }
 
+    /**
+     * Gets the odometry
+     * @return the odometry
+     */
     public SwerveDriveOdometry getOdometry()
     {
         return odometry;

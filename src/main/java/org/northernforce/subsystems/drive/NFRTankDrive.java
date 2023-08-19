@@ -268,6 +268,10 @@ public class NFRTankDrive extends NFRDrive
             rightSide.getSelectedEncoder().getPosition()
         );
     }
+    /**
+     * Gets the odometry
+     * @return the odometry
+     */
     public DifferentialDriveOdometry getOdometry()
     {
         return odometry;
