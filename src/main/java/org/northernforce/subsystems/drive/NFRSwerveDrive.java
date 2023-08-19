@@ -167,6 +167,10 @@ public class NFRSwerveDrive extends NFRDrive
     {
         gyroOffset = gyro.getGyroYaw().unaryMinus();
     }
+    /**
+     * Gets the pose estimated by the odometry, not affected by vision measurements.
+     * @return odometry.getPoseMeters()
+     */
     public Pose2d getOdometryPose()
     {
         return odometry.getPoseMeters();
