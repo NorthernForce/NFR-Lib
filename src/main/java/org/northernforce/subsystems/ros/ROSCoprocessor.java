@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.function.Consumer;
 
 import org.northernforce.subsystems.NFRSubsystem;
+import org.northernforce.subsystems.ros.rosgraph_msgs.Clock;
+import org.northernforce.subsystems.ros.primitives.Time;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Notifier;
@@ -194,6 +196,15 @@ public class ROSCoprocessor extends NFRSubsystem
         else
         {
             System.out.println("Could not connect to rosbridge");
+        }
+    }
+    @Override
+    public void periodic()
+    {
+        if (ros.isConnected())
+        {
+            Clock clock = new Clock(new Time((double)System.currentTimeMillis() / 1000));
+            publish("/clock", "rosgraph_msgs/Clock", clock);
         }
     }
 }
