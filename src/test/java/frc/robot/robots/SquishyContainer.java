@@ -97,6 +97,11 @@ public class SquishyContainer implements NFRRobotContainer {
         field.setRobotPose(drive.getEstimatedPose());
     }
     @Override
+    public void setInitialPose(Pose2d pose)
+    {
+        drive.resetPose(pose);
+    }
+    @Override
     public Pair<String, Command> getDefaultAutonomous()
     {
         return Pair.of("Do Nothing", new InstantCommand());

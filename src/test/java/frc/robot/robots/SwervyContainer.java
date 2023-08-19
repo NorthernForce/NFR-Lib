@@ -108,6 +108,11 @@ public class SwervyContainer implements NFRRobotContainer
         }
     }
     @Override
+    public void setInitialPose(Pose2d pose)
+    {
+        drive.resetPose(pose);
+    }
+    @Override
     public Map<String, Command> getAutonomousOptions()
     {
         return Map.of("Do nothing", new InstantCommand());
