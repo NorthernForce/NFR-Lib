@@ -10,6 +10,7 @@ import org.northernforce.subsystems.ros.geometry_msgs.TransformStamped;
 import org.northernforce.subsystems.ros.nfr_tf_bridge_msgs.LookupTransform;
 import org.northernforce.subsystems.ros.nfr_tf_bridge_msgs.RequestTransform;
 import org.northernforce.subsystems.ros.primitives.Time;
+import org.northernforce.subsystems.ros.tf_msgs.TFMessage;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -255,5 +256,10 @@ public class ROSCoprocessor extends NFRSubsystem
                 )
             ));
         });
+    }
+    public void publishTF(TransformStamped... transforms)
+    {
+        TFMessage message = new TFMessage(transforms);
+        publish("/tf", "tf_msgs/TFMessage", message);
     }
 }
