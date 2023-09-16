@@ -193,6 +193,7 @@ public class NFRSwerveDrive extends NFRDrive
         SwerveModuleState[] states = new SwerveModuleState[modules.length];
         for (int i = 0; i < modules.length; i++)
         {
+            states[i] = new SwerveModuleState();
             states[i].speedMetersPerSecond = 0;
             states[i].angle = Rotation2d.fromRadians(Math.atan2(offsets[i].getX(), offsets[i].getY()));
         }
