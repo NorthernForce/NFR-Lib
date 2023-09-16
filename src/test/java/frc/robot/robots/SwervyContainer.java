@@ -2,6 +2,7 @@ package frc.robot.robots;
 
 import java.util.Map;
 
+import org.northernforce.commands.NFRSwerveDriveStop;
 import org.northernforce.commands.NFRSwerveDriveWithJoystick;
 import org.northernforce.commands.NFRSwerveModuleSetState;
 import org.northernforce.gyros.NFRNavX;
@@ -95,6 +96,8 @@ public class SwervyContainer implements NFRRobotContainer
                 true, true));
             new JoystickButton(driverController, XboxController.Button.kB.value)
                 .onTrue(Commands.runOnce(drive::clearRotation));
+            new JoystickButton(driverController, XboxController.Button.kY.value)
+                .onTrue(new NFRSwerveDriveStop(drive, commands, true));
         }
         else
         {
@@ -103,8 +106,6 @@ public class SwervyContainer implements NFRRobotContainer
                 () -> MathUtil.applyDeadband(driverHID.getRawAxis(0), 0.1),
                 () -> -MathUtil.applyDeadband(driverHID.getRawAxis(4), 0.1),
                 true, true));
-            new JoystickButton(driverHID, 5)
-                .onTrue(Commands.runOnce(drive::clearRotation));
         }
     }
     @Override
