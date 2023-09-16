@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
+import javax.websocket.Session;
+
 import org.northernforce.subsystems.NFRSubsystem;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -15,6 +17,7 @@ import edu.wpi.rail.jrosbridge.Ros;
 import edu.wpi.rail.jrosbridge.Service;
 import edu.wpi.rail.jrosbridge.Topic;
 import edu.wpi.rail.jrosbridge.callback.TopicCallback;
+import edu.wpi.rail.jrosbridge.handler.RosHandler;
 import edu.wpi.rail.jrosbridge.messages.Message;
 import edu.wpi.rail.jrosbridge.messages.geometry.Point;
 import edu.wpi.rail.jrosbridge.messages.geometry.Pose;
@@ -26,7 +29,7 @@ import edu.wpi.rail.jrosbridge.messages.geometry.Vector3;
  * Team 172's implementation of the ROSCoprocessor subsystem which maintains a ROSBridge websocket between the
  * coprocessor and the subsystem.
  */
-public class ROSCoprocessor extends NFRSubsystem
+public class ROSCoprocessor extends NFRSubsystem implements RosHandler
 {
     /**
      * The configuration for the ROSCoprocessor.
@@ -81,7 +84,7 @@ public class ROSCoprocessor extends NFRSubsystem
     protected final Ros ros;
     protected final HashMap<String, Topic> topics;
     protected final HashMap<String, Service> services;
-    protected final ArrayList<Runnable> onConnects;
+    protected final ArrayList<Runnable> onConnects, onDisconnects;
     protected final Notifier tryConnect;
     /**
      * Creates a new ROSCoprocessor.
@@ -94,6 +97,7 @@ public class ROSCoprocessor extends NFRSubsystem
         topics = new HashMap<>();
         services = new HashMap<>();
         onConnects = new ArrayList<>();
+        onDisconnects = new ArrayList<>();
         tryConnect = new Notifier(this::connect);
     }
     /**
@@ -110,6 +114,14 @@ public class ROSCoprocessor extends NFRSubsystem
     public void onConnect(Runnable runnable)
     {
         onConnects.add(runnable);
+    }
+    /**
+     * Adds a runnable to be executed on connect
+     * @param runnable to be executed on connect
+     */
+    public void onDisconnect(Runnable runnable)
+    {
+        onDisconnects.add(runnable);
     }
     /**
      * Checks whether connected
@@ -193,10 +205,6 @@ public class ROSCoprocessor extends NFRSubsystem
         if (ros.connect())
         {
             System.out.println("Connected");
-            for (var onConnect : onConnects)
-            {
-                onConnect.run();
-            }
             tryConnect.stop();
         }
         else
@@ -226,5 +234,25 @@ public class ROSCoprocessor extends NFRSubsystem
             new Vector3(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, 0),
             new Vector3(0, 0, speeds.omegaRadiansPerSecond)
         );
+    }
+    @Override
+    public void handleConnection(Session session)
+    {
+        for (Runnable onConnect : onConnects)
+        {
+            onConnect.run();
+        }
+    }
+    @Override
+    public void handleDisconnection(Session session)
+    {
+        for (Runnable onDisconnect : onDisconnects)
+        {
+            onDisconnect.run();
+        }
+    }
+    @Override
+    public void handleError(Session session, Throwable t)
+    {
     }
 }

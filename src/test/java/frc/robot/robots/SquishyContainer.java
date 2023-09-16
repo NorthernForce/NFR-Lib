@@ -15,6 +15,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -24,6 +25,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.commands.XavierSendTarget;
 import frc.robot.subsystems.Xavier;
 
 public class SquishyContainer implements NFRRobotContainer {
@@ -75,6 +77,8 @@ public class SquishyContainer implements NFRRobotContainer {
             ));
             new JoystickButton(driverController, XboxController.Button.kB.value)
                 .whileTrue(new NFRTankDriveStop(drive, 0.1));
+            new JoystickButton(driverController, XboxController.Button.kA.value)
+                .onTrue(new XavierSendTarget(coprocessor, new Pose2d(5, 3, Rotation2d.fromDegrees(20))));
         }
     }
     @Override

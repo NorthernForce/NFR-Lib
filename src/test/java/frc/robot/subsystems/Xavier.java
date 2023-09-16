@@ -58,6 +58,10 @@ public class Xavier extends ROSCoprocessor
         );
         publish("/odom", "nav_msgs/Odometry", odometry);
     }
+    public void sendTargetPose(Pose2d targetPose)
+    {
+        publish("/target_pose", "geometry_msgs/PoseWithCovarianceStamped", fromPose2d(targetPose));
+    }
     @Override
     public void periodic()
     {

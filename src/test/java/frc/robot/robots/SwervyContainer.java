@@ -13,6 +13,7 @@ import org.northernforce.util.NFRRobotContainer;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -23,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.commands.XavierSendTarget;
 import frc.robot.subsystems.Xavier;
 
 public class SwervyContainer implements NFRRobotContainer
@@ -90,6 +92,8 @@ public class SwervyContainer implements NFRRobotContainer
                 true, true));
             new JoystickButton(driverController, XboxController.Button.kB.value)
                 .onTrue(Commands.runOnce(drive::clearRotation));
+            new JoystickButton(driverController, XboxController.Button.kA.value)
+                .onTrue(new XavierSendTarget(coprocessor, new Pose2d(5, 3, Rotation2d.fromDegrees(20))));
         }
         else
         {
@@ -100,6 +104,8 @@ public class SwervyContainer implements NFRRobotContainer
                 true, true));
             new JoystickButton(driverHID, 5)
                 .onTrue(Commands.runOnce(drive::clearRotation));
+            new JoystickButton(driverHID, 0)
+                .onTrue(new XavierSendTarget(coprocessor, new Pose2d(5, 3, Rotation2d.fromDegrees(20))));
         }
     }
     @Override
