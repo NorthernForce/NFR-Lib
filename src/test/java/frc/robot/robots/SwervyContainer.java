@@ -1,5 +1,6 @@
 package frc.robot.robots;
 
+import java.sql.Driver;
 import java.util.Map;
 
 import org.northernforce.commands.NFRSwerveDriveStop;
@@ -106,6 +107,10 @@ public class SwervyContainer implements NFRRobotContainer
                 () -> MathUtil.applyDeadband(driverHID.getRawAxis(0), 0.1),
                 () -> -MathUtil.applyDeadband(driverHID.getRawAxis(4), 0.1),
                 true, true));
+            new JoystickButton(driverHID, 5)
+                .onTrue(Commands.runOnce(drive::clearRotation));
+            new JoystickButton(driverHID, 1)
+                .onTrue(new NFRSwerveDriveStop(drive, commands, true));
         }
     }
     @Override
