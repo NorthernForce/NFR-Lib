@@ -41,6 +41,7 @@ public class NFRSwerveDrive extends NFRDrive
     protected Rotation2d gyroOffset;
     protected final SwerveDriveOdometry odometry;
     protected final Notifier notifier;
+    
     /**
      * Creates a new NFRSwerveDrive.
      * @param config the configuration for the swerve drive.
@@ -158,6 +159,11 @@ public class NFRSwerveDrive extends NFRDrive
         poseEstimator.updateWithTime(System.currentTimeMillis() / 1000.0, gyro.getGyroYaw(), getPositions());
         odometry.update(gyro.getGyroYaw(), getPositions());
     }
+
+    /**
+     * Gets the odometry
+     * @return the odometry
+     */
     public SwerveDriveOdometry getOdometry()
     {
         return odometry;
