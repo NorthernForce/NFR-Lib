@@ -53,4 +53,9 @@ public abstract class NFRDrive extends NFRSubsystem
      * @return chassis speeds which holds vx, vy, and vtheta.
      */
     public abstract ChassisSpeeds getChassisSpeeds();
+    /**
+     * Gets the pose estimated by the odometry, not affected by vision measurements.
+     * @return odometry.getPoseMeters()
+     */
+    public abstract Pose2d getOdometryPose();
 }

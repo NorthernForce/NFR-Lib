@@ -9,8 +9,10 @@ import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -143,9 +145,11 @@ public class NFRTankDrive extends NFRDrive
     protected final NFRMotorController leftSide, rightSide;
     protected final DifferentialDrive robotDrive;
     protected final DifferentialDrivePoseEstimator estimator;
+    protected final DifferentialDriveOdometry odometry;
     protected final NFRGyro gyro;
     protected final DifferentialDrivetrainSim simulator;
     protected final NFRTankDriveConfiguration config;
+    protected final Notifier notifier;
     /**
      * Creates a new NFR Tank Drive.
      * @param config the class containing the configuration parameters.
@@ -177,6 +181,8 @@ public class NFRTankDrive extends NFRDrive
         estimator = new DifferentialDrivePoseEstimator(kinematics, gyro.getGyroYaw(),
             leftSide.getSelectedEncoder().getPosition(), rightSide.getSelectedEncoder().getPosition(),
             new Pose2d());
+        odometry = new DifferentialDriveOdometry(gyro.getGyroYaw(),
+            leftSide.getSelectedEncoder().getPosition(), rightSide.getSelectedEncoder().getPosition());
         if (RobotBase.isSimulation())
         {
             simulator = new DifferentialDrivetrainSim(
@@ -189,6 +195,8 @@ public class NFRTankDrive extends NFRDrive
         {
             simulator = null;
         }
+        notifier = new Notifier(this::updateOdometry);
+        notifier.startPeriodic(0.02);
     }
     /**
      * Gets the estimated pose that is a combination of odometry and vision estimates
@@ -242,11 +250,27 @@ public class NFRTankDrive extends NFRDrive
     @Override
     public void periodic()
     {
-        estimator.update(
+    }
+    /**
+     * Updates the odometry and pose estimator with module positions.
+     */
+    public void updateOdometry()
+    {
+        estimator.updateWithTime(
+            System.currentTimeMillis() / 1000,
             gyro.getGyroYaw(),
             leftSide.getSelectedEncoder().getPosition(),
             rightSide.getSelectedEncoder().getPosition()
         );
+        odometry.update(
+            gyro.getGyroYaw(),
+            leftSide.getSelectedEncoder().getPosition(),
+            rightSide.getSelectedEncoder().getPosition()
+        );
+    }
+    public DifferentialDriveOdometry getOdometry()
+    {
+        return odometry;
     }
     /**
      * This is the simulation periodic function. The simulator is fed the inputs from the motors, and the simulation
@@ -330,5 +354,13 @@ public class NFRTankDrive extends NFRDrive
     public NFRMotorController getRightSide()
     {
         return rightSide;
+    }
+    /**
+     * Gets the pose estimated by the odometry, not affected by vision measurements.
+     * @return odometry.getPoseMeters()
+     */
+    public Pose2d getOdometryPose()
+    {
+        return odometry.getPoseMeters();
     }
 }
