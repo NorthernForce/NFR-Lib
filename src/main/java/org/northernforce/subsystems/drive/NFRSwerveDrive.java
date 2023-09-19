@@ -35,6 +35,7 @@ public class NFRSwerveDrive extends NFRDrive
     }
     protected final NFRSwerveDriveConfiguration config;
     protected final NFRSwerveModule[] modules;
+    protected final Translation2d[] offsets;
     protected final NFRGyro gyro;
     protected final SwerveDriveKinematics kinematics;
     protected final SwerveDrivePoseEstimator poseEstimator;
@@ -55,6 +56,7 @@ public class NFRSwerveDrive extends NFRDrive
         super(config);
         this.config = config;
         this.modules = modules;
+        this.offsets = offsets;
         this.gyro = gyro;
         kinematics = new SwerveDriveKinematics(offsets);
         poseEstimator = new SwerveDrivePoseEstimator(kinematics, gyro.getGyroYaw(), getPositions(), new Pose2d());
@@ -190,5 +192,17 @@ public class NFRSwerveDrive extends NFRDrive
     public Pose2d getOdometryPose()
     {
         return odometry.getPoseMeters();
+    }
+    
+    public SwerveModuleState[] getStopState()
+    {
+        SwerveModuleState[] states = new SwerveModuleState[modules.length];
+        for (int i = 0; i < modules.length; i++)
+        {
+            states[i] = new SwerveModuleState();
+            states[i].speedMetersPerSecond = 0;
+            states[i].angle = Rotation2d.fromRadians(Math.atan2(offsets[i].getX(), offsets[i].getY()));
+        }
+        return states;
     }
 }
