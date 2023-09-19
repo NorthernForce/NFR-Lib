@@ -36,7 +36,7 @@ public class AprilTagDetectionArray extends Message
     public static AprilTagDetectionArray fromJsonObject(JsonObject object)
     {
         AprilTagDetection[] detections;
-        if (object.containsKey("corners"))
+        if (object.containsKey("detections"))
         {
             JsonArray array = object.getJsonArray("detections");
             detections = new AprilTagDetection[array.size()];
