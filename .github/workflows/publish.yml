@@ -16,4 +16,4 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Publish robot code
-        run: ./gradlew publish -P pubs.publishJson -P pubs.publishJava -P repos.external -P auth.user="Team172" -P auth.key=${{ secrets.REPSY_PASSWORD }} -P pubs.version=github.event.inputs.version
+        run: ./gradlew publish -P pubs.publishJson -P pubs.publishJava -P repos.external -P auth.user="Team172" -P auth.key=${{ secrets.REPSY_PASSWORD }} -P pubs.version=${{ github.event.inputs.version }}
