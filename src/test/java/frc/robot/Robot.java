@@ -81,6 +81,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     autonomousCommand = autonomousChooser.getSelected();
+    container.setInitialPose(poseChooser.getSelected());
     if (autonomousCommand != null)
     {
       autonomousCommand.schedule();
