@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.northernforce.encoders.NFRAbsoluteEncoder;
 import org.northernforce.encoders.NFRCANCoder;
+import org.northernforce.motors.MotorEncoderMismatchException;
 import org.northernforce.motors.NFRMotorController;
 import org.northernforce.motors.NFRTalonFX;
 import org.northernforce.subsystems.NFRSubsystem;
@@ -336,7 +337,14 @@ public class NFRSwerveModule extends NFRSubsystem
         turnConfig.ClosedLoopGeneral.ContinuousWrap = true;
         NFRTalonFX turnMotor = new NFRTalonFX(turnConfig, turnID);
         NFRCANCoder cancoder = new NFRCANCoder(cancoderID);
-        turnMotor.setFusedCANCoder(cancoder, Mk3SwerveConstants.kTurnGearRatio);
+        try
+        {
+            turnMotor.setSelectedEncoder(cancoder);
+        }
+        catch (MotorEncoderMismatchException e)
+        {
+            e.printStackTrace();
+        }
         return new NFRSwerveModule(config, driveMotor, turnMotor, Optional.empty());
     }
 }
