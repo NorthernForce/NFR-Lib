@@ -10,16 +10,16 @@ import org.northernforce.subsystems.arm.NFRRollerIntake;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
-/** Add your docs here. */
+/** Runs a roller intake by boolean supplier*/
 public class NFRRollerIntakeWithJoystick extends CommandBase {
     protected final NFRRollerIntake intake;
     protected final DoubleSupplier speedSupplier;
     protected final boolean stopOnCommandEnd;
 
     /**
-     * sets speed of roller intake (command will not stop motor)
-     * @param intake the roller intake to set speed of 
-     * @param speed the speed to set
+     * Sets speed of roller intake (command will not stop motor)
+     * @param intake The roller intake to set speed of 
+     * @param speed The speed to set
     */
     public NFRRollerIntakeWithJoystick(NFRRollerIntake intake, DoubleSupplier speedSupplier) {
         this.intake = intake;
@@ -28,10 +28,10 @@ public class NFRRollerIntakeWithJoystick extends CommandBase {
     }
 
     /**
-     * sets speed of roller intake
-     * @param intake the roller intake to set speed of 
-     * @param speed the speed to set
-     * @param stopOnCommandEnd if true motor will stop on command end
+     * Sets speed of roller intake
+     * @param intake The roller intake to set speed of 
+     * @param speed The speed to set
+     * @param stopOnCommandEnd If true motor will stop on command end
     */
     public NFRRollerIntakeWithJoystick(NFRRollerIntake intake, DoubleSupplier speedSupplier, boolean stopOnCommandEnd) {
         this.intake = intake;

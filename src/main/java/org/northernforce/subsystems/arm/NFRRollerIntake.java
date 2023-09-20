@@ -8,20 +8,36 @@ import org.northernforce.motors.NFRMotorController;
 
 import edu.wpi.first.math.geometry.Transform3d;
 
-/** Add your docs here. */
+/** The subsystem to control a roller intake */
 public class NFRRollerIntake extends NFRArmJoint {
+
+    /** The config class for a {@link NFRRollerIntake}*/
     public static class NFRRollerIntakeConfiguration extends NFRArmJointConfiguration {
         protected double speedCoefficient = 1;
 
+        /**
+         * Creates a config for a {@link NFRRollerIntake}
+         * @param name The name for the subsystem
+         * @param speedCoefficient The Speed coefficient (usually either -1 or 1)
+         */
         public NFRRollerIntakeConfiguration(String name, double speedCoefficient) {
             super(name);
             this.speedCoefficient = speedCoefficient;
         }
 
+        /**
+         * Creates a config for a {@link NFRRollerIntake}
+         * @param name The name for the subsystem
+         */
         public NFRRollerIntakeConfiguration(String name) {
             super(name);
         }
 
+        /**
+         * Sets the speed coefficient
+         * @param speedCoefficient
+         * @return This for chaining
+         */
         public NFRRollerIntakeConfiguration withSpeedCoefficient(double speedCoefficient) {
             this.speedCoefficient = speedCoefficient;
             return this;
@@ -31,12 +47,21 @@ public class NFRRollerIntake extends NFRArmJoint {
     protected final NFRMotorController controller;
     protected final NFRRollerIntakeConfiguration config;
 
+    /**
+     * Creates a NFRRollerIntake
+     * @param config The config class
+     * @param controller The motor controller for the intake
+     */
     public NFRRollerIntake(NFRRollerIntakeConfiguration config, NFRMotorController controller) {
         super(config);
         this.config = config;
         this.controller = controller;
     }
 
+    /**
+     * Runs the roller intake at speed
+     * @param speed The speed to run the roller intake at
+     */
     public void setSpeed(double speed) {
         controller.set(speed * config.speedCoefficient);
     }
