@@ -1,12 +1,18 @@
 package frc.robot.robots;
 
-import java.sql.Driver;
 import java.util.Map;
+import java.util.Optional;
 
+import org.northernforce.commands.NFRRotatingArmJointWithJoystick;
 import org.northernforce.commands.NFRSwerveDriveStop;
 import org.northernforce.commands.NFRSwerveDriveWithJoystick;
 import org.northernforce.commands.NFRSwerveModuleSetState;
+import org.northernforce.encoders.NFRCANCoder;
 import org.northernforce.gyros.NFRNavX;
+import org.northernforce.motors.MotorEncoderMismatchException;
+import org.northernforce.motors.NFRTalonFX;
+import org.northernforce.subsystems.arm.NFRRotatingArmJoint;
+import org.northernforce.subsystems.arm.NFRRotatingArmJoint.NFRRotatingArmJointConfiguration;
 import org.northernforce.subsystems.drive.NFRSwerveDrive;
 import org.northernforce.subsystems.drive.NFRSwerveDrive.NFRSwerveDriveConfiguration;
 import org.northernforce.subsystems.drive.swerve.NFRSwerveModule;
@@ -14,10 +20,17 @@ import org.northernforce.subsystems.ros.ROSCoprocessor;
 import org.northernforce.subsystems.ros.ROSCoprocessor.ROSCoprocessorConfiguration;
 import org.northernforce.util.NFRRobotContainer;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.XboxController;
@@ -33,6 +46,7 @@ public class SwervyContainer implements NFRRobotContainer
     private final NFRSwerveDrive drive;
     private final Field2d field;
     private final ROSCoprocessor coprocessor;
+    private final NFRRotatingArmJoint rotatingJoint;
     public SwervyContainer()
     {
         NFRSwerveModule[] modules = new NFRSwerveModule[] {
@@ -73,6 +87,31 @@ public class SwervyContainer implements NFRRobotContainer
         coprocessor = new ROSCoprocessor(coprocessorConfig);
         coprocessor.startConnecting();
         Shuffleboard.getTab("Main").add("Xavier", coprocessor);
+        NFRRotatingArmJointConfiguration rotatingJointConfiguration = new NFRRotatingArmJointConfiguration("rotatingJoint")
+            .withUseLimits(false)
+            .withUseIntegratedLimits(true)
+            .withGearbox(DCMotor.getFalcon500(1))
+            .withLimits(new Rotation2d(), new Rotation2d()) // TODO
+            .withOriginOffset(new Transform3d(new Translation3d(10.463, 0, 10.777), new Rotation3d()));
+        TalonFXConfiguration rotatingJointMotorConfiguration = new TalonFXConfiguration();
+        rotatingJointMotorConfiguration.MotionMagic.MotionMagicAcceleration = 0; // TODO
+        rotatingJointMotorConfiguration.MotionMagic.MotionMagicCruiseVelocity = 0; // TODO
+        rotatingJointMotorConfiguration.Slot0.kP = 0; // TODO
+        rotatingJointMotorConfiguration.Slot0.kI = 0; // TODO
+        rotatingJointMotorConfiguration.Slot0.kD = 0; // TODO
+        rotatingJointMotorConfiguration.Slot0.kV = 0; // TODO
+        rotatingJointMotorConfiguration.Slot0.kS = 0; // TODO
+        NFRTalonFX rotatingJointMotor = new NFRTalonFX(rotatingJointMotorConfiguration, 13);
+        NFRCANCoder rotatingJointCANCoder = new NFRCANCoder(14);
+        try
+        {
+            rotatingJointMotor.setSelectedEncoder(rotatingJointCANCoder);
+        }
+        catch (MotorEncoderMismatchException e)
+        {
+            e.printStackTrace();
+        }
+        rotatingJoint = new NFRRotatingArmJoint(rotatingJointConfiguration, rotatingJointMotor, Optional.empty());
     }
     @Override
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
@@ -90,15 +129,18 @@ public class SwervyContainer implements NFRRobotContainer
         if (driverHID instanceof XboxController && manipulatorHID instanceof XboxController)
         {
             XboxController driverController = (XboxController)driverHID;
+            XboxController manipulatorController = (XboxController)manipulatorHID;
             drive.setDefaultCommand(new NFRSwerveDriveWithJoystick(drive, commands,
                 () -> -MathUtil.applyDeadband(driverController.getLeftY(), 0.1),
                 () -> -MathUtil.applyDeadband(driverController.getLeftX(), 0.1),
-                () -> -MathUtil.applyDeadband(driverController.getRightX(), 0.1),
+                () -> -MathUtil.applyDeadband(manipulatorController.getRightX(), 0.1),
                 true, true));
             new JoystickButton(driverController, XboxController.Button.kB.value)
                 .onTrue(Commands.runOnce(drive::clearRotation));
             new JoystickButton(driverController, XboxController.Button.kY.value)
                 .onTrue(new NFRSwerveDriveStop(drive, commands, true));
+            rotatingJoint.setDefaultCommand(new NFRRotatingArmJointWithJoystick(rotatingJoint,
+                () -> -MathUtil.applyDeadband(driverController.getLeftY(), 0.1, 1)));
         }
         else
         {
