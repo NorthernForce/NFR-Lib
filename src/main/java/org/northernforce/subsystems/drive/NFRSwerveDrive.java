@@ -172,7 +172,7 @@ public class NFRSwerveDrive extends NFRDrive
     }
     /**
      * Gets the rotation of the swerve module as reported by the gyroscope.
-     * @return
+     * @return gyro angle
      */
     public Rotation2d getRotation()
     {
@@ -184,6 +184,14 @@ public class NFRSwerveDrive extends NFRDrive
     public void clearRotation()
     {
         gyroOffset = gyro.getGyroYaw().unaryMinus();
+    }
+    /**
+     * Gets the kinematics of the swerve module based on the offsets of each module.
+     * @return kinematics
+     */
+    public SwerveDriveKinematics getKinematics()
+    {
+        return kinematics;
     }
     /**
      * Gets the pose estimated by the odometry, not affected by vision measurements.
