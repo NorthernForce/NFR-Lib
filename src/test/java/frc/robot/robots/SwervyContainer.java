@@ -1,8 +1,8 @@
 package frc.robot.robots;
 
-import java.sql.Driver;
 import java.util.Map;
 
+import org.northernforce.commands.NFRSwerveDriveCalibrate;
 import org.northernforce.commands.NFRSwerveDriveStop;
 import org.northernforce.commands.NFRSwerveDriveWithJoystick;
 import org.northernforce.commands.NFRSwerveModuleSetState;
@@ -73,6 +73,7 @@ public class SwervyContainer implements NFRRobotContainer
         coprocessor = new ROSCoprocessor(coprocessorConfig);
         coprocessor.startConnecting();
         Shuffleboard.getTab("Main").add("Xavier", coprocessor);
+        Shuffleboard.getTab("Swerve").add("Calibrate", new NFRSwerveDriveCalibrate(drive).ignoringDisable(true));
     }
     @Override
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
