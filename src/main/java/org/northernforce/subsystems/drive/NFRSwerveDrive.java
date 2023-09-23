@@ -42,7 +42,6 @@ public class NFRSwerveDrive extends NFRDrive
     protected Rotation2d gyroOffset;
     protected final SwerveDriveOdometry odometry;
     protected final Notifier notifier;
-    
     /**
      * Creates a new NFRSwerveDrive.
      * @param config the configuration for the swerve drive.
@@ -193,7 +192,6 @@ public class NFRSwerveDrive extends NFRDrive
     {
         return odometry.getPoseMeters();
     }
-    
     public SwerveModuleState[] getStopState()
     {
         SwerveModuleState[] states = new SwerveModuleState[modules.length];
