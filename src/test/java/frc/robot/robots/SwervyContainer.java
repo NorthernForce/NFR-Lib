@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.northernforce.commands.NFRSwerveDriveCalibrate;
 import org.northernforce.commands.NFRRotatingArmJointWithJoystick;
+import org.northernforce.commands.NFRRunRollerIntake;
 import org.northernforce.commands.NFRSwerveDriveStop;
 import org.northernforce.commands.NFRSwerveDriveWithJoystick;
 import org.northernforce.commands.NFRSwerveModuleSetState;
@@ -14,6 +15,9 @@ import org.northernforce.motors.MotorEncoderMismatchException;
 import org.northernforce.motors.NFRTalonFX;
 import org.northernforce.subsystems.arm.NFRRotatingArmJoint;
 import org.northernforce.subsystems.arm.NFRRotatingArmJoint.NFRRotatingArmJointConfiguration;
+import org.northernforce.motors.NFRTalonFX;
+import org.northernforce.subsystems.arm.NFRRollerIntake;
+import org.northernforce.subsystems.arm.NFRRollerIntake.NFRRollerIntakeConfiguration;
 import org.northernforce.subsystems.drive.NFRSwerveDrive;
 import org.northernforce.subsystems.drive.NFRSwerveDrive.NFRSwerveDriveConfiguration;
 import org.northernforce.subsystems.drive.swerve.NFRSwerveModule;
@@ -33,6 +37,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -42,6 +47,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.FieldConstants;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class SwervyContainer implements NFRRobotContainer
 {
@@ -49,6 +55,7 @@ public class SwervyContainer implements NFRRobotContainer
     private final Field2d field;
     private final ROSCoprocessor coprocessor;
     private final NFRRotatingArmJoint rotatingJoint;
+    private final NFRRollerIntake intake;
     public SwervyContainer()
     {
         NFRSwerveModule[] modules = new NFRSwerveModule[] {
@@ -64,12 +71,14 @@ public class SwervyContainer implements NFRRobotContainer
             new Translation2d(-0.581025, 0.581025),
             new Translation2d(-0.581025, -0.581025)
         };
+        NFRTalonFX intakeMotor = new NFRTalonFX(new TalonFXConfiguration(), 47);
         NFRNavX gyro = new NFRNavX();
         Shuffleboard.getTab("Swerve").addNumber("Gyro", () -> gyro.getRotation2d().getDegrees())
             .withWidget(BuiltInWidgets.kGyro);
         gyro.reset();
         drive = new NFRSwerveDrive(driveConfig, modules, offsets, gyro);
         field = new Field2d();
+        intake = new NFRRollerIntake(new NFRRollerIntakeConfiguration("Roller Intake", 1), intakeMotor); //TODO set 1 to -1 if positve speed intakes lower absolute value if slower speed is required
         Shuffleboard.getTab("Swerve").add("Field", field);
         Shuffleboard.getTab("Swerve").add("Front Left", modules[0]);
         Shuffleboard.getTab("Swerve").add("Front Right", modules[1]);
@@ -144,6 +153,12 @@ public class SwervyContainer implements NFRRobotContainer
                 .onTrue(new NFRSwerveDriveStop(drive, commands, true));
             rotatingJoint.setDefaultCommand(new NFRRotatingArmJointWithJoystick(rotatingJoint,
                 () -> -MathUtil.applyDeadband(manipulatorController.getLeftY(), 0.1, 1)));
+                //outtake
+            new Trigger(() -> manipulatorController.getLeftTriggerAxis() >= 0.3)
+                .whileTrue(new NFRRunRollerIntake(intake, 1, true));
+                //intake
+            new Trigger(() -> manipulatorController.getRightTriggerAxis() >= 0.3)
+                .whileTrue(new NFRRunRollerIntake(intake, -1, true));
         }
         else
         {
