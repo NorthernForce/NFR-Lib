@@ -27,6 +27,7 @@ public class NFRSwerveAlongPath extends CommandBase
     public NFRSwerveAlongPath(NFRSwerveDrive drive, Trajectory trajectory, HolonomicDriveController controller,
         NFRSwerveModuleSetState[] setStateCommands)
     {
+        addRequirements(drive);
         this.drive = drive;
         this.setStateCommands = setStateCommands;
         this.controller = controller;
