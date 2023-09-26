@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.FieldConstants;
 
 public class SwervyContainer implements NFRRobotContainer
 {
@@ -127,7 +128,14 @@ public class SwervyContainer implements NFRRobotContainer
     @Override
     public Map<String, Pose2d> getStartingLocations()
     {
-        return Map.of("Unnecessary", new Pose2d());
+        return Map.of(
+            "Blue Left", FieldConstants.BLUE_POSES[0],
+            "Blue Center", FieldConstants.BLUE_POSES[1],
+            "Blue Right", FieldConstants.BLUE_POSES[2],
+            "Red Left", FieldConstants.RED_POSES[0],
+            "Red Center", FieldConstants.RED_POSES[1],
+            "Red Right", FieldConstants.RED_POSES[2]
+        );
     }
     @Override
     public Pair<String, Command> getDefaultAutonomous()
