@@ -265,6 +265,20 @@ public class NFRSwerveModule extends NFRSubsystem
     {
         return new SwerveModuleState(state.speedMetersPerSecond * config.maxSpeed, state.angle);
     }
+    public void resetAngle(Rotation2d angle)
+    {
+        if (externalEncoder.isPresent())
+        {
+            externalEncoder.get().setAbsoluteOffset(angle.getRotations() - externalEncoder.get().getAbsolutePosition()
+                + externalEncoder.get().getAbsoluteOffset());
+        }
+        else if (turnController.getSelectedEncoder() instanceof NFRAbsoluteEncoder)
+        {
+            NFRAbsoluteEncoder encoder = (NFRAbsoluteEncoder)turnController.getSelectedEncoder();
+            encoder.setAbsoluteOffset(angle.getRotations() - encoder.getAbsolutePosition()
+                + encoder.getAbsoluteOffset());
+        }
+    }
     /**
      * Initializes the sendable data that is passed when published to network tables.
      * @param builder the SendableBuilder

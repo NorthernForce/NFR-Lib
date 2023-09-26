@@ -41,6 +41,11 @@ public interface NFRAbsoluteEncoder extends NFREncoder
      */
     public void setAbsoluteOffset(double offset);
     /**
+     * This is a permanant configuration, and thus will be saved between boots.
+     * @return offset in units based on absolute conversion factor.
+     */
+    public double getAbsoluteOffset();
+    /**
      * Sets the conversion factor that affects readings of the sensor. This is by default 1. 
      * @param factor the factor for measurements of velocity and position. 1 means 1 unit = 1 encoder rotation.
      */

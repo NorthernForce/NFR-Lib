@@ -156,6 +156,17 @@ public class NFRCANCoder implements NFRAbsoluteEncoder
         cancoder.getConfigurator().apply(config);
     }
     /**
+     * This is a permanant configuration, and thus will be saved between boots.
+     * @return offset in units based on absolute conversion factor.
+     */
+    @Override
+    public double getAbsoluteOffset()
+    {
+        CANcoderConfiguration config = new CANcoderConfiguration();
+        cancoder.getConfigurator().refresh(config);
+        return config.MagnetSensor.MagnetOffset * factor;
+    }
+    /**
      * Sets the conversion factor for the absolute sensor. Also affects the relative encoder.
      * @param factor 1 = 1 rotation.
      */

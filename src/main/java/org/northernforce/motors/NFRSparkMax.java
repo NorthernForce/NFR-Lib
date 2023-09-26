@@ -361,6 +361,15 @@ public class NFRSparkMax extends CANSparkMax implements NFRMotorController
             getAbsoluteEncoder(Type.kDutyCycle).setZeroOffset(offset);
         }
         /**
+         * This is a permanant configuration, and thus will be saved between boots.
+         * @return offset in units based on absolute conversion factor.
+         */
+        @Override
+        public double getAbsoluteOffset()
+        {
+            return getAbsoluteEncoder(Type.kDutyCycle).getZeroOffset();
+        }
+        /**
          * Sets the conversion factor that affects readings of the sensor. This is by default 1. 
          * @param factor the factor for measurements of velocity and position. 1 means 1 unit = 1 encoder rotation.
          */
