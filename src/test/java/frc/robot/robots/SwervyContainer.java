@@ -15,7 +15,7 @@ import org.northernforce.motors.MotorEncoderMismatchException;
 import org.northernforce.motors.NFRTalonFX;
 import org.northernforce.subsystems.arm.NFRRotatingArmJoint;
 import org.northernforce.subsystems.arm.NFRRotatingArmJoint.NFRRotatingArmJointConfiguration;
-import org.northernforce.motors.NFRTalonFX;
+
 import org.northernforce.subsystems.arm.NFRRollerIntake;
 import org.northernforce.subsystems.arm.NFRRollerIntake.NFRRollerIntakeConfiguration;
 import org.northernforce.subsystems.drive.NFRSwerveDrive;
