@@ -20,6 +20,7 @@ public class NFRRunRollerIntake extends CommandBase {
      * @param speed The speed to set
     */
     public NFRRunRollerIntake(NFRRollerIntake intake, double speed) {
+        addRequirements(intake);
         this.intake = intake;
         this.speed = speed;
         this.stopOnCommandEnd = false;
@@ -32,6 +33,7 @@ public class NFRRunRollerIntake extends CommandBase {
      * @param stopOnCommandEnd If true motor will stop on command end
     */
     public NFRRunRollerIntake(NFRRollerIntake intake, double speed, boolean stopOnCommandEnd) {
+        addRequirements(intake);
         this.intake = intake;
         this.speed = speed;
         this.stopOnCommandEnd = stopOnCommandEnd;
