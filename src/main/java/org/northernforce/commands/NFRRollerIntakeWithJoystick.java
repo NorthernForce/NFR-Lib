@@ -22,6 +22,7 @@ public class NFRRollerIntakeWithJoystick extends CommandBase {
      * @param speed The speed to set
     */
     public NFRRollerIntakeWithJoystick(NFRRollerIntake intake, DoubleSupplier speedSupplier) {
+        addRequirements(intake);
         this.intake = intake;
         this.speedSupplier = speedSupplier;
         this.stopOnCommandEnd = false;
@@ -34,6 +35,7 @@ public class NFRRollerIntakeWithJoystick extends CommandBase {
      * @param stopOnCommandEnd If true motor will stop on command end
     */
     public NFRRollerIntakeWithJoystick(NFRRollerIntake intake, DoubleSupplier speedSupplier, boolean stopOnCommandEnd) {
+        addRequirements(intake);
         this.intake = intake;
         this.speedSupplier = speedSupplier;
         this.stopOnCommandEnd = stopOnCommandEnd;
