@@ -65,7 +65,7 @@ public class SwervyContainer implements NFRRobotContainer
         gyro.reset();
         drive = new NFRSwerveDrive(driveConfig, modules, offsets, gyro);
         field = new Field2d();
-        intake = new NFRRollerIntake(new NFRRollerIntakeConfiguration("Roller Intake", 1), intakeMotor); //TODO set 1 to -1 if positve speed intakes lower absolute value if slower speed is required
+        intake = new NFRRollerIntake(new NFRRollerIntakeConfiguration("Roller Intake", -1), intakeMotor); //TODO set 1 to -1 if positve speed intakes lower absolute value if slower speed is required
         Shuffleboard.getTab("Swerve").add("Field", field);
         Shuffleboard.getTab("Swerve").add("Front Left", modules[0]);
         Shuffleboard.getTab("Swerve").add("Front Right", modules[1]);
@@ -103,7 +103,6 @@ public class SwervyContainer implements NFRRobotContainer
         if (driverHID instanceof XboxController && manipulatorHID instanceof XboxController)
         {
             XboxController driverController = (XboxController)driverHID;
-            XboxController manipulatorController = (XboxController)manipulatorHID;
             drive.setDefaultCommand(new NFRSwerveDriveWithJoystick(drive, commands,
                 () -> -MathUtil.applyDeadband(driverController.getLeftY(), 0.1),
                 () -> -MathUtil.applyDeadband(driverController.getLeftX(), 0.1),
@@ -113,12 +112,6 @@ public class SwervyContainer implements NFRRobotContainer
                 .onTrue(Commands.runOnce(drive::clearRotation));
             new JoystickButton(driverController, XboxController.Button.kY.value)
                 .onTrue(new NFRSwerveDriveStop(drive, commands, true));
-                //outtake
-            new Trigger(() -> Math.abs(manipulatorController.getLeftTriggerAxis()) >= 0.3)
-                .whileTrue(new NFRRunRollerIntake(intake, 1, true));
-                //intake
-            new Trigger(() ->  Math.abs(manipulatorController.getRightTriggerAxis()) >= 0.3)
-                .whileTrue(new NFRRunRollerIntake(intake, -1, true));
         }
         else
         {
@@ -132,6 +125,13 @@ public class SwervyContainer implements NFRRobotContainer
             new JoystickButton(driverHID, 1)
                 .onTrue(new NFRSwerveDriveStop(drive, commands, true));
         }
+        XboxController manipulatorController = (XboxController)manipulatorHID;
+        //outtake
+        new Trigger(() -> Math.abs(manipulatorController.getLeftTriggerAxis()) >= 0.3)
+            .whileTrue(new NFRRunRollerIntake(intake, 1, true));
+            //intake
+        new Trigger(() ->  Math.abs(manipulatorController.getRightTriggerAxis()) >= 0.3)
+            .whileTrue(new NFRRunRollerIntake(intake, -1, true));
     }
     @Override
     public void setInitialPose(Pose2d pose)
