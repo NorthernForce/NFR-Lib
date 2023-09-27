@@ -114,10 +114,10 @@ public class SwervyContainer implements NFRRobotContainer
             new JoystickButton(driverController, XboxController.Button.kY.value)
                 .onTrue(new NFRSwerveDriveStop(drive, commands, true));
                 //outtake
-            new Trigger(() -> manipulatorController.getLeftTriggerAxis() >= 0.3)
+            new Trigger(() -> Math.abs(manipulatorController.getLeftTriggerAxis()) >= 0.3)
                 .whileTrue(new NFRRunRollerIntake(intake, 1, true));
                 //intake
-            new Trigger(() -> manipulatorController.getRightTriggerAxis() >= 0.3)
+            new Trigger(() ->  Math.abs(manipulatorController.getRightTriggerAxis()) >= 0.3)
                 .whileTrue(new NFRRunRollerIntake(intake, -1, true));
         }
         else
