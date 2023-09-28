@@ -25,6 +25,7 @@ import org.northernforce.subsystems.ros.ROSCoprocessor.ROSCoprocessorConfigurati
 import org.northernforce.util.NFRRobotContainer;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.InvertedValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
@@ -111,6 +112,7 @@ public class SwervyContainer implements NFRRobotContainer
         rotatingJointMotorConfiguration.Slot0.kD = 0; // TODO
         rotatingJointMotorConfiguration.Slot0.kV = 0; // TODO
         rotatingJointMotorConfiguration.Slot0.kS = 0; // TODO
+        rotatingJointMotorConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         NFRTalonFX rotatingJointMotor = new NFRTalonFX(rotatingJointMotorConfiguration, 13);
         NFRCANCoder rotatingJointCANCoder = new NFRCANCoder(14);
         try
@@ -122,6 +124,11 @@ public class SwervyContainer implements NFRRobotContainer
             e.printStackTrace();
         }
         rotatingJoint = new NFRRotatingArmJoint(rotatingJointConfiguration, rotatingJointMotor, Optional.empty());
+        Shuffleboard.getTab("General").addDouble("Arm Angle", () -> rotatingJoint.getRotation().getDegrees());
+        Shuffleboard.getTab("General").add("Reset CANCoder",
+            Commands.runOnce(
+                () -> rotatingJointCANCoder.setAbsoluteOffset(rotatingJointCANCoder.getAbsoluteOffset()
+                    - rotatingJointCANCoder.getPosition())));
     }
     @Override
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
@@ -136,10 +143,10 @@ public class SwervyContainer implements NFRRobotContainer
             new NFRSwerveModuleSetState(drive.getModules()[3], 0,
                 false)
         };
+        XboxController manipulatorController = (XboxController)manipulatorHID;
         if (driverHID instanceof XboxController && manipulatorHID instanceof XboxController)
         {
             XboxController driverController = (XboxController)driverHID;
-            XboxController manipulatorController = (XboxController)manipulatorHID;
             drive.setDefaultCommand(new NFRSwerveDriveWithJoystick(drive, commands,
                 () -> -MathUtil.applyDeadband(driverController.getLeftY(), 0.1),
                 () -> -MathUtil.applyDeadband(driverController.getLeftX(), 0.1),
@@ -149,8 +156,6 @@ public class SwervyContainer implements NFRRobotContainer
                 .onTrue(Commands.runOnce(drive::clearRotation));
             new JoystickButton(driverController, XboxController.Button.kY.value)
                 .onTrue(new NFRSwerveDriveStop(drive, commands, true));
-            rotatingJoint.setDefaultCommand(new NFRRotatingArmJointWithJoystick(rotatingJoint,
-                () -> -MathUtil.applyDeadband(manipulatorController.getLeftY(), 0.1, 1)));
         }
         else
         {
@@ -164,13 +169,14 @@ public class SwervyContainer implements NFRRobotContainer
             new JoystickButton(driverHID, 1)
                 .onTrue(new NFRSwerveDriveStop(drive, commands, true));
         }
-        XboxController manipulatorController = (XboxController)manipulatorHID;
         //outtake
         new Trigger(() -> Math.abs(manipulatorController.getLeftTriggerAxis()) >= 0.3)
             .whileTrue(new NFRRunRollerIntake(intake, 1, true));
             //intake
         new Trigger(() ->  Math.abs(manipulatorController.getRightTriggerAxis()) >= 0.3)
             .whileTrue(new NFRRunRollerIntake(intake, -1, true));
+        rotatingJoint.setDefaultCommand(new NFRRotatingArmJointWithJoystick(rotatingJoint,
+                () -> -MathUtil.applyDeadband(manipulatorController.getLeftY(), 0.1, 1)));
     }
     @Override
     public void setInitialPose(Pose2d pose)
