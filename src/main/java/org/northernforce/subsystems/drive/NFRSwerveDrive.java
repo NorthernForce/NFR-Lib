@@ -193,7 +193,10 @@ public class NFRSwerveDrive extends NFRDrive
     {
         return odometry.getPoseMeters();
     }
-    
+    /**
+     * Gets the state of the swerve drive in which all of the motors are pointing inwards.
+     * @return the stop state
+     */
     public SwerveModuleState[] getStopState()
     {
         SwerveModuleState[] states = new SwerveModuleState[modules.length];
