@@ -111,7 +111,7 @@ public class SwervyContainer implements NFRRobotContainer
         TalonFXConfiguration rotatingJointMotorConfiguration = new TalonFXConfiguration();
         rotatingJointMotorConfiguration.MotionMagic.MotionMagicAcceleration = 0; // TODO
         rotatingJointMotorConfiguration.MotionMagic.MotionMagicCruiseVelocity = 0; // TODO
-        rotatingJointMotorConfiguration.Slot0.kP = 0; // TODO
+        rotatingJointMotorConfiguration.Slot0.kP = 0.5; // TODO
         rotatingJointMotorConfiguration.Slot0.kI = 0; // TODO
         rotatingJointMotorConfiguration.Slot0.kD = 0; // TODO
         rotatingJointMotorConfiguration.Slot0.kV = 0; // TODO
