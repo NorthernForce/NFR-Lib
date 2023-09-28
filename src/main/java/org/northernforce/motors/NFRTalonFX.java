@@ -8,6 +8,7 @@ import org.northernforce.encoders.NFRAbsoluteEncoder;
 import org.northernforce.encoders.NFRCANCoder;
 import org.northernforce.encoders.NFREncoder;
 
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
@@ -151,7 +152,13 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
         {
             followers.add(new TalonFX(id));
         }
-        getConfigurator().apply(config);
+        for (int i = 0; i < 3; i++)
+        {
+            if (getConfigurator().apply(config) == StatusCode.OK)
+            {
+                break;
+            }
+        }
         for (var motor : followers)
         {
             motor.getConfigurator().apply(config);
