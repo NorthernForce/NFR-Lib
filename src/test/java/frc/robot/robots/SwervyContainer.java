@@ -150,7 +150,7 @@ public class SwervyContainer implements NFRRobotContainer
             drive.setDefaultCommand(new NFRSwerveDriveWithJoystick(drive, commands,
                 () -> -MathUtil.applyDeadband(driverController.getLeftY(), 0.1),
                 () -> -MathUtil.applyDeadband(driverController.getLeftX(), 0.1),
-                () -> -MathUtil.applyDeadband(manipulatorController.getRightX(), 0.1),
+                () -> -MathUtil.applyDeadband(driverController.getRightX(), 0.1),
                 true, true));
             new JoystickButton(driverController, XboxController.Button.kB.value)
                 .onTrue(Commands.runOnce(drive::clearRotation));
