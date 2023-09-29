@@ -48,6 +48,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.FieldConstants;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DropCubeAuto;
+import frc.robot.commands.SwerveSideAuto;
 
 public class SwervyContainer implements NFRRobotContainer
 {
@@ -188,7 +189,8 @@ public class SwervyContainer implements NFRRobotContainer
     @Override
     public Map<String, Command> getAutonomousOptions()
     {
-        return Map.of("Haha you got no autonomous", new DropCubeAuto(rotatingJoint, intake));
+        return Map.of("Haha you got no autonomous", new DropCubeAuto(rotatingJoint, intake),
+            "Auto??", new SwerveSideAuto(drive, setStateCommands, rotatingJoint, intake));
     }
     @Override
     public Map<String, Pose2d> getStartingLocations()
