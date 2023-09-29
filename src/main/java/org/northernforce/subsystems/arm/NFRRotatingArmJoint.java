@@ -224,10 +224,10 @@ public class NFRRotatingArmJoint extends NFRArmJoint
     public Rotation2d getRotation()
     {
         if (externalEncoder.isPresent())
-            return Rotation2d.fromDegrees(externalEncoder.get().getPosition())
+            return Rotation2d.fromRotations(externalEncoder.get().getPosition())
                 .plus(config.encoderOffset);
         else
-            return Rotation2d.fromDegrees(controller.getSelectedEncoder().getPosition())
+            return Rotation2d.fromRotations(controller.getSelectedEncoder().getPosition())
                 .plus(config.encoderOffset);
     }
     /**
