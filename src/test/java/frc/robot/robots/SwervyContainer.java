@@ -176,7 +176,7 @@ public class SwervyContainer implements NFRRobotContainer
         new Trigger(() ->  Math.abs(manipulatorController.getRightTriggerAxis()) >= 0.3)
             .whileTrue(new NFRRunRollerIntake(intake, -1, true));
         rotatingJoint.setDefaultCommand(new NFRRotatingArmJointWithJoystick(rotatingJoint,
-                () -> -MathUtil.applyDeadband(manipulatorController.getLeftY(), 0.1, 1)));
+            () -> -MathUtil.applyDeadband(manipulatorController.getLeftY(), 0.1, 1)));
     }
     @Override
     public void setInitialPose(Pose2d pose)
