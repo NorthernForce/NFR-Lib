@@ -128,7 +128,7 @@ public class SwervyContainer implements NFRRobotContainer
         Shuffleboard.getTab("General").add("Reset CANCoder",
             Commands.runOnce(
                 () -> rotatingJointCANCoder.setAbsoluteOffset(rotatingJointCANCoder.getAbsoluteOffset()
-                    - rotatingJointCANCoder.getPosition())));
+                    - rotatingJointCANCoder.getPosition())).ignoringDisable(true));
     }
     @Override
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
