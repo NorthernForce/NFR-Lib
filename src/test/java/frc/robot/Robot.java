@@ -52,7 +52,7 @@ public class Robot extends TimedRobot {
       autonomousChooser.addOption(pair.getKey(), pair.getValue());
     }
     var pair = container.getDefaultAutonomous();
-    autonomousChooser.addOption(pair.getFirst(), pair.getSecond());
+    autonomousChooser.setDefaultOption(pair.getFirst(), pair.getSecond());
     Shuffleboard.getTab("Autonomous").add("Starting location?", poseChooser);
     Shuffleboard.getTab("Autonomous").add("Autonomous routine?", autonomousChooser);
   }
@@ -81,7 +81,11 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     autonomousCommand = autonomousChooser.getSelected();
-    container.setInitialPose(poseChooser.getSelected());
+    var pose = poseChooser.getSelected();
+    if (pose != null)
+    {
+      container.setInitialPose(pose);
+    }
     if (autonomousCommand != null)
     {
       autonomousCommand.schedule();
