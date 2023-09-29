@@ -26,6 +26,7 @@ import org.northernforce.util.NFRRobotContainer;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
@@ -116,6 +117,7 @@ public class SwervyContainer implements NFRRobotContainer
         rotatingJointMotorConfiguration.Slot0.kV = 0; // TODO
         rotatingJointMotorConfiguration.Slot0.kS = 0; // TODO
         rotatingJointMotorConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        rotatingJointMotorConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         NFRTalonFX rotatingJointMotor = new NFRTalonFX(rotatingJointMotorConfiguration, 13);
         NFRCANCoder rotatingJointCANCoder = new NFRCANCoder(14);
         try
