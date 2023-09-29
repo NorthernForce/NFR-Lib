@@ -2,6 +2,7 @@ package org.northernforce.encoders;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.ctre.phoenix6.sim.CANcoderSimState;
 
@@ -252,5 +253,16 @@ public class NFRCANCoder implements NFRAbsoluteEncoder
     public CANcoder getEncoder()
     {
         return cancoder;
+    }
+    /**
+     * Sets the range of the CANCoder output.
+     * @param negative true means -0.5 to 0.5, false means 0 to 1.
+     */
+    public void setRange(boolean negative)
+    {
+        CANcoderConfiguration config = new CANcoderConfiguration();
+        cancoder.getConfigurator().refresh(config);
+        config.MagnetSensor.AbsoluteSensorRange = negative ? AbsoluteSensorRangeValue.Signed_PlusMinusHalf : AbsoluteSensorRangeValue.Unsigned_0To1;
+        cancoder.getConfigurator().apply(config);
     }
 }

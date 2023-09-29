@@ -120,6 +120,7 @@ public class SwervyContainer implements NFRRobotContainer
         rotatingJointMotorConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         NFRTalonFX rotatingJointMotor = new NFRTalonFX(rotatingJointMotorConfiguration, 13);
         NFRCANCoder rotatingJointCANCoder = new NFRCANCoder(14);
+        rotatingJointCANCoder.setRange(true);
         try
         {
             rotatingJointMotor.setSelectedEncoder(rotatingJointCANCoder);
