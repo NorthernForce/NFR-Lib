@@ -174,7 +174,7 @@ public class SwervyContainer implements NFRRobotContainer
             .whileTrue(new NFRRunRollerIntake(intake, 1, true));
             //intake
         new Trigger(() ->  Math.abs(manipulatorController.getRightTriggerAxis()) >= 0.3)
-            .whileTrue(new NFRRunRollerIntake(intake, -1, true));
+            .whileTrue(new NFRRunRollerIntake(intake, -0.5, true));
         rotatingJoint.setDefaultCommand(new NFRRotatingArmJointWithJoystick(rotatingJoint,
                 () -> -MathUtil.applyDeadband(manipulatorController.getLeftY(), 0.1, 1)));
     }
