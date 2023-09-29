@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import org.northernforce.commands.NFRSwerveDriveStop;
 import org.northernforce.commands.NFRSwerveModuleSetState;
 import org.northernforce.commands.NFRSwerveMoveAtAngle;
 import org.northernforce.subsystems.arm.NFRRollerIntake;
@@ -15,7 +16,8 @@ public class SwerveSideAuto extends SequentialCommandGroup
     {
         addCommands(
             new DropCubeAuto(joint, intake),
-            new NFRSwerveMoveAtAngle(drive, Rotation2d.fromDegrees(180), 0.25, setStateCommands, true)
+            new NFRSwerveMoveAtAngle(drive, Rotation2d.fromDegrees(0), 0.75, setStateCommands, true).withTimeout(1.75),
+            new NFRSwerveDriveStop(drive, setStateCommands, true)
         );
     }
 }
