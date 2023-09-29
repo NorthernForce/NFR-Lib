@@ -254,6 +254,10 @@ public class NFRCANCoder implements NFRAbsoluteEncoder
     {
         return cancoder;
     }
+    /**
+     * Sets the range of the CANCoder output.
+     * @param negative true means -0.5 to 0.5, false means 0 to 1.
+     */
     public void setRange(boolean negative)
     {
         CANcoderConfiguration config = new CANcoderConfiguration();
