@@ -12,7 +12,9 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 /**
  * The subsystem used for a swerve drive.
@@ -94,7 +96,14 @@ public class NFRSwerveDrive extends NFRDrive
     @Override
     public void resetPose(Pose2d newPose)
     {
-        gyro.setYawOffset(newPose.getRotation().minus(getRotation()));
+        if (DriverStation.getAlliance() == Alliance.Red)
+        {
+            gyroOffset = gyro.getGyroYaw().unaryMinus().plus(newPose.getRotation().plus(Rotation2d.fromDegrees(180)));
+        }
+        else
+        {
+            gyroOffset = gyro.getGyroYaw().unaryMinus().plus(newPose.getRotation());
+        }
         poseEstimator.resetPosition(gyro.getGyroYaw(), getPositions(), newPose);
     }
     /**
