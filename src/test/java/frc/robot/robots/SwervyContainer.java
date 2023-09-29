@@ -47,6 +47,8 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.FieldConstants;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.DropCubeAuto;
+import frc.robot.commands.SwerveSideAuto;
 
 public class SwervyContainer implements NFRRobotContainer
 {
@@ -55,6 +57,7 @@ public class SwervyContainer implements NFRRobotContainer
     private final ROSCoprocessor coprocessor;
     private final NFRRollerIntake intake;
     private final NFRRotatingArmJoint rotatingJoint;
+    private final NFRSwerveModuleSetState[] setStateCommands;
     public SwervyContainer()
     {
         NFRSwerveModule[] modules = new NFRSwerveModule[] {
@@ -129,11 +132,7 @@ public class SwervyContainer implements NFRRobotContainer
             Commands.runOnce(
                 () -> rotatingJointCANCoder.setAbsoluteOffset(rotatingJointCANCoder.getAbsoluteOffset()
                     - rotatingJointCANCoder.getPosition())));
-    }
-    @Override
-    public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
-    {
-        NFRSwerveModuleSetState[] commands = new NFRSwerveModuleSetState[] {
+        setStateCommands = new NFRSwerveModuleSetState[] {
             new NFRSwerveModuleSetState(drive.getModules()[0], 0,
                 false),
             new NFRSwerveModuleSetState(drive.getModules()[1], 0,
@@ -143,11 +142,15 @@ public class SwervyContainer implements NFRRobotContainer
             new NFRSwerveModuleSetState(drive.getModules()[3], 0,
                 false)
         };
+    }
+    @Override
+    public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
+    {
         XboxController manipulatorController = (XboxController)manipulatorHID;
         if (driverHID instanceof XboxController && manipulatorHID instanceof XboxController)
         {
             XboxController driverController = (XboxController)driverHID;
-            drive.setDefaultCommand(new NFRSwerveDriveWithJoystick(drive, commands,
+            drive.setDefaultCommand(new NFRSwerveDriveWithJoystick(drive, setStateCommands,
                 () -> -MathUtil.applyDeadband(driverController.getLeftY(), 0.1),
                 () -> -MathUtil.applyDeadband(driverController.getLeftX(), 0.1),
                 () -> -MathUtil.applyDeadband(manipulatorController.getRightX(), 0.1),
@@ -155,11 +158,11 @@ public class SwervyContainer implements NFRRobotContainer
             new JoystickButton(driverController, XboxController.Button.kB.value)
                 .onTrue(Commands.runOnce(drive::clearRotation));
             new JoystickButton(driverController, XboxController.Button.kY.value)
-                .onTrue(new NFRSwerveDriveStop(drive, commands, true));
+                .onTrue(new NFRSwerveDriveStop(drive, setStateCommands, true));
         }
         else
         {
-            drive.setDefaultCommand(new NFRSwerveDriveWithJoystick(drive, commands,
+            drive.setDefaultCommand(new NFRSwerveDriveWithJoystick(drive, setStateCommands,
                 () -> MathUtil.applyDeadband(driverHID.getRawAxis(1), 0.1),
                 () -> MathUtil.applyDeadband(driverHID.getRawAxis(0), 0.1),
                 () -> -MathUtil.applyDeadband(driverHID.getRawAxis(4), 0.1),
@@ -167,7 +170,7 @@ public class SwervyContainer implements NFRRobotContainer
             new JoystickButton(driverHID, 5)
                 .onTrue(Commands.runOnce(drive::clearRotation));
             new JoystickButton(driverHID, 1)
-                .onTrue(new NFRSwerveDriveStop(drive, commands, true));
+                .onTrue(new NFRSwerveDriveStop(drive, setStateCommands, true));
         }
         //outtake
         new Trigger(() -> Math.abs(manipulatorController.getLeftTriggerAxis()) >= 0.3)
@@ -186,7 +189,8 @@ public class SwervyContainer implements NFRRobotContainer
     @Override
     public Map<String, Command> getAutonomousOptions()
     {
-        return Map.of("Do nothing", new InstantCommand());
+        return Map.of("Haha you got no autonomous", new DropCubeAuto(rotatingJoint, intake),
+            "Auto??", new SwerveSideAuto(drive, setStateCommands, rotatingJoint, intake));
     }
     @Override
     public Map<String, Pose2d> getStartingLocations()
@@ -203,7 +207,7 @@ public class SwervyContainer implements NFRRobotContainer
     @Override
     public Pair<String, Command> getDefaultAutonomous()
     {
-        return Pair.of("Haha you got no autonomous", new InstantCommand());
+        return Pair.of("Do nothing", new InstantCommand());
     }
     @Override
     public void periodic()
