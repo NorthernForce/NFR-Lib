@@ -21,7 +21,7 @@ public class DropCubeAuto extends SequentialCommandGroup {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new NFRRotatingArmJointSetAngle(arm, Rotation2d.fromDegrees(30), Rotation2d.fromDegrees(5), 0, false),
+      new NFRRotatingArmJointSetAngle(arm, Rotation2d.fromDegrees(-50), Rotation2d.fromDegrees(5), 0, true),
       new NFRRunRollerIntake(intake, -1, true).withTimeout(0.5)
     );
   }
