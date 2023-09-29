@@ -103,10 +103,10 @@ public class SwervyContainer implements NFRRobotContainer
         Shuffleboard.getTab("Main").add("Xavier", coprocessor);
         Shuffleboard.getTab("Swerve").add("Calibrate", new NFRSwerveDriveCalibrate(drive).ignoringDisable(true));
         NFRRotatingArmJointConfiguration rotatingJointConfiguration = new NFRRotatingArmJointConfiguration("rotatingJoint")
-            .withUseLimits(false)
+            .withUseLimits(true)
             .withUseIntegratedLimits(true)
             .withGearbox(DCMotor.getFalcon500(1))
-            .withLimits(new Rotation2d(), new Rotation2d()) // TODO
+            .withLimits(Rotation2d.fromDegrees(-95), Rotation2d.fromDegrees(71)) // TODO
             .withOriginOffset(new Transform3d(new Translation3d(10.463, 0, 10.777), new Rotation3d()));
         TalonFXConfiguration rotatingJointMotorConfiguration = new TalonFXConfiguration();
         rotatingJointMotorConfiguration.MotionMagic.MotionMagicAcceleration = 0; // TODO
