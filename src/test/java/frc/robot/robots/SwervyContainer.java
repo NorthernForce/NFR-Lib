@@ -115,6 +115,7 @@ public class SwervyContainer implements NFRRobotContainer
         rotatingJointMotorConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         NFRTalonFX rotatingJointMotor = new NFRTalonFX(rotatingJointMotorConfiguration, 13);
         NFRCANCoder rotatingJointCANCoder = new NFRCANCoder(14);
+        rotatingJointCANCoder.setRange(true);
         try
         {
             rotatingJointMotor.setSelectedEncoder(rotatingJointCANCoder);
