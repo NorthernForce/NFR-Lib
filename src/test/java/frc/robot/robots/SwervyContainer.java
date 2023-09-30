@@ -195,8 +195,10 @@ public class SwervyContainer implements NFRRobotContainer
     @Override
     public Map<String, Command> getAutonomousOptions()
     {
-        return Map.of("Haha you got no autonomous", new DropCubeAuto(rotatingJoint, intake),
-            "Auto??", new SwerveSideAuto(drive, setStateCommands, rotatingJoint, intake));
+        return Map.of(
+            "Drop Cube", new DropCubeAuto(rotatingJoint, intake),
+            "Side Auto", new SwerveSideAuto(drive, setStateCommands, rotatingJoint, intake)
+        );
     }
     @Override
     public Map<String, Pose2d> getStartingLocations()

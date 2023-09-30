@@ -188,6 +188,13 @@ public class NFRSwerveDrive extends NFRDrive
         return gyro.getGyroYaw().plus(gyroOffset);
     }
     /**
+     * Gets the pitch of the robot as reported by the gyroscope
+     * @return The pitch of the robot
+     */
+    public double getPitch() {
+        return gyro.getGyroAngle().getY();
+    }
+    /**
      * Clears rotation reported by the gyroscope by changing the offset. 
      */
     public void clearRotation()
