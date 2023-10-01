@@ -15,7 +15,6 @@ public class SwerveSideAuto extends SequentialCommandGroup
     public SwerveSideAuto(NFRSwerveDrive drive, NFRSwerveModuleSetState[] setStateCommands, NFRRotatingArmJoint joint, NFRRollerIntake intake)
     {
         addCommands(
-            new DropCubeAuto(joint, intake),
             new NFRSwerveMoveAtAngle(drive, Rotation2d.fromDegrees(0), 0.75, setStateCommands, true).withTimeout(1.75),
             new NFRSwerveDriveStop(drive, setStateCommands, true)
         );
