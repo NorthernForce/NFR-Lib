@@ -22,7 +22,7 @@ public class Xavier extends ROSCoprocessor
     protected final NFRDrive drive;
     public Xavier(NFRDrive drive)
     {
-        super(new ROSCoprocessorConfiguration("xavier", "northernforce-desktop", 5809));
+        super(new ROSCoprocessorConfiguration("xavier", "10.1.72.20", 5809));
         this.drive = drive;
         onConnect(() -> {
             subscribe("realsense/estimated_pose",
