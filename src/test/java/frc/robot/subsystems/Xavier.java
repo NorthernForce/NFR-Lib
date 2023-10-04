@@ -25,7 +25,7 @@ public class Xavier extends ROSCoprocessor
         super(new ROSCoprocessorConfiguration("xavier", "10.1.72.20", 5809));
         this.drive = drive;
         onConnect(() -> {
-            subscribe("realsense/estimated_pose",
+            subscribe("realsense/pose_estimations",
                 "geometry_msgs/PoseWithCovarianceStamped", this::recieveDetection);
         });
         startConnecting();
