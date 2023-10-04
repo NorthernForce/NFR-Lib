@@ -8,6 +8,7 @@ import org.northernforce.commands.NFRRunRollerIntake;
 import org.northernforce.commands.NFRRotatingArmJointWithJoystick;
 import org.northernforce.commands.NFRSwerveDriveStop;
 import org.northernforce.commands.NFRSwerveDriveWithJoystick;
+import org.northernforce.commands.NFRSwerveDriveWithJoystickAbsolute;
 import org.northernforce.commands.NFRSwerveModuleSetState;
 import org.northernforce.encoders.NFRCANCoder;
 import org.northernforce.gyros.NFRNavX;
@@ -30,6 +31,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -37,8 +39,10 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -138,6 +142,9 @@ public class SwervyContainer implements NFRRobotContainer
             Commands.runOnce(
                 () -> rotatingJointCANCoder.setAbsoluteOffset(rotatingJointCANCoder.getAbsoluteOffset()
                     - rotatingJointCANCoder.getPosition())));
+        SmartDashboard.putNumber("Theta P", 0);
+        SmartDashboard.putNumber("Theta I", 0);
+        SmartDashboard.putNumber("Theta D", 0);
         setStateCommands = new NFRSwerveModuleSetState[] {
             new NFRSwerveModuleSetState(drive.getModules()[0], 0,
                 false),
@@ -153,7 +160,7 @@ public class SwervyContainer implements NFRRobotContainer
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
     {
         XboxController manipulatorController = (XboxController)manipulatorHID;
-        if (driverHID instanceof XboxController && manipulatorHID instanceof XboxController)
+        if (driverHID instanceof XboxController)
         {
             XboxController driverController = (XboxController)driverHID;
             drive.setDefaultCommand(new NFRSwerveDriveWithJoystick(drive, setStateCommands,
@@ -168,11 +175,21 @@ public class SwervyContainer implements NFRRobotContainer
         }
         else
         {
-            drive.setDefaultCommand(new NFRSwerveDriveWithJoystick(drive, setStateCommands,
-                () -> MathUtil.applyDeadband(driverHID.getRawAxis(1), 0.1),
-                () -> MathUtil.applyDeadband(driverHID.getRawAxis(0), 0.1),
+            drive.setDefaultCommand(new NFRSwerveDriveWithJoystickAbsolute(drive, setStateCommands,
+                () -> -MathUtil.applyDeadband(driverHID.getRawAxis(1), 0.1),
+                () -> -MathUtil.applyDeadband(driverHID.getRawAxis(0), 0.1),
+                () -> {
+                    if (driverHID.getPOV() == -1)
+                    {
+                        return Optional.empty();
+                    }
+                    else
+                    {
+                        return Optional.of(Rotation2d.fromDegrees(driverHID.getPOV()));
+                    }
+                },
                 () -> -MathUtil.applyDeadband(driverHID.getRawAxis(4), 0.1),
-                true, true));
+                true, true, new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(360, 720))));
             new JoystickButton(driverHID, 5)
                 .onTrue(Commands.runOnce(drive::clearRotation));
             new JoystickButton(driverHID, 1)
