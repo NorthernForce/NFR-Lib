@@ -118,6 +118,32 @@ public class NFRSwerveModuleSetState extends CommandBase
         }
     }
     /**
+     * Stets the target state of the module.
+     * @param state the target speed and rotation.
+     * @param scale the target scale to apply to the velocity.
+     */
+    public void setTargetState(SwerveModuleState state, double scale)
+    {
+        this.state = state;
+        if (useVelocityClosedLoop)
+        {
+            module.setDriveSpeed(state.speedMetersPerSecond * scale, velocityPidSlot);
+        }
+        else
+        {
+            module.setDriveSpeed(state.speedMetersPerSecond * scale);
+        }
+        if (usePositionalClosedLoop)
+        {
+            module.setTurnPosition(state.angle, positionalPidSlot, useTrapezoidalPositioning);
+        }
+        else
+        {
+            pidController.reset();
+            pidController.setSetpoint(state.angle.getRotations());
+        }
+    }
+    /**
      * Updates feedback as needed.
      */
     @Override
