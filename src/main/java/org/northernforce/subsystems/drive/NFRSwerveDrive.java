@@ -95,14 +95,7 @@ public class NFRSwerveDrive extends NFRDrive
     @Override
     public void resetPose(Pose2d newPose)
     {
-        if (DriverStation.getAlliance() == Alliance.Red)
-        {
-            gyroOffset = gyro.getGyroYaw().unaryMinus().plus(newPose.getRotation().plus(Rotation2d.fromDegrees(180)));
-        }
-        else
-        {
-            gyroOffset = gyro.getGyroYaw().unaryMinus().plus(newPose.getRotation());
-        }
+        gyroOffset = gyro.getGyroYaw().unaryMinus().plus(newPose.getRotation());
         poseEstimator.resetPosition(gyro.getGyroYaw(), getPositions(), newPose);
     }
     /**
@@ -181,7 +174,16 @@ public class NFRSwerveDrive extends NFRDrive
      * Gets the rotation of the swerve module as reported by the gyroscope.
      * @return
      */
-    public Rotation2d getRotation()
+    public Rotation2d getAllianceRelativeRotation()
+    {
+        return gyro.getGyroYaw().plus(gyroOffset)
+            .plus(DriverStation.getAlliance() == Alliance.Red ? Rotation2d.fromDegrees(180) : Rotation2d.fromDegrees(0));
+    }
+    /**
+     * Gets the rotation of the swerve module as reported by the gyroscope.
+     * @return
+     */
+    public Rotation2d getBlueRelativeRotation()
     {
         return gyro.getGyroYaw().plus(gyroOffset);
     }
