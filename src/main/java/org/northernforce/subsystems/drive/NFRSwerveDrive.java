@@ -154,6 +154,11 @@ public class NFRSwerveDrive extends NFRDrive
     public void periodic()
     {
     }
+    @Override
+    public void simulationPeriodic()
+    {
+        gyro.addSimulationYaw(Rotation2d.fromRadians(getChassisSpeeds().omegaRadiansPerSecond * 0.02));
+    }
     /**
      * Updates the odometry and pose estimator with module positions.
      */
