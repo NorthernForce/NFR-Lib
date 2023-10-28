@@ -2,6 +2,8 @@ package org.northernforce.subsystems.ros;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 import javax.websocket.Session;
@@ -84,6 +86,7 @@ public class ROSCoprocessor extends NFRSubsystem implements RosHandler
             return this;
         }
     }
+    protected final Lock lock;
     protected final Ros ros;
     protected final HashMap<String, Topic> topics;
     protected final HashMap<String, Service> services;
@@ -103,6 +106,7 @@ public class ROSCoprocessor extends NFRSubsystem implements RosHandler
         onDisconnects = new ArrayList<>();
         tryConnect = new Notifier(this::connect);
         ros.addRosHandler(this);
+        lock = new ReentrantLock();
     }
     /**
      * Starts a notifier to try to connect every 0.5 seconds
@@ -206,19 +210,24 @@ public class ROSCoprocessor extends NFRSubsystem implements RosHandler
      */
     public void connect()
     {
-        if (ros.connect())
+        lock.lock();
+        if (!ros.isConnected())
         {
-            System.out.println("Connected");
-            for (var onConnect : onConnects)
+            if (ros.connect())
             {
-                onConnect.run();
+                System.out.println("Connected");
+                for (var onConnect : onConnects)
+                {
+                    onConnect.run();
+                }
+                tryConnect.stop();
             }
-            tryConnect.stop();
+            else
+            {
+                System.out.println("Could not connect to rosbridge");
+            }
         }
-        else
-        {
-            System.out.println("Could not connect to rosbridge");
-        }
+        lock.unlock();
     }
     @Override
     public void periodic()
