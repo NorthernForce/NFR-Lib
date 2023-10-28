@@ -101,7 +101,9 @@ public class SwervyContainer implements NFRRobotContainer
             new JoystickButton(driverController, XboxController.Button.kB.value)
                 .onTrue(Commands.runOnce(drive::clearRotation));
             new JoystickButton(driverController, XboxController.Button.kY.value)
-                .onTrue(new NFRSwerveDriveStop(drive, setStateCommands, true));
+                .whileTrue(new NFRSwerveDriveStop(drive, setStateCommands, true));
+            new JoystickButton(driverController, XboxController.Button.kA.value)
+                .whileTrue(new FollowXavierPath(drive, setStateCommands, coprocessor, () -> new Pose2d(8, 5, Rotation2d.fromDegrees(0))));
         }
         else
         {
