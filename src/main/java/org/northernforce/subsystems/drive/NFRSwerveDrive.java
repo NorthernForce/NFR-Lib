@@ -44,7 +44,6 @@ public class NFRSwerveDrive extends NFRDrive
     protected Rotation2d gyroOffset;
     protected final SwerveDriveOdometry odometry;
     protected final Notifier notifier;
-    
     /**
      * Creates a new NFRSwerveDrive.
      * @param config the configuration for the swerve drive.
@@ -96,14 +95,7 @@ public class NFRSwerveDrive extends NFRDrive
     @Override
     public void resetPose(Pose2d newPose)
     {
-        if (DriverStation.getAlliance() == Alliance.Red)
-        {
-            gyroOffset = gyro.getGyroYaw().unaryMinus().plus(newPose.getRotation().plus(Rotation2d.fromDegrees(180)));
-        }
-        else
-        {
-            gyroOffset = gyro.getGyroYaw().unaryMinus().plus(newPose.getRotation());
-        }
+        gyroOffset = gyro.getGyroYaw().unaryMinus().plus(newPose.getRotation());
         poseEstimator.resetPosition(gyro.getGyroYaw(), getPositions(), newPose);
     }
     /**
@@ -162,6 +154,11 @@ public class NFRSwerveDrive extends NFRDrive
     public void periodic()
     {
     }
+    @Override
+    public void simulationPeriodic()
+    {
+        gyro.addSimulationYaw(Rotation2d.fromRadians(getChassisSpeeds().omegaRadiansPerSecond * 0.02));
+    }
     /**
      * Updates the odometry and pose estimator with module positions.
      */
@@ -170,7 +167,6 @@ public class NFRSwerveDrive extends NFRDrive
         poseEstimator.updateWithTime(System.currentTimeMillis() / 1000.0, gyro.getGyroYaw(), getPositions());
         odometry.update(gyro.getGyroYaw(), getPositions());
     }
-
     /**
      * Gets the odometry
      * @return the odometry
@@ -183,7 +179,16 @@ public class NFRSwerveDrive extends NFRDrive
      * Gets the rotation of the swerve module as reported by the gyroscope.
      * @return
      */
-    public Rotation2d getRotation()
+    public Rotation2d getAllianceRelativeRotation()
+    {
+        return gyro.getGyroYaw().plus(gyroOffset)
+            .plus(DriverStation.getAlliance() == Alliance.Red ? Rotation2d.fromDegrees(180) : Rotation2d.fromDegrees(0));
+    }
+    /**
+     * Gets the rotation of the swerve module as reported by the gyroscope.
+     * @return
+     */
+    public Rotation2d getBlueRelativeRotation()
     {
         return gyro.getGyroYaw().plus(gyroOffset);
     }

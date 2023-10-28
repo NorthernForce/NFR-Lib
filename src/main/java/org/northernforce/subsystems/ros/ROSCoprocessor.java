@@ -2,25 +2,39 @@ package org.northernforce.subsystems.ros;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+
+import javax.websocket.Session;
 
 import org.northernforce.subsystems.NFRSubsystem;
 import org.northernforce.subsystems.ros.rosgraph_msgs.Clock;
 import org.northernforce.subsystems.ros.primitives.Time;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.rail.jrosbridge.Ros;
 import edu.wpi.rail.jrosbridge.Service;
 import edu.wpi.rail.jrosbridge.Topic;
 import edu.wpi.rail.jrosbridge.callback.TopicCallback;
+import edu.wpi.rail.jrosbridge.handler.RosHandler;
 import edu.wpi.rail.jrosbridge.messages.Message;
+import edu.wpi.rail.jrosbridge.messages.geometry.Point;
+import edu.wpi.rail.jrosbridge.messages.geometry.Pose;
+import edu.wpi.rail.jrosbridge.messages.geometry.Quaternion;
+import edu.wpi.rail.jrosbridge.messages.geometry.Twist;
+import edu.wpi.rail.jrosbridge.messages.geometry.Vector3;
 
 /**
  * Team 172's implementation of the ROSCoprocessor subsystem which maintains a ROSBridge websocket between the
  * coprocessor and the subsystem.
  */
-public class ROSCoprocessor extends NFRSubsystem
+public class ROSCoprocessor extends NFRSubsystem implements RosHandler
 {
     /**
      * The configuration for the ROSCoprocessor.
@@ -72,10 +86,11 @@ public class ROSCoprocessor extends NFRSubsystem
             return this;
         }
     }
+    protected final Lock lock;
     protected final Ros ros;
     protected final HashMap<String, Topic> topics;
     protected final HashMap<String, Service> services;
-    protected final ArrayList<Runnable> onConnects;
+    protected final ArrayList<Runnable> onConnects, onDisconnects;
     protected final Notifier tryConnect;
     /**
      * Creates a new ROSCoprocessor.
@@ -88,7 +103,10 @@ public class ROSCoprocessor extends NFRSubsystem
         topics = new HashMap<>();
         services = new HashMap<>();
         onConnects = new ArrayList<>();
+        onDisconnects = new ArrayList<>();
         tryConnect = new Notifier(this::connect);
+        ros.addRosHandler(this);
+        lock = new ReentrantLock();
     }
     /**
      * Starts a notifier to try to connect every 0.5 seconds
@@ -104,6 +122,14 @@ public class ROSCoprocessor extends NFRSubsystem
     public void onConnect(Runnable runnable)
     {
         onConnects.add(runnable);
+    }
+    /**
+     * Adds a runnable to be executed on disconnect
+     * @param runnable to be executed on disconnect
+     */
+    public void onDisconnect(Runnable runnable)
+    {
+        onDisconnects.add(runnable);
     }
     /**
      * Checks whether connected
@@ -184,19 +210,24 @@ public class ROSCoprocessor extends NFRSubsystem
      */
     public void connect()
     {
-        if (ros.connect())
+        lock.lock();
+        if (!ros.isConnected())
         {
-            System.out.println("Connected");
-            for (var onConnect : onConnects)
+            if (ros.connect())
             {
-                onConnect.run();
+                System.out.println("Connected");
+                for (var onConnect : onConnects)
+                {
+                    onConnect.run();
+                }
+                tryConnect.stop();
             }
-            tryConnect.stop();
+            else
+            {
+                System.out.println("Could not connect to rosbridge");
+            }
         }
-        else
-        {
-            System.out.println("Could not connect to rosbridge");
-        }
+        lock.unlock();
     }
     @Override
     public void periodic()
@@ -206,5 +237,50 @@ public class ROSCoprocessor extends NFRSubsystem
             Clock clock = new Clock(new Time((double)System.currentTimeMillis() / 1000));
             publish("/clock", "rosgraph_msgs/Clock", clock);
         }
+    }
+    public static Pose fromPose3d(Pose3d pose)
+    {
+        return new Pose(
+            new Point(pose.getX(), pose.getY(), pose.getZ()),
+            new Quaternion(
+                pose.getRotation().getQuaternion().getX(),
+                pose.getRotation().getQuaternion().getY(),
+                pose.getRotation().getQuaternion().getZ(),
+                pose.getRotation().getQuaternion().getW()
+            )
+        );
+    }
+    public static Pose fromPose2d(Pose2d pose)
+    {
+        return fromPose3d(new Pose3d(pose));
+    }
+    public static Twist fromChassisSpeeds(ChassisSpeeds speeds)
+    {
+        return new Twist(
+            new Vector3(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, 0),
+            new Vector3(0, 0, speeds.omegaRadiansPerSecond)
+        );
+    }
+    public static ChassisSpeeds toChassisSpeeds(Twist twist)
+    {
+        return new ChassisSpeeds(twist.getLinear().getX(), twist.getLinear().getY(), twist.getAngular().getZ());
+    }
+    @Override
+    public void handleConnection(Session session)
+    {
+    }
+    @Override
+    public void handleDisconnection(Session session)
+    {
+        DriverStation.reportWarning("Disconnected from ROS coprocessor", true);
+        for (Runnable runnable : onDisconnects)
+        {
+            runnable.run();
+        }
+    }
+    @Override
+    public void handleError(Session session, Throwable t)
+    {
+        DriverStation.reportError(t.getMessage(), true);
     }
 }

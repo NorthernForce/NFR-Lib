@@ -77,7 +77,7 @@ public class NFRSwerveMoveAtAngle extends CommandBase {
 	// Called every time the scheduler runs while the command is scheduled.
 	@Override
 	public void execute() {
-		ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(angle.getCos()*speed, angle.getSin()*speed, 0, drive.getRotation()); 
+		ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(angle.getCos()*speed, angle.getSin()*speed, 0, drive.getAllianceRelativeRotation()); 
 		SwerveModuleState[] states = drive.toModuleStates(speeds);
 		for (int i = 0; i < states.length; i++){
 			setStateCommands[i].setTargetState(optimize ? SwerveModuleState.optimize(states[i],
