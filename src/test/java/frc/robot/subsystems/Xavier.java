@@ -1,86 +1,126 @@
 package frc.robot.subsystems;
 
+import org.northernforce.subsystems.NFRSubsystem;
 import org.northernforce.subsystems.drive.NFRDrive;
-import org.northernforce.subsystems.ros.ROSCoprocessor;
-import org.northernforce.subsystems.ros.geometry_msgs.PoseStamped;
-import org.northernforce.subsystems.ros.geometry_msgs.PoseWithCovarianceStamped;
-import org.northernforce.subsystems.ros.nav_msgs.Odometry;
-import org.northernforce.subsystems.ros.primitives.Time;
-import org.northernforce.subsystems.ros.std_msgs.Header;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Quaternion;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.rail.jrosbridge.messages.Message;
-import edu.wpi.rail.jrosbridge.messages.geometry.PoseWithCovariance;
-import edu.wpi.rail.jrosbridge.messages.geometry.Twist;
-import edu.wpi.rail.jrosbridge.messages.geometry.TwistWithCovariance;
+import edu.wpi.first.networktables.BooleanPublisher;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.networktables.IntegerPublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEvent;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.Timer;
 
-public class Xavier extends ROSCoprocessor
+public class Xavier extends NFRSubsystem
 {
+    protected final NetworkTable table, targetPoseTable, odometryTable, globalSetPoseTable, cmdVelTable;
+    protected final DoublePublisher targetPoseX;
+    protected final DoublePublisher targetPoseY;
+    protected final DoublePublisher targetPoseTheta;
+    protected final IntegerPublisher targetPoseStamp;
+    protected final DoublePublisher odometryDeltaX;
+    protected final DoublePublisher odometryDeltaY;
+    protected final DoublePublisher odometryDeltaTheta;
+    protected final BooleanPublisher cancelTargetPose;
+    protected final DoublePublisher odometryPoseX;
+    protected final DoublePublisher odometryPoseY;
+    protected final DoublePublisher odometryPoseTheta;
+    protected final IntegerPublisher odometryPoseStamp;
+    protected final DoubleSubscriber cmdVelX, cmdVelY, cmdVelTheta;
+    protected final DoublePublisher globalSetPoseX, globalSetPoseY, globalSetPoseTheta;
+    protected final IntegerPublisher globalSetPoseStamp;
     protected final NFRDrive drive;
-    protected Twist targetVelocity = new Twist();
+    protected volatile boolean xavierIsConnected;
+    public static class XavierConfiguration extends NFRSubsystemConfiguration
+    {
+        public XavierConfiguration()
+        {
+            super("xavier");
+        }
+    }
     public Xavier(NFRDrive drive)
     {
-        super(new ROSCoprocessorConfiguration("xavier", "localhost", 5809));
+        super(new XavierConfiguration());
+        table = NetworkTableInstance.getDefault().getTable("xavier");
+        NetworkTableInstance.getDefault().startServer();
+        targetPoseTable = table.getSubTable("target_pose");
+        targetPoseX = targetPoseTable.getDoubleTopic("x").publish();
+        targetPoseY = targetPoseTable.getDoubleTopic("y").publish();
+        targetPoseTheta = targetPoseTable.getDoubleTopic("theta").publish();
+        targetPoseStamp = targetPoseTable.getIntegerTopic("stamp").publish();
+        cancelTargetPose = targetPoseTable.getBooleanTopic("cancel").publish();
+        odometryTable = table.getSubTable("odometry");
+        odometryPoseX = odometryTable.getDoubleTopic("x").publish();
+        odometryPoseY = odometryTable.getDoubleTopic("y").publish();
+        odometryPoseTheta = odometryTable.getDoubleTopic("theta").publish();
+        odometryDeltaX = odometryTable.getDoubleTopic("dx").publish();
+        odometryDeltaY = odometryTable.getDoubleTopic("dy").publish();
+        odometryDeltaTheta = odometryTable.getDoubleTopic("dtheta").publish();
+        odometryPoseStamp = odometryTable.getIntegerTopic("stamp").publish();
+        globalSetPoseTable = table.getSubTable("global_set_pose");
+        globalSetPoseX = globalSetPoseTable.getDoubleTopic("x").publish();
+        globalSetPoseY = globalSetPoseTable.getDoubleTopic("y").publish();
+        globalSetPoseTheta = globalSetPoseTable.getDoubleTopic("theta").publish();
+        globalSetPoseStamp = globalSetPoseTable.getIntegerTopic("stamp").publish();
+        cmdVelTable = table.getSubTable("cmd_vel");
+        cmdVelX = cmdVelTable.getDoubleTopic("x").subscribe(0);
+        cmdVelY = cmdVelTable.getDoubleTopic("y").subscribe(0);
+        cmdVelTheta = cmdVelTable.getDoubleTopic("theta").subscribe(0);
         this.drive = drive;
-        onConnect(() -> {
-            subscribe("/realsense/pose_estimations",
-                "geometry_msgs/PoseWithCovarianceStamped", this::recieveDetection);
-            subscribe("/cmd_vel", "geometry_msgs/Twist", message -> {
-                targetVelocity = Twist.fromMessage(message);
-            });
-        });
-        onDisconnect(() -> {
-            startConnecting();
-        });
-        startConnecting();
-    }
-    public void recieveDetection(Message message)
-    {
-        PoseWithCovarianceStamped poseStamped = PoseWithCovarianceStamped.fromMessage(message);
-        Pose3d pose = new Pose3d(
-            new Translation3d(
-                poseStamped.pose.getPose().getPosition().getX(),
-                poseStamped.pose.getPose().getPosition().getY(),
-                poseStamped.pose.getPose().getPosition().getZ()
-            ),
-            new Rotation3d(
-                new Quaternion(
-                    poseStamped.pose.getPose().getOrientation().getW(),
-                    poseStamped.pose.getPose().getOrientation().getX(),
-                    poseStamped.pose.getPose().getOrientation().getY(),
-                    poseStamped.pose.getPose().getOrientation().getZ()
-                )
-            )
-        );
-        drive.addVisionEstimate(poseStamped.header.getStamp().toSec(), pose.toPose2d());
+        xavierIsConnected = false;
+        NetworkTableInstance.getDefault().addConnectionListener(true, this::connectionCallback);
     }
     public void publishOdometry(Pose2d odometryPose, ChassisSpeeds speeds)
-    {
-        Odometry odometry = new Odometry(new Header(Time.now(), "odom"), "base_link",
-            new PoseWithCovariance(fromPose2d(odometryPose)),
-            new TwistWithCovariance(fromChassisSpeeds(speeds))
-        );
-        publish("/odom", "nav_msgs/Odometry", odometry);
+    { 
+        odometryPoseX.set(odometryPose.getX());
+        odometryPoseY.set(odometryPose.getY());
+        odometryPoseTheta.set(odometryPose.getRotation().getRadians());
+        odometryDeltaX.set(speeds.vxMetersPerSecond);
+        odometryDeltaY.set(speeds.vyMetersPerSecond);
+        odometryDeltaTheta.set(speeds.omegaRadiansPerSecond);
+        odometryPoseStamp.set((long)(Timer.getFPGATimestamp() * 1e9));
     }
     public void setGlobalPose(Pose2d globalPose)
     {
-        PoseWithCovarianceStamped poseMessage = new PoseWithCovarianceStamped(new Header(Time.now(), "map"),
-            new PoseWithCovariance(fromPose2d(globalPose)));
-        publish("/global_set_pose", poseMessage.getMessageType(), poseMessage);
+        globalSetPoseX.set(globalPose.getX());
+        globalSetPoseY.set(globalPose.getY());
+        globalSetPoseTheta.set(globalPose.getRotation().getRadians());
+        globalSetPoseStamp.set((long)(Timer.getFPGATimestamp() * 1e9));
     }
     public void sendTargetPose(Pose2d targetPose)
     {
-        PoseStamped poseMessage = new PoseStamped(new Header(Time.now(), "map"), fromPose2d(targetPose));
-        publish("/target_pose", poseMessage.getMessageType(), poseMessage);
+        targetPoseX.set(targetPose.getX());
+        targetPoseY.set(targetPose.getY());
+        targetPoseTheta.set(targetPose.getRotation().getRadians());
+        globalSetPoseStamp.set((long)(Timer.getFPGATimestamp() * 1e9));
+    }
+    public void cancelTargetPose()
+    {
+        cancelTargetPose.set(true);
     }
     public ChassisSpeeds getTargetVelocity()
     {
-        return toChassisSpeeds(targetVelocity);
+        return new ChassisSpeeds(cmdVelX.get(), cmdVelY.get(), cmdVelTheta.get());
+    }
+    public void connectionCallback(NetworkTableEvent event)
+    {
+    }
+    public boolean isConnected()
+    {
+        boolean flag = false;
+        for (var connection : NetworkTableInstance.getDefault().getConnections())
+            {
+            if (connection.remote_ip.equals("10.1.72.47"))
+            {
+                flag = true;
+                break;
+            }
+        }
+        return flag;
     }
     @Override
     public void periodic()
@@ -90,5 +130,10 @@ public class Xavier extends ROSCoprocessor
         {
             publishOdometry(drive.getOdometryPose(), drive.getChassisSpeeds());
         }
+    }
+    @Override
+    public void initSendable(SendableBuilder builder)
+    {
+        builder.addBooleanProperty("isConnected", this::isConnected, null);
     }
 }
