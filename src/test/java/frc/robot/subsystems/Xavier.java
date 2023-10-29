@@ -113,8 +113,8 @@ public class Xavier extends NFRSubsystem
     {
         boolean flag = false;
         for (var connection : NetworkTableInstance.getDefault().getConnections())
-            {
-            if (connection.remote_ip.equals("10.1.72.47"))
+        {
+            if (connection.remote_ip.equals("10.1.72.47") || connection.remote_id.indexOf("xavier") != -1)
             {
                 flag = true;
                 break;
