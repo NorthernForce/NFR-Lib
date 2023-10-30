@@ -149,6 +149,6 @@ public class SwervyContainer implements NFRRobotContainer
     @Override
     public void periodic()
     {
-        field.setRobotPose(drive.getEstimatedPose());
+        field.setRobotPose(coprocessor.getPose());
     }
 }

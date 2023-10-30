@@ -1,23 +1,28 @@
 package frc.robot.subsystems;
 
+import java.util.EnumSet;
+
 import org.northernforce.subsystems.NFRSubsystem;
 import org.northernforce.subsystems.drive.NFRDrive;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.IntegerPublisher;
+import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableEvent.Kind;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
 
 public class Xavier extends NFRSubsystem
 {
-    protected final NetworkTable table, targetPoseTable, odometryTable, globalSetPoseTable, cmdVelTable;
+    protected final NetworkTable table, targetPoseTable, odometryTable, globalSetPoseTable, cmdVelTable, poseTable;
     protected final DoublePublisher targetPoseX;
     protected final DoublePublisher targetPoseY;
     protected final DoublePublisher targetPoseTheta;
@@ -30,11 +35,13 @@ public class Xavier extends NFRSubsystem
     protected final DoublePublisher odometryPoseY;
     protected final DoublePublisher odometryPoseTheta;
     protected final IntegerPublisher odometryPoseStamp;
-    protected final DoubleSubscriber cmdVelX, cmdVelY, cmdVelTheta;
+    protected final DoubleSubscriber cmdVelX, cmdVelY, cmdVelTheta, poseX, poseY, poseTheta;
+    protected final IntegerSubscriber poseStamp;
     protected final DoublePublisher globalSetPoseX, globalSetPoseY, globalSetPoseTheta;
     protected final IntegerPublisher globalSetPoseStamp;
     protected final NFRDrive drive;
     protected volatile boolean xavierIsConnected;
+    protected volatile Pose2d pose;
     public static class XavierConfiguration extends NFRSubsystemConfiguration
     {
         public XavierConfiguration()
@@ -70,6 +77,12 @@ public class Xavier extends NFRSubsystem
         cmdVelX = cmdVelTable.getDoubleTopic("x").subscribe(0);
         cmdVelY = cmdVelTable.getDoubleTopic("y").subscribe(0);
         cmdVelTheta = cmdVelTable.getDoubleTopic("theta").subscribe(0);
+        poseTable = table.getSubTable("pose");
+        poseX = poseTable.getDoubleTopic("x").subscribe(0);
+        poseY = poseTable.getDoubleTopic("y").subscribe(0);
+        poseTheta = poseTable.getDoubleTopic("theta").subscribe(0);
+        poseStamp = poseTable.getIntegerTopic("stamp").subscribe(0);
+        NetworkTableInstance.getDefault().addListener(poseStamp, EnumSet.of(Kind.kValueAll), this::receivePose);
         this.drive = drive;
         xavierIsConnected = false;
         NetworkTableInstance.getDefault().addConnectionListener(true, this::connectionCallback);
@@ -96,7 +109,7 @@ public class Xavier extends NFRSubsystem
         targetPoseX.set(targetPose.getX());
         targetPoseY.set(targetPose.getY());
         targetPoseTheta.set(targetPose.getRotation().getRadians());
-        globalSetPoseStamp.set((long)(Timer.getFPGATimestamp() * 1e9));
+        targetPoseStamp.set((long)(Timer.getFPGATimestamp() * 1e9));
     }
     public void cancelTargetPose()
     {
@@ -108,6 +121,14 @@ public class Xavier extends NFRSubsystem
     }
     public void connectionCallback(NetworkTableEvent event)
     {
+    }
+    public void receivePose(NetworkTableEvent event)
+    {
+        pose = new Pose2d(poseX.get(), poseY.get(), Rotation2d.fromRadians(poseTheta.get()));
+    }
+    public Pose2d getPose()
+    {
+        return pose;
     }
     public boolean isConnected()
     {
