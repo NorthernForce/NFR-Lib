@@ -37,13 +37,13 @@ public class FollowXavierPath extends CommandBase
     public void execute()
     {
         var targetVelocity = xavier.getTargetVelocity();
-        targetVelocity.vxMetersPerSecond = Math.min(Math.max(targetVelocity.vxMetersPerSecond, -0.25), 0.25);
-        targetVelocity.vyMetersPerSecond = Math.min(Math.max(targetVelocity.vyMetersPerSecond, -0.25), 0.25);
-        targetVelocity.omegaRadiansPerSecond = Math.min(Math.max(targetVelocity.omegaRadiansPerSecond, -0.25), 0.25);
+        targetVelocity.vxMetersPerSecond = Math.min(Math.max(targetVelocity.vxMetersPerSecond, -0.5), 0.5);
+        targetVelocity.vyMetersPerSecond = Math.min(Math.max(targetVelocity.vyMetersPerSecond, -0.5), 0.5);
+        targetVelocity.omegaRadiansPerSecond = Math.min(Math.max(targetVelocity.omegaRadiansPerSecond, -0.5), 0.5);
         SwerveModuleState[] targetStates = drive.toModuleStates(targetVelocity);
         for (int i = 0; i < targetStates.length; i++)
         {
-            setStateCommands[i].setTargetState(targetStates[i], 1 / 3.3);
+            setStateCommands[i].setTargetState(targetStates[i]);
         }
     }
     @Override

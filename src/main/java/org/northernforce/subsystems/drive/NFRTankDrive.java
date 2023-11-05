@@ -7,6 +7,7 @@ import org.northernforce.gyros.NFRGyro;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
@@ -366,5 +367,9 @@ public class NFRTankDrive extends NFRDrive
     public Pose2d getOdometryPose()
     {
         return odometry.getPoseMeters();
+    }
+    public Rotation2d getFieldRelativeRotation() // TODO
+    {
+        return new Rotation2d();
     }
 }

@@ -165,7 +165,7 @@ public class NFRSwerveDrive extends NFRDrive
     public void updateOdometry()
     {
         poseEstimator.updateWithTime(System.currentTimeMillis() / 1000.0, gyro.getGyroYaw(), getPositions());
-        odometry.update(gyro.getGyroYaw(), getPositions());
+        odometry.update(getFieldRelativeRotation(), getPositions());
     }
     /**
      * Gets the odometry
@@ -189,6 +189,15 @@ public class NFRSwerveDrive extends NFRDrive
      * @return
      */
     public Rotation2d getBlueRelativeRotation()
+    {
+        return gyro.getGyroYaw().plus(gyroOffset);
+    }
+    /**
+     * Gets the rotation of the swerve module as reported by the gyroscope.
+     * @return
+     */
+    @Override
+    public Rotation2d getFieldRelativeRotation()
     {
         return gyro.getGyroYaw().plus(gyroOffset);
     }
