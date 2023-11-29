@@ -11,29 +11,26 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
 
 public class Xavier extends NFRSubsystem
 {
-    protected final NetworkTable table, targetPoseTable, odometryTable, globalSetPoseTable, cmdVelTable, poseTable;
+    protected final NetworkTable table, targetPoseTable, odometryTable, imuTable, globalSetPoseTable, cmdVelTable, poseTable;
     protected final DoublePublisher targetPoseX;
     protected final DoublePublisher targetPoseY;
     protected final DoublePublisher targetPoseTheta;
     protected final IntegerPublisher targetPoseStamp;
     protected final DoublePublisher odometryDeltaX;
     protected final DoublePublisher odometryDeltaY;
-    protected final DoublePublisher odometryDeltaTheta;
     protected final BooleanPublisher cancelTargetPose;
-    protected final DoublePublisher odometryPoseX;
-    protected final DoublePublisher odometryPoseY;
-    protected final DoublePublisher odometryPoseTheta;
     protected final IntegerPublisher odometryPoseStamp;
     protected final DoubleSubscriber cmdVelX, cmdVelY, cmdVelTheta, poseX, poseY, poseTheta;
     protected final DoublePublisher globalSetPoseX, globalSetPoseY, globalSetPoseTheta;
     protected final IntegerPublisher globalSetPoseStamp;
+    protected final DoublePublisher imuTheta;
+    protected final IntegerPublisher imuStamp;
     protected final NFRDrive drive;
     protected volatile boolean xavierIsConnected;
     public static class XavierConfiguration extends NFRSubsystemConfiguration
@@ -55,13 +52,12 @@ public class Xavier extends NFRSubsystem
         targetPoseStamp = targetPoseTable.getIntegerTopic("stamp").publish();
         cancelTargetPose = targetPoseTable.getBooleanTopic("cancel").publish();
         odometryTable = table.getSubTable("odometry");
-        odometryPoseX = odometryTable.getDoubleTopic("x").publish();
-        odometryPoseY = odometryTable.getDoubleTopic("y").publish();
-        odometryPoseTheta = odometryTable.getDoubleTopic("theta").publish();
-        odometryDeltaX = odometryTable.getDoubleTopic("dx").publish();
-        odometryDeltaY = odometryTable.getDoubleTopic("dy").publish();
-        odometryDeltaTheta = odometryTable.getDoubleTopic("dtheta").publish();
+        odometryDeltaX = odometryTable.getDoubleTopic("vx").publish();
+        odometryDeltaY = odometryTable.getDoubleTopic("vy").publish();
         odometryPoseStamp = odometryTable.getIntegerTopic("stamp").publish();
+        imuTable = table.getSubTable("imu");
+        imuTheta = imuTable.getDoubleTopic("theta").publish();
+        imuStamp = imuTable.getIntegerTopic("stamp").publish();
         globalSetPoseTable = table.getSubTable("global_set_pose");
         globalSetPoseX = globalSetPoseTable.getDoubleTopic("x").publish();
         globalSetPoseY = globalSetPoseTable.getDoubleTopic("y").publish();
@@ -77,17 +73,14 @@ public class Xavier extends NFRSubsystem
         poseTheta = poseTable.getDoubleTopic("theta").subscribe(0);
         this.drive = drive;
         xavierIsConnected = false;
-        NetworkTableInstance.getDefault().addConnectionListener(true, this::connectionCallback);
     }
-    public void publishOdometry(Pose2d odometryPose, ChassisSpeeds speeds)
+    public void publishOdometry(ChassisSpeeds speeds, Rotation2d imuAngle)
     { 
-        odometryPoseX.set(odometryPose.getX());
-        odometryPoseY.set(odometryPose.getY());
-        odometryPoseTheta.set(drive.getFieldRelativeRotation().getRadians());
         odometryDeltaX.set(speeds.vxMetersPerSecond);
         odometryDeltaY.set(speeds.vyMetersPerSecond);
-        odometryDeltaTheta.set(speeds.omegaRadiansPerSecond);
         odometryPoseStamp.set((long)(Timer.getFPGATimestamp() * 1e9));
+        imuTheta.set(imuAngle.getRadians());
+        imuStamp.set((long)(Timer.getFPGATimestamp() * 1e9));
     }
     public void setGlobalPose(Pose2d globalPose)
     {
@@ -110,9 +103,6 @@ public class Xavier extends NFRSubsystem
     public ChassisSpeeds getTargetVelocity()
     {
         return new ChassisSpeeds(cmdVelX.get(), cmdVelY.get(), cmdVelTheta.get());
-    }
-    public void connectionCallback(NetworkTableEvent event)
-    {
     }
     public Pose2d getPose()
     {
@@ -137,7 +127,7 @@ public class Xavier extends NFRSubsystem
         super.periodic();
         if (isConnected())
         {
-            publishOdometry(drive.getOdometryPose(), drive.getChassisSpeeds());
+            publishOdometry(drive.getChassisSpeeds(), drive.getFieldRelativeRotation().minus(Rotation2d.fromDegrees(180)));
         }
     }
     @Override

@@ -84,8 +84,6 @@ public class SwervyContainer implements NFRRobotContainer
             new NFRSwerveModuleSetState(drive.getModules()[3], 0,
                 false)
         };
-        Shuffleboard.getTab("Main").add("Send Random Pose", new FollowXavierPath(drive, setStateCommands, coprocessor,
-            () -> new Pose2d(5, 5, Rotation2d.fromDegrees(0))));
     }
     @Override
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID)
@@ -103,7 +101,8 @@ public class SwervyContainer implements NFRRobotContainer
             new JoystickButton(driverController, XboxController.Button.kY.value)
                 .whileTrue(new NFRSwerveDriveStop(drive, setStateCommands, true));
             new JoystickButton(driverController, XboxController.Button.kA.value)
-                .whileTrue(new FollowXavierPath(drive, setStateCommands, coprocessor, () -> new Pose2d(8, 5, Rotation2d.fromDegrees(0))));
+                .whileTrue(new FollowXavierPath(drive, setStateCommands, coprocessor, () -> new Pose2d(8, 1, Rotation2d.fromDegrees(0)),
+                    0.35, 0));
         }
         else
         {
