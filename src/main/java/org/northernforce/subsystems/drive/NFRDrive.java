@@ -3,6 +3,7 @@ package org.northernforce.subsystems.drive;
 import org.northernforce.subsystems.NFRSubsystem;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 /**
@@ -58,4 +59,5 @@ public abstract class NFRDrive extends NFRSubsystem
      * @return odometry.getPoseMeters()
      */
     public abstract Pose2d getOdometryPose();
+    public abstract Rotation2d getFieldRelativeRotation();
 }

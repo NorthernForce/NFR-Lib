@@ -8,8 +8,6 @@ import org.northernforce.gyros.NFRNavX;
 import org.northernforce.motors.NFRSparkMax;
 import org.northernforce.subsystems.drive.NFRTankDrive;
 import org.northernforce.subsystems.drive.NFRTankDrive.NFRTankDriveConfiguration;
-import org.northernforce.subsystems.ros.ROSCoprocessor;
-import org.northernforce.subsystems.ros.ROSCoprocessor.ROSCoprocessorConfiguration;
 import org.northernforce.util.NFRRobotContainer;
 
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -26,10 +24,12 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.subsystems.Xavier;
 
 public class SquishyContainer implements NFRRobotContainer {
     private final NFRTankDrive drive;
     private final Field2d field;
+    private final Xavier coprocessor;
     public SquishyContainer()
     {
         NFRTankDriveConfiguration config = new NFRTankDriveConfiguration(
@@ -53,11 +53,7 @@ public class SquishyContainer implements NFRRobotContainer {
         NFRNavX navx = new NFRNavX();
         drive = new NFRTankDrive(config, leftSide, rightSide, navx);
         field = new Field2d();
-        Shuffleboard.getTab("Autonomous").add("Field", field);
-        ROSCoprocessorConfiguration coprocessorConfig = new ROSCoprocessorConfiguration("xavier")
-            .withHostname("northernforce-desktop")
-            .withPort(5809);
-        ROSCoprocessor coprocessor = new ROSCoprocessor(coprocessorConfig);
+        coprocessor = new Xavier(drive, null);
         Shuffleboard.getTab("Main").add("Xavier", coprocessor);
     }
     @Override
