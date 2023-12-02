@@ -1,17 +1,27 @@
 package frc.robot.subsystems;
 
+import java.util.EnumSet;
+import java.util.function.Consumer;
+
 import org.northernforce.subsystems.NFRSubsystem;
 import org.northernforce.subsystems.drive.NFRDrive;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.IntegerPublisher;
+import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableEvent.Kind;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -31,7 +41,11 @@ public class Xavier extends NFRSubsystem
     protected final IntegerPublisher globalSetPoseStamp;
     protected final DoublePublisher imuTheta;
     protected final IntegerPublisher imuStamp;
+    protected final NetworkTable realsenseTable;
+    protected final DoubleSubscriber realsenseX, realsenseY, realsenseZ, realsenseQX, realsenseQY, realsenseQZ, realsenseQW;
+    protected final IntegerSubscriber realsenseStamp;
     protected final NFRDrive drive;
+    protected final Consumer<Pair<Double, Pose2d>> realsenseEstimates;
     protected volatile boolean xavierIsConnected;
     public static class XavierConfiguration extends NFRSubsystemConfiguration
     {
@@ -40,7 +54,7 @@ public class Xavier extends NFRSubsystem
             super("xavier");
         }
     }
-    public Xavier(NFRDrive drive)
+    public Xavier(NFRDrive drive, Consumer<Pair<Double, Pose2d>> realsenseEstimates)
     {
         super(new XavierConfiguration());
         table = NetworkTableInstance.getDefault().getTable("xavier");
@@ -71,6 +85,17 @@ public class Xavier extends NFRSubsystem
         poseX = poseTable.getDoubleTopic("x").subscribe(0);
         poseY = poseTable.getDoubleTopic("y").subscribe(0);
         poseTheta = poseTable.getDoubleTopic("theta").subscribe(0);
+        realsenseTable = table.getSubTable("realsense");
+        realsenseX = realsenseTable.getDoubleTopic("x").subscribe(0.0);
+        realsenseY = realsenseTable.getDoubleTopic("x").subscribe(0.0);
+        realsenseZ = realsenseTable.getDoubleTopic("x").subscribe(0.0);
+        realsenseQX = realsenseTable.getDoubleTopic("qx").subscribe(0.0);
+        realsenseQY = realsenseTable.getDoubleTopic("qy").subscribe(0.0);
+        realsenseQZ = realsenseTable.getDoubleTopic("qz").subscribe(0.0);
+        realsenseQW = realsenseTable.getDoubleTopic("qw").subscribe(0.0);
+        realsenseStamp = realsenseTable.getIntegerTopic("stamp").subscribe(0);
+        this.realsenseEstimates = realsenseEstimates;
+        NetworkTableInstance.getDefault().addListener(realsenseStamp, EnumSet.of(Kind.kValueAll), this::realsenseCallback);
         this.drive = drive;
         xavierIsConnected = false;
     }
@@ -107,6 +132,17 @@ public class Xavier extends NFRSubsystem
     public Pose2d getPose()
     {
         return new Pose2d(poseX.get(), poseY.get(), Rotation2d.fromRadians(poseTheta.get()));
+    }
+    public void realsenseCallback(NetworkTableEvent event)
+    {
+        if (realsenseEstimates != null)
+        {
+            double timestamp = realsenseStamp.get();
+            Pose3d pose = new Pose3d(realsenseX.get(), realsenseY.get(), realsenseZ.get(), new Rotation3d(new Quaternion(
+                realsenseQX.get(), realsenseQY.get(), realsenseQZ.get(), realsenseQW.get()
+            )));
+            realsenseEstimates.accept(Pair.of(timestamp, pose.toPose2d()));
+        }
     }
     public boolean isConnected()
     {

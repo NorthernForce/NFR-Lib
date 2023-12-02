@@ -53,7 +53,7 @@ public class SquishyContainer implements NFRRobotContainer {
         NFRNavX navx = new NFRNavX();
         drive = new NFRTankDrive(config, leftSide, rightSide, navx);
         field = new Field2d();
-        coprocessor = new Xavier(drive);
+        coprocessor = new Xavier(drive, null);
         Shuffleboard.getTab("Main").add("Xavier", coprocessor);
     }
     @Override

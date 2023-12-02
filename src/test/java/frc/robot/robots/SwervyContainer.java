@@ -71,7 +71,7 @@ public class SwervyContainer implements NFRRobotContainer
             .withWidget(BuiltInWidgets.kGyro);
         Shuffleboard.getTab("Swerve").addDouble("Field Relative Angle", () -> drive.getBlueRelativeRotation().getDegrees());
         Shuffleboard.getTab("Swerve").addDouble("Alliance Relative Angle", () -> drive.getAllianceRelativeRotation().getDegrees());
-        coprocessor = new Xavier(drive);
+        coprocessor = new Xavier(drive, estimate -> {drive.addVisionEstimate(estimate.getFirst(), estimate.getSecond());});
         Shuffleboard.getTab("Main").add("Xavier", coprocessor);
         Shuffleboard.getTab("Swerve").add("Calibrate", new NFRSwerveDriveCalibrate(drive).ignoringDisable(true));
         setStateCommands = new NFRSwerveModuleSetState[] {
@@ -148,6 +148,6 @@ public class SwervyContainer implements NFRRobotContainer
     @Override
     public void periodic()
     {
-        field.setRobotPose(coprocessor.getPose());
+        field.setRobotPose(drive.getEstimatedPose());
     }
 }
