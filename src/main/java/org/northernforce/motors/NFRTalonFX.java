@@ -162,6 +162,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
         for (var motor : followers)
         {
             motor.getConfigurator().apply(config);
+            motor.setControl(new Follower(primaryID, false));
         }
         selectedEncoder = integratedEncoder = new IntegratedEncoder();
         if (RobotBase.isSimulation())
