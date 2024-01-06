@@ -89,7 +89,7 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
         @Override
         public void setEncoderPosition(double position)
         {
-            setRotorPosition(position / conversionFactor);
+            setPosition(position / conversionFactor);
         }
         /**
          * Sets the position using the simulation API. Use solely in simulation as it can lead to undefined behavior on
