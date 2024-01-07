@@ -23,6 +23,7 @@ sourceSets
 
 ext.pubVersion = project.findProperty("pubs.version") ?: "unknown"
 ext.json_version = ext.pubVersion
+ext.year = project.findProperty("pubs.year") ?: 2024
 
 apply plugin: "java"
 
@@ -76,6 +77,7 @@ task generateVendorJson() {
 
         def read = libFileInput.text.replace('${lib_version}', pubVersion)
         read = read.replace('${json_version}', json_version)
+        read = read.replace('${year}', year)
         libFileOutput.write(read)
     }
     outputs.upToDateWhen { false }
