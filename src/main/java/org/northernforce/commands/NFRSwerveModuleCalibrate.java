@@ -3,12 +3,12 @@ package org.northernforce.commands;
 import org.northernforce.subsystems.drive.swerve.NFRSwerveModule;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * NFRSwerveModuleCalibrate is a command designed to calibrate a single swerve drive module
  */
-public class NFRSwerveModuleCalibrate extends CommandBase
+public class NFRSwerveModuleCalibrate extends Command
 {
     protected final NFRSwerveModule module;
     protected final Rotation2d angle;

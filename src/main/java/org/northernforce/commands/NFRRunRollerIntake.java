@@ -6,10 +6,10 @@ package org.northernforce.commands;
 
 import org.northernforce.subsystems.arm.NFRRollerIntake;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /** Runs a roller intake */
-public class NFRRunRollerIntake extends CommandBase {
+public class NFRRunRollerIntake extends Command {
     protected final NFRRollerIntake intake;
     protected final double speed;
     protected final boolean stopOnCommandEnd;

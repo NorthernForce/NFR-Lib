@@ -50,7 +50,7 @@ public class SwervyContainer implements NFRRobotContainer
             new Translation2d(-0.581025, -0.581025)
         };
         NFRNavX gyro = new NFRNavX();
-        Shuffleboard.getTab("Swerve").addNumber("Gyro", () -> gyro.getRotation2d().getDegrees())
+        Shuffleboard.getTab("Swerve").addNumber("Gyro", () -> gyro.getGyroYaw().getDegrees())
             .withWidget(BuiltInWidgets.kGyro);
         gyro.reset();
         drive = new NFRSwerveDrive(driveConfig, modules, offsets, gyro);

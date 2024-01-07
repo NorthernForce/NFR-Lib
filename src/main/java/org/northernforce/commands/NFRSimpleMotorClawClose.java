@@ -2,12 +2,12 @@ package org.northernforce.commands;
 
 import org.northernforce.subsystems.arm.NFRSimpleMotorClaw;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * Closes a claw. Goes until the claw is closed at a set speed.
  */
-public class NFRSimpleMotorClawClose extends CommandBase
+public class NFRSimpleMotorClawClose extends Command
 {
     protected final NFRSimpleMotorClaw claw;
     protected final double speed;

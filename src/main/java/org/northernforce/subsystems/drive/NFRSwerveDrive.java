@@ -96,7 +96,7 @@ public class NFRSwerveDrive extends NFRDrive
     @Override
     public void resetPose(Pose2d newPose)
     {
-        if (DriverStation.getAlliance() == Alliance.Red)
+        if (DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Red)
         {
             gyroOffset = gyro.getGyroYaw().unaryMinus().plus(newPose.getRotation().plus(Rotation2d.fromDegrees(180)));
         }

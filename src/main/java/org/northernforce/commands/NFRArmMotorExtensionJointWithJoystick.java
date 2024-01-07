@@ -4,12 +4,12 @@ import java.util.function.DoubleSupplier;
 
 import org.northernforce.subsystems.arm.NFRArmMotorExtensionJoint;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * Controls an extension joint by a variable input.
  */
-public class NFRArmMotorExtensionJointWithJoystick extends CommandBase
+public class NFRArmMotorExtensionJointWithJoystick extends Command
 {
     protected final NFRArmMotorExtensionJoint arm;
     protected final DoubleSupplier supplier;

@@ -6,12 +6,12 @@ import org.northernforce.subsystems.drive.NFRSwerveDrive;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * Command responsible for driving a swerve drive via joystick inputs.
  */
-public class NFRSwerveDriveWithJoystick extends CommandBase
+public class NFRSwerveDriveWithJoystick extends Command
 {
     protected final NFRSwerveDrive drive;
     protected final NFRSwerveModuleSetState[] setStateCommands;

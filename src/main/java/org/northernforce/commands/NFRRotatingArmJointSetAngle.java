@@ -6,12 +6,12 @@ import org.northernforce.subsystems.arm.NFRRotatingArmJoint;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * Moves the arm joint to a position.
  */
-public class NFRRotatingArmJointSetAngle extends CommandBase
+public class NFRRotatingArmJointSetAngle extends Command
 {
     protected final NFRRotatingArmJoint arm;
     protected final boolean useTrapezoidalPositioning;

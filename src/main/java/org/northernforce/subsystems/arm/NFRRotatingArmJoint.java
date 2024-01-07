@@ -209,7 +209,8 @@ public class NFRRotatingArmJoint extends NFRArmJoint
                 config.length,
                 config.negativeLimit.get().getRadians(),
                 config.positiveLimit.get().getRadians(),
-                config.simulateGravity
+                config.simulateGravity,
+                0
             );
         }
         else
