@@ -6,7 +6,7 @@
   "mavenUrls": [
     "https://repo.repsy.io/mvn/cml1010101/nfr-lib"
   ],
-  "jsonUrl": "https://repsy.io/mvn/cml1010101/nfr-lib/org/northernforce/nfrlib-json/${json_version}/nfrlib-json-${json_version}",
+  "jsonUrl": "https://repsy.io/mvn/cml1010101/nfr-lib/org/northernforce/nfrlib-json/${json_version}/nfrlib-json-${json_version}.json",
   "javaDependencies": [
     {
       "groupId": "org.northernforce",
