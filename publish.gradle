@@ -1,5 +1,5 @@
 apply plugin: 'maven-publish'
-
+wpilibRepositories.addAllReleaseRepositories(project)
 ext.licenseFile = files("$rootDir/LICENSE.txt")
 
 def outputsFolder = file("$buildDir/outputs")
