@@ -4,12 +4,12 @@ import java.util.function.DoubleSupplier;
 
 import org.northernforce.subsystems.arm.NFRRotatingArmJoint;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * Controls a rotating arm joint with a single input. Optionally uses closed-loop control.
  */
-public class NFRRotatingArmJointWithJoystick extends CommandBase
+public class NFRRotatingArmJointWithJoystick extends Command
 {
     protected final NFRRotatingArmJoint arm;
     protected final DoubleSupplier supplier;

@@ -1,7 +1,5 @@
 package frc.robot;
 
-import java.io.IOException;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -376,11 +374,7 @@ public class FieldConstants
     };
     public static AprilTagFieldLayout APRILTAG_LAYOUT;
     static {
-        try {
-            APRILTAG_LAYOUT = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        APRILTAG_LAYOUT = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
     }
     /** DRIVER ORIENTED */
     public static final Pose2d[] BLUE_POSES = new Pose2d[] {

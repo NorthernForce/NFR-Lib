@@ -2,12 +2,12 @@ package org.northernforce.commands;
 
 import org.northernforce.subsystems.arm.NFRArmMotorExtensionJoint;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * Extends an extension joint controlled by a motor.
  */
-public class NFRArmMotorExtensionJointExtend extends CommandBase
+public class NFRArmMotorExtensionJointExtend extends Command
 {
     protected final NFRArmMotorExtensionJoint arm;
     protected final double speed;

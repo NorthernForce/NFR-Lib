@@ -54,7 +54,7 @@ public class NFRNavX extends AHRS implements NFRGyro
     @Override
     public Rotation2d getGyroYaw()
     {
-        return getRotation2d();
+        return Rotation2d.fromDegrees(getYaw());
     }
     /**
      * Gets the current rotational state of the gyroscope.

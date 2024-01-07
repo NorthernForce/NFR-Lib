@@ -6,12 +6,12 @@ import org.northernforce.subsystems.drive.NFRTankDrive;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * Drives a tank drive with inputs from a joystick.
  */
-public class NFRTankDriveWithJoystick extends CommandBase
+public class NFRTankDriveWithJoystick extends Command
 {
     protected final NFRTankDrive drive;
     protected final DoubleSupplier xSupplier, thetaSupplier;

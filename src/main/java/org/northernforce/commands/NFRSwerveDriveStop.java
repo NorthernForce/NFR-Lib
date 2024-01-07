@@ -3,12 +3,12 @@ package org.northernforce.commands;
 import org.northernforce.subsystems.drive.NFRSwerveDrive;
 
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * Points the wheels inwards, effectively stopping the swerve drive.
  */
-public class NFRSwerveDriveStop extends CommandBase
+public class NFRSwerveDriveStop extends Command
 {
     protected final NFRSwerveDrive drive;
     protected final NFRSwerveModuleSetState[] setStateCommands;

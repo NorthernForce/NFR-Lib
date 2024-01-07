@@ -4,12 +4,12 @@ import org.northernforce.subsystems.drive.swerve.NFRSwerveModule;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * The command responsible for setting the state of a swerve module.
  */
-public class NFRSwerveModuleSetState extends CommandBase
+public class NFRSwerveModuleSetState extends Command
 {
     protected final NFRSwerveModule module;
     protected final int velocityPidSlot, positionalPidSlot;

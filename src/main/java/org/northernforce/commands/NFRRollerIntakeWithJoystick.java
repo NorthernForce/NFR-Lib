@@ -8,10 +8,10 @@ import java.util.function.DoubleSupplier;
 
 import org.northernforce.subsystems.arm.NFRRollerIntake;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /** Runs a roller intake by boolean supplier*/
-public class NFRRollerIntakeWithJoystick extends CommandBase {
+public class NFRRollerIntakeWithJoystick extends Command {
     protected final NFRRollerIntake intake;
     protected final DoubleSupplier speedSupplier;
     protected final boolean stopOnCommandEnd;

@@ -10,9 +10,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
-public class NFRSwerveMoveAtAngle extends CommandBase {
+public class NFRSwerveMoveAtAngle extends Command {
 	private final NFRSwerveDrive drive;
 	private final Rotation2d angle;
 	private final double speed;

@@ -3,12 +3,12 @@ package org.northernforce.commands;
 import org.northernforce.subsystems.drive.NFRTankDrive;
 
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * Stops the tank chassis.
  */
-public class NFRTankDriveStop extends CommandBase
+public class NFRTankDriveStop extends Command
 {
     protected final NFRTankDrive drive;
     protected final double tolerance;
