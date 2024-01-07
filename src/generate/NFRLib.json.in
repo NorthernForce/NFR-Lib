@@ -2,8 +2,8 @@
   "fileName": "NFRLib.json",
   "name": "NFRLib",
   "version": "${lib_version}",
-  "year": ${year},
   "uuid": "515fe07e-bfc6-11fa-b3de-0242ac130004",
+  "frcYear": "${year}",
   "mavenUrls": [
     "https://repo.repsy.io/mvn/cml1010101/nfr-lib"
   ],
