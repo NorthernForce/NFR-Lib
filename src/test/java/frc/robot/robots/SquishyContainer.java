@@ -12,7 +12,7 @@ import org.northernforce.subsystems.ros.ROSCoprocessor;
 import org.northernforce.subsystems.ros.ROSCoprocessor.ROSCoprocessorConfiguration;
 import org.northernforce.util.NFRRobotContainer;
 
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
