@@ -8,7 +8,7 @@ import org.northernforce.encoders.NFRAbsoluteEncoder;
 import org.northernforce.encoders.NFREncoder;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
+import com.revrobotics.SparkAbsoluteEncoder.Type;
 
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
