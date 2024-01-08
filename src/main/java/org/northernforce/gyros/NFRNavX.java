@@ -112,4 +112,11 @@ public class NFRNavX extends AHRS implements NFRGyro
             -MathUtil.inputModulus(getGyroYaw().plus(deltaYaw).getDegrees(), -180, 180) - getAngleAdjustment()
         );
     }
+    /**
+     * Empty calibration for now.
+     */
+    @Override
+    public void calibrate()
+    {
+    }
 }
