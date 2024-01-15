@@ -52,6 +52,42 @@ public class NFRCANCoder implements NFRAbsoluteEncoder
         }
     }
     /**
+     * Creates a new NFRCANCoder.
+     * @param canbus the canbus of the cancoder
+     * @param id the ID of the device on the canbus.
+     */
+    public NFRCANCoder(String canbus, int id)
+    {
+        cancoder = new CANcoder(id, canbus);
+        if (RobotBase.isSimulation())
+        {
+            simState = cancoder.getSimState();
+        }
+        else
+        {
+            simState = null;
+        }
+    }
+    /**
+     * Creates a new NFRCANCoder.
+     * @param canbus the canbus of the cancoder
+     * @param configuration The configuration to load onto the CANCoder.
+     * @param id the ID of the device on the canbus.
+     */
+    public NFRCANCoder(String canbus, CANcoderConfiguration configuration, int id)
+    {
+        cancoder = new CANcoder(id, canbus);
+        cancoder.getConfigurator().apply(configuration);
+        if (RobotBase.isSimulation())
+        {
+            simState = cancoder.getSimState();
+        }
+        else
+        {
+            simState = null;
+        }
+    }
+    /**
      * Checks whether this cancoder is present on the canbus.
      */
     @Override

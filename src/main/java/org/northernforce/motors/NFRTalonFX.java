@@ -184,6 +184,53 @@ public class NFRTalonFX extends TalonFX implements NFRMotorController {
         this(config, primaryID, new int[]{});
     }
     /**
+     * Creates a new NFRTalon FX instance that contains a list of followers.
+     * @param canbus the canbus name to find the talonFX
+     * @param config The TalonFXConfiguration
+     * @param primaryID the canbus id of the primary motor
+     * @param followerIDs the canbus ids of the follower motors
+     */
+    public NFRTalonFX(String canbus, TalonFXConfiguration config, int primaryID, int... followerIDs)
+    {
+        super(primaryID, canbus); 
+        followers = new ArrayList<>();
+        for (int id : followerIDs)
+        {
+            followers.add(new TalonFX(id, canbus));
+        }
+        for (int i = 0; i < 3; i++)
+        {
+            if (getConfigurator().apply(config) == StatusCode.OK)
+            {
+                break;
+            }
+        }
+        for (var motor : followers)
+        {
+            motor.getConfigurator().apply(config);
+            motor.setControl(new Follower(primaryID, false));
+        }
+        selectedEncoder = integratedEncoder = new IntegratedEncoder();
+        if (RobotBase.isSimulation())
+        {
+            simState = getSimState();
+        }
+        else
+        {
+            simState = null;
+        }
+    }
+    /**
+     * Creates a new NFRTalon FX instance that contains a list of followers.
+     * @param canbus the canbus name to find the talonFX
+     * @param config The TalonFXConfiguration
+     * @param primaryID the canbus id of the primary motor
+     */
+    public NFRTalonFX(String canbus, TalonFXConfiguration config, int primaryID)
+    {
+        this(canbus, config, primaryID, new int[]{});
+    }
+    /**
      * Checks to see whether an motor controller is present by comparing the version to -1.
      * @return true if the motor controller is present, false if not present
      */
