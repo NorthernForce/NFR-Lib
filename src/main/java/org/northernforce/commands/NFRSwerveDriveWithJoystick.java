@@ -60,6 +60,7 @@ public class NFRSwerveDriveWithJoystick extends Command
         ChassisSpeeds speeds = new ChassisSpeeds(xSupplier.getAsDouble(), ySupplier.getAsDouble(), thetaSupplier.getAsDouble());
         if (fieldRelative)
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation());
+        speeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] states = drive.toModuleStates(speeds);
         for (int i = 0; i < states.length; i++)
         {
