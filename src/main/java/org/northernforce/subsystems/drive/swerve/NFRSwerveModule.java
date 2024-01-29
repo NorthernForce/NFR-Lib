@@ -270,13 +270,13 @@ public class NFRSwerveModule extends NFRSubsystem
         if (externalEncoder.isPresent())
         {
             externalEncoder.get().setAbsoluteOffset(MathUtil.inputModulus(angle.getRotations() - externalEncoder.get().getAbsolutePosition()
-                + externalEncoder.get().getAbsoluteOffset(), 0, 1));
+                + externalEncoder.get().getAbsoluteOffset(), 0, externalEncoder.get().getConversionFactor()));
         }
         else if (turnController.getSelectedEncoder() instanceof NFRAbsoluteEncoder)
         {
             NFRAbsoluteEncoder encoder = (NFRAbsoluteEncoder)turnController.getSelectedEncoder();
             encoder.setAbsoluteOffset(MathUtil.inputModulus(angle.getRotations() - encoder.getAbsolutePosition()
-                + encoder.getAbsoluteOffset(), 0, 1));
+                + encoder.getAbsoluteOffset(), 0, encoder.getConversionFactor()));
         }
     }
     /**
