@@ -1,0 +1,9 @@
+PROJECT_NAME           = NFR-Lib
+PROJECT_NUMBER         = 2024
+PROJECT_BRIEF          = Utility classes provided by Team 172
+OPTIMIZE_OUTPUT_JAVA   = YES
+EXTRACT_ALL            = NO
+INPUT                  = src/main README.md
+RECURSIVE              = YES
+USE_MDFILE_AS_MAINPAGE = README.md
+GENERATE_LATEX         = NO
