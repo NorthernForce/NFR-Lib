@@ -217,4 +217,12 @@ public class NFRSwerveDrive extends NFRDrive
         }
         return states;
     }
+    /**
+     * Gets the kinematics of the swerve drive.
+     * @return the kinematics of this swerve drive
+     */
+    public SwerveDriveKinematics getKinematics()
+    {
+        return kinematics;
+    }
 }
